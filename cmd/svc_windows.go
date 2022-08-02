@@ -19,8 +19,10 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bloodhoundad/azurehound/config"
+	"github.com/bloodhoundad/azurehound/logger"
 	"github.com/judwhite/go-svc"
 )
 
