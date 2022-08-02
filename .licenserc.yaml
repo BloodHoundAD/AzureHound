@@ -1,0 +1,18 @@
+header: 
+  license:
+    spdx-id: GPL-3.0-or-later
+    copyright-owner: The BloodHound Enterprise Team
+    software-name: AzureHound
+  paths:
+  - '**/*.go'
+  paths-ignore:
+    - .git
+    - dist
+    - licenses
+    - '**/*.md'
+
+  comment: on-failure
+
+  dependency:
+    files:
+      - go.mod
