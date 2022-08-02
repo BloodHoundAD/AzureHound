@@ -1,4 +1,4 @@
-// Copyright (C) 2022 The BloodHound Enterprise Team
+// Copyright (C) 2022 Specter Ops, Inc.
 //
 // This file is part of AzureHound.
 //
@@ -21,7 +21,7 @@ import "fmt"
 
 // AzureHound version
 // This gets populated at build time when the command being run uses the following flag:
-// -ldflags "-X constants.Version=`git describe --tags --abbrev=0`"
+// -ldflags "-X github.com/bloodhoundad/azurehound/constants.Version=`git describe --tags --exact-match 2> /dev/null || git rev-parse HEAD`"
 var Version string = "v0.0.0"
 
 const (

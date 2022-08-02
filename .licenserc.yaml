@@ -1,10 +1,10 @@
 header: 
   license:
     spdx-id: GPL-3.0-or-later
-    copyright-owner: The BloodHound Enterprise Team
+    copyright-owner: Specter Ops, Inc.
     software-name: AzureHound
   paths:
-  - '**/*.go'
+  - 'main.go'
   paths-ignore:
     - .git
     - dist

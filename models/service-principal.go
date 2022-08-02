@@ -1,4 +1,4 @@
-// Copyright (C) 2022 The BloodHound Enterprise Team
+// Copyright (C) 2022 Specter Ops, Inc.
 //
 // This file is part of AzureHound.
 //
