@@ -58,17 +58,15 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if logr, err := logger.GetLogger(); err != nil {
+	config.LoadValues(cmd, config.Options())
+	config.SetAzureDefaults()
+
+	if err := config.SetProxyEnvVars(); err != nil {
+		return err
+	} else if logr, err := logger.GetLogger(); err != nil {
 		return err
 	} else {
 		log = *logr
-
-		config.LoadValues(cmd, config.Options())
-		config.SetAzureDefaults()
-
-		if err := config.SetProxyEnvVars(); err != nil {
-			return err
-		}
 
 		if config.ConfigFileUsed() != "" {
 			log.V(1).Info(fmt.Sprintf("Config File: %v", config.ConfigFileUsed()))

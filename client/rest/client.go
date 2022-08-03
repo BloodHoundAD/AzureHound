@@ -110,6 +110,7 @@ func (s *restClient) Authenticate() error {
 	if s.refreshToken != "" {
 		body.Add("grant_type", "refresh_token")
 		body.Add("refresh_token", s.refreshToken)
+		body.Set("client_id", constants.AzPowerShellClientID)
 	} else if s.clientSecret != "" {
 		body.Add("grant_type", "client_credentials")
 		body.Add("client_secret", s.clientSecret)
@@ -125,6 +126,7 @@ func (s *restClient) Authenticate() error {
 		body.Add("grant_type", "password")
 		body.Add("username", s.username)
 		body.Add("password", s.password)
+		body.Set("client_id", constants.AzPowerShellClientID)
 	} else {
 		return fmt.Errorf("unable to authenticate. no valid credential provided")
 	}
