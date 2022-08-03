@@ -11,7 +11,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://www.twitter.com/_wald0"><img src="https://avatars.githubusercontent.com/u/842644?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andy Robbins</b></sub></a><br /><a href="#ideas-andyrobbins" title="Ideas, Planning, & Feedback">🤔</a> <a href="#design-andyrobbins" title="Design">🎨</a> <a href="#blog-andyrobbins" title="Blogposts">📝</a> <a href="#content-andyrobbins" title="Content">🖋</a></td>
+    <td align="center"><a href="https://www.twitter.com/_wald0"><img src="https://avatars.githubusercontent.com/u/842644?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andy Robbins</b></sub></a><br /><a href="#ideas-andyrobbins" title="Ideas, Planning, & Feedback">🤔</a> <a href="#design-andyrobbins" title="Design">🎨</a> <a href="#blog-andyrobbins" title="Blogposts">📝</a> <a href="#content-andyrobbins" title="Content">🖋</a> <a href="https://github.com/BloodHoundAD/AzureHound/commits?author=andyrobbins" title="Documentation">📖</a></td>
   </tr>
 </table>
 
