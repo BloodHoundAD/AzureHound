@@ -55,5 +55,18 @@ jobs:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
 
-      - name: Test
-        run: go test ./...
+      - name: Zip
+        if: "! startsWith(github.event_name, 'pull_request')"
+        run: 7z a -tzip -mx9 azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip azurehound*
+
+      - name: Update Rolling Release
+        if: "! startsWith(github.event_name, 'pull_request')"
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Rolling Release (unstable)
+          tag_name: rolling
+          prerelease: true
+          files: azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip
+          body: |
+            Rolling release of AzureHound compiled from source (${{ github.sha }})
+            This is automatically kept up-to-date with the `${{ github.ref_name }}` ${{ github.ref_type }}
