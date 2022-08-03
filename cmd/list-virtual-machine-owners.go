@@ -69,7 +69,7 @@ func listVirtualMachineOwners(ctx context.Context, client client.AzureClient, vi
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 50)
+		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
 	)
 
