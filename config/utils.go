@@ -18,10 +18,8 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
-	"os"
 
 	client "github.com/bloodhoundad/azurehound/client/config"
 	config "github.com/bloodhoundad/azurehound/config/internal"
@@ -58,24 +56,6 @@ func ValidateURL(input string) error {
 		return fmt.Errorf("invalid URL")
 	} else {
 		return nil
-	}
-}
-
-func SetProxyEnvVars() error {
-	if proxy, ok := Proxy.Value().(string); !ok || proxy == "" {
-		return nil
-	} else if err := ValidateURL(proxy); err != nil {
-		return err
-	} else if proxyURL, err := url.Parse(proxy); err != nil {
-		return err
-	} else if proxyURL.Scheme == "https" {
-		os.Setenv("HTTPS_PROXY", proxy)
-		return nil
-	} else if proxyURL.Scheme == "http" {
-		os.Setenv("HTTP_PROXY", proxy)
-		return nil
-	} else {
-		return errors.New("unsupported url scheme")
 	}
 }
 

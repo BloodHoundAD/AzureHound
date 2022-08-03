@@ -33,6 +33,7 @@ type Config struct {
 	Management     string   // The Azure ResourceManager URL
 	MgmtGroupId    []string // The Management Group Id to use as a filter
 	Password       string   // The password associated with the user principal name associated with the Azure portal.
+	ProxyUrl       string   // The forward proxy url
 	RefreshToken   string   // The refresh token that will be used to authenticate requests sent to Azure APIs
 	Region         string   // The region of the Azure Cloud deployment.
 	SubscriptionId []string // The Subscription Id(s) to use as a filter

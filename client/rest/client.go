@@ -46,6 +46,8 @@ func NewRestClient(apiUrl string, config config.Config) (RestClient, error) {
 		return nil, err
 	} else if api, err := url.Parse(apiUrl); err != nil {
 		return nil, err
+	} else if http, err := NewHTTPClient(config.ProxyUrl); err != nil {
+		return nil, err
 	} else {
 		client := &restClient{
 			*api,
@@ -58,7 +60,7 @@ func NewRestClient(apiUrl string, config config.Config) (RestClient, error) {
 			config.ClientKeyPass,
 			config.Username,
 			config.Password,
-			NewHTTPClient(),
+			http,
 			sync.RWMutex{},
 			config.RefreshToken,
 			config.Tenant,

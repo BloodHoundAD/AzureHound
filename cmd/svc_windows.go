@@ -47,10 +47,6 @@ func (s *azurehoundSvc) Init(env svc.Environment) error {
 		config.LoadValues(nil, config.Options())
 		config.SetAzureDefaults()
 
-		if err := config.SetProxyEnvVars(); err != nil {
-			return err
-		}
-
 		if config.ConfigFileUsed() != "" {
 			log.V(1).Info(fmt.Sprintf("Config File: %v", config.ConfigFileUsed()))
 		}

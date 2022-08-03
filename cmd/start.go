@@ -78,12 +78,9 @@ func start(ctx context.Context) {
 		exit(err)
 	} else if bheInstance, err := url.Parse(config.BHEUrl.Value().(string)); err != nil {
 		exit(err)
+	} else if bheClient, err := newSigningHttpClient(BHEAuthSignature, config.BHETokenId.Value().(string), config.BHEToken.Value().(string), config.Proxy.Value().(string)); err != nil {
+		exit(err)
 	} else {
-		bheClient := newSigningHttpClient(
-			BHEAuthSignature,
-			config.BHETokenId.Value().(string),
-			config.BHEToken.Value().(string),
-		)
 
 		if err := updateClient(ctx, *bheInstance, bheClient); err != nil {
 			exit(err)

@@ -61,9 +61,7 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 	config.LoadValues(cmd, config.Options())
 	config.SetAzureDefaults()
 
-	if err := config.SetProxyEnvVars(); err != nil {
-		return err
-	} else if logr, err := logger.GetLogger(); err != nil {
+	if logr, err := logger.GetLogger(); err != nil {
 		return err
 	} else {
 		log = *logr
@@ -148,6 +146,7 @@ func newAzureClient() (client.AzureClient, error) {
 		Management:     config.AzMgmtUrl.Value().(string),
 		MgmtGroupId:    config.AzMgmtGroupId.Value().([]string),
 		Password:       config.AzPassword.Value().(string),
+		ProxyUrl:       config.Proxy.Value().(string),
 		RefreshToken:   config.RefreshToken.Value().(string),
 		Region:         config.AzRegion.Value().(string),
 		SubscriptionId: config.AzSubId.Value().([]string),
@@ -157,15 +156,18 @@ func newAzureClient() (client.AzureClient, error) {
 	return client.NewClient(config)
 }
 
-func newSigningHttpClient(signature, tokenId, token string) *http.Client {
-	client := rest.NewHTTPClient()
-	client.Transport = signingTransport{
-		base:      client.Transport,
-		tokenId:   tokenId,
-		token:     token,
-		signature: signature,
+func newSigningHttpClient(signature, tokenId, token, proxyUrl string) (*http.Client, error) {
+	if client, err := rest.NewHTTPClient(proxyUrl); err != nil {
+		return nil, err
+	} else {
+		client.Transport = signingTransport{
+			base:      client.Transport,
+			tokenId:   tokenId,
+			token:     token,
+			signature: signature,
+		}
+		return client, nil
 	}
-	return client
 }
 
 type signingTransport struct {

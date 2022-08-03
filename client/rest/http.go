@@ -32,7 +32,7 @@ import (
 	"github.com/bloodhoundad/azurehound/constants"
 )
 
-func NewHTTPClient() *http.Client {
+func NewHTTPClient(proxyUrl string) (*http.Client, error) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.MaxConnsPerHost = 200
 
@@ -49,10 +49,19 @@ func NewHTTPClient() *http.Client {
 	// ignoring err; always nil
 	jar, _ := cookiejar.New(nil)
 
+	// setup forward proxy
+	if proxyUrl != "" {
+		if url, err := url.Parse(proxyUrl); err != nil {
+			return nil, err
+		} else {
+			transport.Proxy = http.ProxyURL(url)
+		}
+	}
+
 	return &http.Client{
 		Jar:       jar,
 		Transport: transport,
-	}
+	}, nil
 }
 
 func NewRequest(
