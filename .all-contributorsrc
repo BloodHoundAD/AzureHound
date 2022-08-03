@@ -52,6 +52,15 @@
         "code",
         "maintenance"
       ]
+    },
+    {
+      "login": "joshgantt",
+      "name": "joshgantt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29784250?v=4",
+      "profile": "https://github.com/joshgantt",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
