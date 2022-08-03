@@ -42,6 +42,15 @@
         "code",
         "maintenance"
       ]
+    },
+    {
+      "login": "urangel",
+      "name": "Ulises Rangel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16910931?v=4",
+      "profile": "https://ulises.io/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
