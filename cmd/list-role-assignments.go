@@ -93,6 +93,7 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 				var (
 					roleAssignments = models.RoleAssignments{
 						RoleDefinitionId: id.(string),
+						TenantId:         client.TenantInfo().TenantId,
 					}
 					count  = 0
 					filter = fmt.Sprintf("roleDefinitionId eq '%s'", id.(string))

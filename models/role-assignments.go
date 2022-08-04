@@ -24,4 +24,5 @@ import (
 type RoleAssignments struct {
 	RoleAssignments  []azure.UnifiedRoleAssignment `json:"roleAssignments"`
 	RoleDefinitionId string                        `json:"roleDefinitionId"`
+	TenantId         string                        `json:"tenantId"`
 }
