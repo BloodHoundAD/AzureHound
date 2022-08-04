@@ -37,7 +37,7 @@ go build -ldflags="-s -w -X github.com/bloodhoundad/azurehound/constants.Version
 
 ```
 ❯ azurehound --help
-AzureHound v1.1.1
+AzureHound v1.1.2
 Created by the BloodHound Enterprise team - https://bloodhoundenterprise.io
 
 The official tool for collecting Azure data for BloodHound and BloodHound Enterprise
