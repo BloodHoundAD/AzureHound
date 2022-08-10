@@ -34,17 +34,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listVirtualMachineContributorsCmd)
+	listRootCmd.AddCommand(listVirtualMachineVMContributorsCmd)
 }
 
-var listVirtualMachineContributorsCmd = &cobra.Command{
-	Use:          "virtual-machine-contributors",
-	Long:         "Lists Azure Virtual Machine Contributors",
-	Run:          listVirtualMachineContributorsCmdImpl,
+var listVirtualMachineVMContributorsCmd = &cobra.Command{
+	Use:          "virtual-machine-vmcontributors",
+	Long:         "Lists Azure Virtual Machine VMContributors",
+	Run:          listVirtualMachineVMContributorsCmdImpl,
 	SilenceUsage: true,
 }
 
-func listVirtualMachineContributorsCmdImpl(cmd *cobra.Command, args []string) {
+func listVirtualMachineVMContributorsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -54,19 +54,19 @@ func listVirtualMachineContributorsCmdImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure virtual machine contributors...")
+		log.Info("collecting azure virtual machine vmcontributors...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
 		vms := listVirtualMachines(ctx, azClient, subscriptions)
 		vmRoleAssignments := listVirtualMachineRoleAssignments(ctx, azClient, vms)
-		stream := listVirtualMachineContributors(ctx, azClient, vmRoleAssignments)
+		stream := listVirtualMachineVMContributors(ctx, azClient, vmRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listVirtualMachineContributors(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
+func listVirtualMachineVMContributors(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
@@ -74,11 +74,11 @@ func listVirtualMachineContributors(ctx context.Context, client client.AzureClie
 
 		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {
 			if roleAssignments, ok := result.(AzureWrapper).Data.(models.VirtualMachineRoleAssignments); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine contributors", "result", result)
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine vmcontributors", "result", result)
 				return
 			} else {
 				var (
-					virtualMachineContributors = models.VirtualMachineContributors{
+					virtualMachineVMContributors = models.VirtualMachineVMContributors{
 						VirtualMachineId: roleAssignments.VirtualMachineId,
 					}
 					count = 0
@@ -86,24 +86,24 @@ func listVirtualMachineContributors(ctx context.Context, client client.AzureClie
 				for _, item := range roleAssignments.RoleAssignments {
 					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
 
-					if roleDefinitionId == constants.ContributorRoleID {
-						virtualMachineContributor := models.VirtualMachineContributor{
-							Contributor:      item.RoleAssignment,
+					if roleDefinitionId == constants.VirtualMachineContributorRoleID {
+						virtualMachineVMContributor := models.VirtualMachineVMContributor{
+							VMContributor:    item.RoleAssignment,
 							VirtualMachineId: item.VirtualMachineId,
 						}
-						log.V(2).Info("found virtual machine contributor", "virtualMachineContributor", virtualMachineContributor)
+						log.V(2).Info("found virtual machine contributor", "vmContributor", virtualMachineVMContributor)
 						count++
-						virtualMachineContributors.Contributors = append(virtualMachineContributors.Contributors, virtualMachineContributor)
+						virtualMachineVMContributors.VMContributors = append(virtualMachineVMContributors.VMContributors, virtualMachineVMContributor)
 					}
 				}
 				out <- AzureWrapper{
-					Kind: enums.KindAZVMContributor,
-					Data: virtualMachineContributors,
+					Kind: enums.KindAZVMVMContributor,
+					Data: virtualMachineVMContributors,
 				}
 				log.V(1).Info("finished listing virtual machine contributors", "virtualMachineId", roleAssignments.VirtualMachineId, "count", count)
 			}
 		}
-		log.Info("finished listing all virtual machine contributors")
+		log.Info("finished listing all virtual machine vmcontributors")
 	}()
 
 	return out

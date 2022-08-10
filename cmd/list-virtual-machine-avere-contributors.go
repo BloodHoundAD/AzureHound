@@ -23,7 +23,6 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"sync"
 	"time"
 
 	"github.com/bloodhoundad/azurehound/client"
@@ -58,75 +57,52 @@ func listVirtualMachineAvereContributorsCmdImpl(cmd *cobra.Command, args []strin
 		log.Info("collecting azure virtual machine averecontributors...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listVirtualMachineAvereContributors(ctx, azClient, listVirtualMachines(ctx, azClient, subscriptions))
+		vms := listVirtualMachines(ctx, azClient, subscriptions)
+		vmRoleAssignments := listVirtualMachineRoleAssignments(ctx, azClient, vms)
+		stream := listVirtualMachineAvereContributors(ctx, azClient, vmRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listVirtualMachineAvereContributors(ctx context.Context, client client.AzureClient, virtualMachines <-chan interface{}) <-chan interface{} {
-	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
-		wg      sync.WaitGroup
-	)
+func listVirtualMachineAvereContributors(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
+	out := make(chan interface{})
 
 	go func() {
-		defer close(ids)
+		defer close(out)
 
-		for result := range pipeline.OrDone(ctx.Done(), virtualMachines) {
-			if virtualMachine, ok := result.(AzureWrapper).Data.(models.VirtualMachine); !ok {
+		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {
+			if roleAssignments, ok := result.(AzureWrapper).Data.(models.VirtualMachineRoleAssignments); !ok {
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine avere contributors", "result", result)
 				return
 			} else {
-				ids <- virtualMachine.Id
-			}
-		}
-	}()
-
-	wg.Add(len(streams))
-	for i := range streams {
-		stream := streams[i]
-		go func() {
-			defer wg.Done()
-			for id := range stream {
 				var (
 					virtualMachineAvereContributors = models.VirtualMachineAvereContributors{
-						VirtualMachineId: id.(string),
+						VirtualMachineId: roleAssignments.VirtualMachineId,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
-					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing avere contributors for this virtual machine", "virtualMachineId", id)
-					} else {
-						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
+				for _, item := range roleAssignments.RoleAssignments {
+					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.AvereContributorRoleID {
-							virtualMachineAvereContributor := models.VirtualMachineAvereContributor{
-								AvereContributor: item.Ok,
-								VirtualMachineId: item.ParentId,
-							}
-							log.V(2).Info("found virtual machine avere contributor", "virtualMachineAvereContributor", virtualMachineAvereContributor)
-							count++
-							virtualMachineAvereContributors.AvereContributors = append(virtualMachineAvereContributors.AvereContributors, virtualMachineAvereContributor)
+					if roleDefinitionId == constants.AvereContributorRoleID {
+						virtualMachineAvereContributor := models.VirtualMachineAvereContributor{
+							AvereContributor: item.RoleAssignment,
+							VirtualMachineId: item.VirtualMachineId,
 						}
+						log.V(2).Info("found virtual machine avere contributor", "virtualMachineAvereContributor", virtualMachineAvereContributor)
+						count++
+						virtualMachineAvereContributors.AvereContributors = append(virtualMachineAvereContributors.AvereContributors, virtualMachineAvereContributor)
 					}
 				}
 				out <- AzureWrapper{
 					Kind: enums.KindAZVMAvereContributor,
 					Data: virtualMachineAvereContributors,
 				}
-				log.V(1).Info("finished listing virtual machine avere contributors", "virtualMachineId", id, "count", count)
+				log.V(1).Info("finished listing virtual machine avere contributors", "virtualMachineId", roleAssignments.VirtualMachineId, "count", count)
 			}
-		}()
-	}
-
-	go func() {
-		wg.Wait()
-		close(out)
+		}
 		log.Info("finished listing all virtual machine avere contributors")
 	}()
 
