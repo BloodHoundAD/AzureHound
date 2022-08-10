@@ -19,7 +19,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
@@ -40,54 +39,28 @@ func TestListVirtualMachineAvereContributors(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockVirtualMachinesChannel := make(chan interface{})
-	mockVirtualMachineAvereContributorChannel := make(chan azure.RoleAssignmentResult)
-	mockVirtualMachineAvereContributorChannel2 := make(chan azure.RoleAssignmentResult)
-
+	mockVMRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
-	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineAvereContributorChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineAvereContributorChannel2).Times(1)
-	channel := listVirtualMachineAvereContributors(ctx, mockClient, mockVirtualMachinesChannel)
+	channel := listVirtualMachineAvereContributors(ctx, mockClient, mockVMRoleAssignmentsChannel)
 
 	go func() {
-		defer close(mockVirtualMachinesChannel)
-		mockVirtualMachinesChannel <- AzureWrapper{
-			Data: models.VirtualMachine{},
-		}
-		mockVirtualMachinesChannel <- AzureWrapper{
-			Data: models.VirtualMachine{},
-		}
-	}()
-	go func() {
-		defer close(mockVirtualMachineAvereContributorChannel)
-		mockVirtualMachineAvereContributorChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.AvereContributorRoleID,
+		defer close(mockVMRoleAssignmentsChannel)
+
+		mockVMRoleAssignmentsChannel <- AzureWrapper{
+			Data: models.VirtualMachineRoleAssignments{
+				VirtualMachineId: "foo",
+				RoleAssignments: []models.VirtualMachineRoleAssignment{
+					{
+						RoleAssignment: azure.RoleAssignment{
+							Name: constants.AvereContributorRoleID,
+							Properties: azure.RoleAssignmentPropertiesWithScope{
+								RoleDefinitionId: constants.AvereContributorRoleID,
+							},
+						},
+					},
 				},
 			},
-		}
-		mockVirtualMachineAvereContributorChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.AvereContributorRoleID,
-				},
-			},
-		}
-	}()
-	go func() {
-		defer close(mockVirtualMachineAvereContributorChannel2)
-		mockVirtualMachineAvereContributorChannel2 <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.AvereContributorRoleID,
-				},
-			},
-		}
-		mockVirtualMachineAvereContributorChannel2 <- azure.RoleAssignmentResult{
-			Error: mockError,
 		}
 	}()
 
@@ -95,19 +68,11 @@ func TestListVirtualMachineAvereContributors(t *testing.T) {
 		t.Fatalf("failed to receive from channel")
 	} else if wrapper, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.VirtualMachineAvereContributors); !ok {
+	} else if _, ok := wrapper.Data.(models.VirtualMachineAvereContributors); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.VirtualMachineAvereContributors{})
-	} else if len(data.AvereContributors) != 2 {
-		t.Errorf("got %v, want %v", len(data.AvereContributors), 2)
 	}
 
-	if result, ok := <-channel; !ok {
-		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.VirtualMachineAvereContributors); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.VirtualMachineAvereContributors{})
-	} else if len(data.AvereContributors) != 1 {
-		t.Errorf("got %v, want %v", len(data.AvereContributors), 2)
+	if _, ok := <-channel; ok {
+		t.Error("should not have recieved from channel")
 	}
 }
