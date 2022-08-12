@@ -100,12 +100,20 @@ func dial(targetUrl string) (string, error) {
 	log.V(2).Info("dialing...", "targetUrl", targetUrl)
 	if url, err := url.Parse(targetUrl); err != nil {
 		return "", err
-	} else if conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:https", url.Host), 5*time.Second); err != nil {
-		return "", err
 	} else {
-		defer conn.Close()
-		addr := conn.LocalAddr().(*net.TCPAddr)
-		return addr.IP.String(), nil
+		port := url.Port()
+
+		if port == "" {
+			port = "https"
+		}
+
+		if conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%s", url.Hostname(), port), 5*time.Second); err != nil {
+			return "", err
+		} else {
+			defer conn.Close()
+			addr := conn.LocalAddr().(*net.TCPAddr)
+			return addr.IP.String(), nil
+		}
 	}
 }
 
