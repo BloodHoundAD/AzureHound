@@ -57,4 +57,5 @@ const (
 	KindAZVMRoleAssignment               Kind = "AZVMRoleAssignment"
 	KindAZVMUserAccessAdmin              Kind = "AZVMUserAccessAdmin"
 	KindAZVMVMContributor                Kind = "AZVMVMContributor"
+	KindAZAppRoleAssignment              Kind = "AZAppRoleAssignment"
 )
