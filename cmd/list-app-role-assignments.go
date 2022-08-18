@@ -103,9 +103,9 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 						count++
 						out <- AzureWrapper{
 							Kind: enums.KindAZAppRoleAssignment,
-							Data: models.AppRoleAssignments{
-								AppRoleAssignments: item.Ok,
-								TenantId:           client.TenantInfo().TenantId,
+							Data: models.AppRoleAssignment{
+								AppRoleAssignment: item.Ok,
+								TenantId:          client.TenantInfo().TenantId,
 							},
 						}
 					}

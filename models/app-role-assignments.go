@@ -21,7 +21,7 @@ import (
 	"github.com/bloodhoundad/azurehound/models/azure"
 )
 
-type AppRoleAssignments struct {
-	AppRoleAssignments azure.AppRoleAssignment `json:"appRoleAssignments"`
-	TenantId           string                  `json:"tenantId"`
+type AppRoleAssignment struct {
+	azure.AppRoleAssignment
+	TenantId string `json:"tenantId"`
 }
