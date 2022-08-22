@@ -2,6 +2,9 @@
 # Project Settings
 ################################
 
+# The binary file for darwin and linux
+azurehound
+
 ################
 # Boilerplate Settings (modify as needed)
 # (https://github.com/github/gitignore)

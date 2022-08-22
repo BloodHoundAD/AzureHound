@@ -18,10 +18,12 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"io/fs"
@@ -42,6 +44,7 @@ import (
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/bloodhoundad/azurehound/sinks"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/proxy"
 )
 
 func exit(err error) {
@@ -96,18 +99,106 @@ func testConnections() error {
 	}
 }
 
+type httpsDialer struct{}
+
+func (s httpsDialer) Dial(network string, addr string) (net.Conn, error) {
+	return tls.Dial(network, addr, &tls.Config{})
+}
+
+func newProxyDialer(url *url.URL, forward proxy.Dialer) (proxy.Dialer, error) {
+	dialer := &proxyDialer{
+		host:    url.Host,
+		forward: forward,
+	}
+
+	if url.User != nil {
+		dialer.user = url.User.Username()
+		dialer.pass, _ = url.User.Password()
+	}
+
+	return dialer, nil
+}
+
+type proxyDialer struct {
+	host    string
+	user    string
+	pass    string
+	forward proxy.Dialer
+}
+
+func (s proxyDialer) Dial(network string, addr string) (net.Conn, error) {
+	if s.forward == nil {
+		return nil, fmt.Errorf("unable to connect to %s: forward dialer not set", s.host)
+	} else if conn, err := s.forward.Dial(network, s.host); err != nil {
+		return nil, fmt.Errorf("unable to connect to %s: %w", s.host, err)
+	} else if req, err := http.NewRequest("CONNECT", "//"+addr, nil); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("unable to connect to %s: %w", addr, err)
+	} else {
+		req.Close = false
+		if s.user != "" {
+			req.SetBasicAuth(s.user, s.pass)
+		}
+
+		// Write request over proxy connection
+		if err := req.Write(conn); err != nil {
+			conn.Close()
+			return nil, fmt.Errorf("unable to connect to %s: %w", addr, err)
+		}
+
+		res, err := http.ReadResponse(bufio.NewReader(conn), req)
+		defer func() {
+			if res.Body != nil {
+				res.Body.Close()
+			}
+		}()
+
+		if err != nil {
+			conn.Close()
+			return nil, fmt.Errorf("unable to connect to %s: %w", addr, err)
+		} else if res.StatusCode != 200 {
+			if res.Body != nil {
+				res.Body.Close()
+			}
+			conn.Close()
+			return nil, fmt.Errorf("unable to connect to %s via proxy (%s): statusCode %d", addr, s.host, res.StatusCode)
+		} else {
+			return conn, nil
+		}
+	}
+}
+
+func getDialer() (proxy.Dialer, error) {
+	if proxyUrl := config.Proxy.Value().(string); proxyUrl == "" {
+		return proxy.Direct, nil
+	} else if url, err := url.Parse(proxyUrl); err != nil {
+		return nil, err
+	} else if url.Scheme == "https" {
+		return proxy.FromURL(url, httpsDialer{})
+	} else {
+		return proxy.FromURL(url, proxy.Direct)
+	}
+}
+
+func init() {
+	proxy.RegisterDialerType("http", newProxyDialer)
+	proxy.RegisterDialerType("https", newProxyDialer)
+}
+
 func dial(targetUrl string) (string, error) {
 	log.V(2).Info("dialing...", "targetUrl", targetUrl)
-	if url, err := url.Parse(targetUrl); err != nil {
+	if dialer, err := getDialer(); err != nil {
+		return "", err
+	} else if url, err := url.Parse(targetUrl); err != nil {
 		return "", err
 	} else {
 		port := url.Port()
 
 		if port == "" {
-			port = "https"
+			port = "443"
 		}
 
-		if conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%s", url.Hostname(), port), 5*time.Second); err != nil {
+		if conn, err := dialer.Dial("tcp", fmt.Sprintf("%s:%s", url.Hostname(), port)); err != nil {
 			return "", err
 		} else {
 			defer conn.Close()
