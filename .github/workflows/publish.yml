@@ -39,10 +39,15 @@ jobs:
       - name: Zip
         run: 7z a -tzip -mx9 azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip azurehound*
 
+      - name: Compute Checksum
+        run: sha256sum azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip > azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip.sha256
+
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
-          files: azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip
+          files: |
+            azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip
+            azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip.sha256
 
   containerize:
     runs-on: ubuntu-latest
