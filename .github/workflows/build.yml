@@ -93,6 +93,10 @@ jobs:
         if: "! startsWith(github.event_name, 'pull_request')"
         run: 7z a -tzip -mx9 azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip azurehound*
 
+      - name: Compute Checksum
+        if: "! startsWith(github.event_name, 'pull_request')"
+        run: sha256sum azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip > azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip.sha256
+
       - name: Update Rolling Release
         if: "! startsWith(github.event_name, 'pull_request')"
         uses: softprops/action-gh-release@v1
@@ -100,7 +104,9 @@ jobs:
           name: Rolling Release (unstable)
           tag_name: rolling
           prerelease: true
-          files: azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip
+          files: |
+            azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip
+            azurehound-${{ matrix.os }}-${{ matrix.arch }}.zip.sha256
           body: |
             Rolling release of AzureHound compiled from source (${{ github.sha }})
             This is automatically kept up-to-date with the `${{ github.ref_name }}` ${{ github.ref_type }}
