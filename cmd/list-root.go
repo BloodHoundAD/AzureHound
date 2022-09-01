@@ -115,10 +115,6 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 
 		virtualMachines  = make(chan interface{})
 		virtualMachines2 = make(chan interface{})
-		virtualMachines3 = make(chan interface{})
-		virtualMachines4 = make(chan interface{})
-		virtualMachines5 = make(chan interface{})
-		virtualMachines6 = make(chan interface{})
 
 		vmRoleAssignments1 = make(chan interface{})
 		vmRoleAssignments2 = make(chan interface{})

@@ -119,7 +119,7 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 							count++
 							automationAccountOwners.Owners = append(automationAccountOwners.Owners, automationAccountOwner)
 						} else if (roleDefinitionId == constants.ContributorRoleID) ||
-							(roleDefinitionId == constants.AzAutomationAccountContributorRoleID) {
+							(roleDefinitionId == constants.AutomationContributorRoleID) {
 							automationAccountContributor := models.AutomationAccountContributor{
 								Contributor:         item.Ok,
 								AutomationAccountId: item.ParentId,
