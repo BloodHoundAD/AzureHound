@@ -27,12 +27,12 @@ import (
 	"github.com/bloodhoundad/azurehound/models/azure"
 )
 
-func (s *azureClient) GetAzureAutomationAccount(ctx context.Context, subscriptionId, groupName, aaName, expand string) (*azure.AutomationAccount, error) {
+func (s *azureClient) GetAzureWorkflow(ctx context.Context, subscriptionId, groupName, workflowName, expand string) (*azure.Workflow, error) {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Automation/automationAccounts/%s", subscriptionId, groupName, aaName)
-		params   = query.Params{ApiVersion: "2021-07-01", Expand: expand}.AsMap()
+		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Automation/automationAccounts/%s", subscriptionId, groupName, workflowName)
+		params   = query.Params{ApiVersion: "2016-06-01", Expand: expand}.AsMap()
 		headers  map[string]string
-		response azure.AutomationAccount
+		response azure.Workflow
 	)
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
 		return nil, err
@@ -43,12 +43,12 @@ func (s *azureClient) GetAzureAutomationAccount(ctx context.Context, subscriptio
 	}
 }
 
-func (s *azureClient) GetAzureAutomationAccounts(ctx context.Context, subscriptionId string, statusOnly bool) (azure.AutomationAccountList, error) {
+func (s *azureClient) GetAzureWorkflows(ctx context.Context, subscriptionId string, statusOnly bool) (azure.WorkflowList, error) {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Automation/automationAccounts", subscriptionId)
-		params   = query.Params{ApiVersion: "2021-06-22", StatusOnly: statusOnly}.AsMap()
+		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Logic/workflows", subscriptionId)
+		params   = query.Params{ApiVersion: "2016-06-01", StatusOnly: statusOnly}.AsMap()
 		headers  map[string]string
-		response azure.AutomationAccountList
+		response azure.WorkflowList
 	)
 
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
@@ -60,30 +60,30 @@ func (s *azureClient) GetAzureAutomationAccounts(ctx context.Context, subscripti
 	}
 }
 
-func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.AutomationAccountResult {
-	out := make(chan azure.AutomationAccountResult)
+func (s *azureClient) ListAzureWorkflows(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.WorkflowResult {
+	out := make(chan azure.WorkflowResult)
 
 	go func() {
 		defer close(out)
 
 		var (
-			errResult = azure.AutomationAccountResult{
+			errResult = azure.WorkflowResult{
 				SubscriptionId: subscriptionId,
 			}
 			nextLink string
 		)
 
-		if result, err := s.GetAzureAutomationAccounts(ctx, subscriptionId, statusOnly); err != nil {
+		if result, err := s.GetAzureWorkflows(ctx, subscriptionId, statusOnly); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {
 			for _, u := range result.Value {
-				out <- azure.AutomationAccountResult{SubscriptionId: subscriptionId, Ok: u}
+				out <- azure.WorkflowResult{SubscriptionId: subscriptionId, Ok: u}
 			}
 
 			nextLink = result.NextLink
 			for nextLink != "" {
-				var list azure.AutomationAccountList
+				var list azure.WorkflowList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
 					out <- errResult
@@ -102,7 +102,7 @@ func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscript
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.AutomationAccountResult{
+						out <- azure.WorkflowResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
 						}
