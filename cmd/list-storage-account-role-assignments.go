@@ -116,7 +116,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if (roleDefinitionId == constants.OwnerRoleID) || (roleDefinitionId == constants.AzStorageBlobDataOwnerRoleID) {
+						if roleDefinitionId == constants.OwnerRoleID {
 							storageAccountOwner := models.StorageAccountOwner{
 								Owner:            item.Ok,
 								StorageAccountId: item.ParentId,
@@ -125,9 +125,10 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 							count++
 							storageAccountOwners.Owners = append(storageAccountOwners.Owners, storageAccountOwner)
 						} else if (roleDefinitionId == constants.ContributorRoleID) ||
-							(roleDefinitionId == constants.AzStorageAccountContributorRoleID) ||
-							(roleDefinitionId == constants.AzStorageBlobContributorRoleID) ||
-							(roleDefinitionId == constants.AzStorageQueueContributorRoleID) {
+							(roleDefinitionId == constants.StorageAccountContributorRoleID) ||
+							(roleDefinitionId == constants.StorageBlobDataContributorRoleID) ||
+							(roleDefinitionId == constants.StorageQueueDataContributorRoleID) ||
+							(roleDefinitionId == constants.StorageBlobDataOwnerRoleID) {
 							storageAccountContributor := models.StorageAccountContributor{
 								Contributor:      item.Ok,
 								StorageAccountId: item.ParentId,
