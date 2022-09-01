@@ -32,7 +32,7 @@ func init() {
 	setupLogger()
 }
 
-func TestListVirtualMachineUserAccessAdmins(t *testing.T) {
+func TestListVirtualMachineVMContributors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := context.Background()
@@ -42,7 +42,7 @@ func TestListVirtualMachineUserAccessAdmins(t *testing.T) {
 	mockVMRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listVirtualMachineUserAccessAdmins(ctx, mockClient, mockVMRoleAssignmentsChannel)
+	channel := listVirtualMachineVMContributors(ctx, mockClient, mockVMRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockVMRoleAssignmentsChannel)
@@ -53,9 +53,9 @@ func TestListVirtualMachineUserAccessAdmins(t *testing.T) {
 				RoleAssignments: []models.VirtualMachineRoleAssignment{
 					{
 						RoleAssignment: azure.RoleAssignment{
-							Name: constants.UserAccessAdminRoleID,
+							Name: constants.VirtualMachineContributorRoleID,
 							Properties: azure.RoleAssignmentPropertiesWithScope{
-								RoleDefinitionId: constants.UserAccessAdminRoleID,
+								RoleDefinitionId: constants.VirtualMachineContributorRoleID,
 							},
 						},
 					},
@@ -68,8 +68,8 @@ func TestListVirtualMachineUserAccessAdmins(t *testing.T) {
 		t.Fatalf("failed to receive from channel")
 	} else if wrapper, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if _, ok := wrapper.Data.(models.VirtualMachineUserAccessAdmins); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.VirtualMachineUserAccessAdmins{})
+	} else if _, ok := wrapper.Data.(models.VirtualMachineVMContributors); !ok {
+		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.VirtualMachineVMContributors{})
 	}
 
 	if _, ok := <-channel; ok {

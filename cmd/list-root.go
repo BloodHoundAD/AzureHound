@@ -119,6 +119,13 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		virtualMachines5 = make(chan interface{})
 		virtualMachines6 = make(chan interface{})
 
+		vmRoleAssignments1 = make(chan interface{})
+		vmRoleAssignments2 = make(chan interface{})
+		vmRoleAssignments3 = make(chan interface{})
+		vmRoleAssignments4 = make(chan interface{})
+		vmRoleAssignments5 = make(chan interface{})
+		vmRoleAssignments6 = make(chan interface{})
+
 		storageAccounts  = make(chan interface{})
 		storageAccounts2 = make(chan interface{})
 		storageAccounts3 = make(chan interface{})
@@ -184,12 +191,14 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 
 	// Enumerate VirtualMachines, VirtualMachineOwners, VirtualMachineAvereContributors, VirtualMachineContributors,
 	// VirtualMachineAdminLogins and VirtualMachineUserAccessAdmins
-	pipeline.Tee(ctx.Done(), listVirtualMachines(ctx, client, subscriptions4), virtualMachines, virtualMachines2, virtualMachines3, virtualMachines4, virtualMachines5, virtualMachines6)
-	virtualMachineOwners := listVirtualMachineOwners(ctx, client, virtualMachines2)
-	virtualMachineAvereContributors := listVirtualMachineAvereContributors(ctx, client, virtualMachines3)
-	virtualMachineContributors := listVirtualMachineContributors(ctx, client, virtualMachines4)
-	virtualMachineAdminLogins := listVirtualMachineAdminLogins(ctx, client, virtualMachines5)
-	virtualMachineUserAccessAdmins := listVirtualMachineUserAccessAdmins(ctx, client, virtualMachines6)
+	pipeline.Tee(ctx.Done(), listVirtualMachines(ctx, client, subscriptions4), virtualMachines, virtualMachines2)
+	pipeline.Tee(ctx.Done(), listVirtualMachineRoleAssignments(ctx, client, virtualMachines2), vmRoleAssignments1, vmRoleAssignments2, vmRoleAssignments3, vmRoleAssignments4, vmRoleAssignments5, vmRoleAssignments6)
+	virtualMachineOwners := listVirtualMachineOwners(ctx, client, vmRoleAssignments1)
+	virtualMachineAvereContributors := listVirtualMachineAvereContributors(ctx, client, vmRoleAssignments2)
+	virtualMachineContributors := listVirtualMachineContributors(ctx, client, vmRoleAssignments3)
+	virtualMachineAdminLogins := listVirtualMachineAdminLogins(ctx, client, vmRoleAssignments4)
+	virtualMachineUserAccessAdmins := listVirtualMachineUserAccessAdmins(ctx, client, vmRoleAssignments5)
+	virtualMachineVMContributors := listVirtualMachineVMContributors(ctx, client, vmRoleAssignments6)
 
 	//Enumerate storage accounts
 	pipeline.Tee(ctx.Done(), listStorageAccounts(ctx, client, subscriptions7), storageAccounts, storageAccounts2, storageAccounts3)
@@ -241,6 +250,7 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		virtualMachineContributors,
 		virtualMachineOwners,
 		virtualMachineUserAccessAdmins,
+		virtualMachineVMContributors,
 		virtualMachines,
 		storageAccounts,
 		storageContainers,

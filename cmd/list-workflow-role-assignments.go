@@ -99,6 +99,9 @@ func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, 
 					workflowContributors = models.WorkflowContributors{
 						WorkflowId: id.(string),
 					}
+					workflowUserAccessAdmins = models.WorkflowUserAccessAdmins{
+						WorkflowId: id.(string),
+					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
@@ -124,6 +127,14 @@ func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, 
 							log.V(2).Info("found workflow contributor", "workflowContributor", workflowContributor)
 							count++
 							workflowContributors.Contributors = append(workflowContributors.Contributors, workflowContributor)
+						} else if roleDefinitionId == constants.UserAccessAdminRoleID {
+							workflowUserAccessAdmin := models.WorkflowUserAccessAdmin{
+								UserAccessAdmin: item.Ok,
+								WorkflowId:      item.ParentId,
+							}
+							log.V(2).Info("found workflow user access admin", "workflowUserAccessAdmin", workflowUserAccessAdmin)
+							count++
+							workflowUserAccessAdmins.UserAccessAdmins = append(workflowUserAccessAdmins.UserAccessAdmins, workflowUserAccessAdmin)
 						}
 					}
 				}
@@ -134,6 +145,10 @@ func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, 
 					{
 						Kind: enums.KindAZWorkflowContributor,
 						Data: workflowContributors,
+					},
+					{
+						Kind: enums.KindAZWorkflowUserAccessAdmin,
+						Data: workflowUserAccessAdmins,
 					},
 				}
 				log.V(1).Info("finished listing workflow owners", "workflowId", id, "count", count)

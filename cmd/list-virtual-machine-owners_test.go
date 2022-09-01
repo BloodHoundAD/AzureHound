@@ -19,7 +19,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
@@ -40,54 +39,28 @@ func TestListVirtualMachineOwners(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockVirtualMachinesChannel := make(chan interface{})
-	mockVirtualMachineOwnerChannel := make(chan azure.RoleAssignmentResult)
-	mockVirtualMachineOwnerChannel2 := make(chan azure.RoleAssignmentResult)
-
+	mockVMRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
-	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineOwnerChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineOwnerChannel2).Times(1)
-	channel := listVirtualMachineOwners(ctx, mockClient, mockVirtualMachinesChannel)
+	channel := listVirtualMachineOwners(ctx, mockClient, mockVMRoleAssignmentsChannel)
 
 	go func() {
-		defer close(mockVirtualMachinesChannel)
-		mockVirtualMachinesChannel <- AzureWrapper{
-			Data: models.VirtualMachine{},
-		}
-		mockVirtualMachinesChannel <- AzureWrapper{
-			Data: models.VirtualMachine{},
-		}
-	}()
-	go func() {
-		defer close(mockVirtualMachineOwnerChannel)
-		mockVirtualMachineOwnerChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.OwnerRoleID,
+		defer close(mockVMRoleAssignmentsChannel)
+
+		mockVMRoleAssignmentsChannel <- AzureWrapper{
+			Data: models.VirtualMachineRoleAssignments{
+				VirtualMachineId: "foo",
+				RoleAssignments: []models.VirtualMachineRoleAssignment{
+					{
+						RoleAssignment: azure.RoleAssignment{
+							Name: constants.OwnerRoleID,
+							Properties: azure.RoleAssignmentPropertiesWithScope{
+								RoleDefinitionId: constants.OwnerRoleID,
+							},
+						},
+					},
 				},
 			},
-		}
-		mockVirtualMachineOwnerChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.OwnerRoleID,
-				},
-			},
-		}
-	}()
-	go func() {
-		defer close(mockVirtualMachineOwnerChannel2)
-		mockVirtualMachineOwnerChannel2 <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.OwnerRoleID,
-				},
-			},
-		}
-		mockVirtualMachineOwnerChannel2 <- azure.RoleAssignmentResult{
-			Error: mockError,
 		}
 	}()
 
@@ -95,19 +68,11 @@ func TestListVirtualMachineOwners(t *testing.T) {
 		t.Fatalf("failed to receive from channel")
 	} else if wrapper, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.VirtualMachineOwners); !ok {
+	} else if _, ok := wrapper.Data.(models.VirtualMachineOwners); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.VirtualMachineOwners{})
-	} else if len(data.Owners) != 2 {
-		t.Errorf("got %v, want %v", len(data.Owners), 2)
 	}
 
-	if result, ok := <-channel; !ok {
-		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.VirtualMachineOwners); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.VirtualMachineOwners{})
-	} else if len(data.Owners) != 1 {
-		t.Errorf("got %v, want %v", len(data.Owners), 2)
+	if _, ok := <-channel; ok {
+		t.Error("should not have recieved from channel")
 	}
 }

@@ -105,6 +105,9 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 					storageAccountKeyOperators = models.StorageAccountKeyOperators{
 						StorageAccountId: id.(string),
 					}
+					storageAccountUserAccessAdmins = models.StorageAccountUserAccessAdmins{
+						StorageAccountId: id.(string),
+					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
@@ -151,25 +154,37 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 							log.V(2).Info("found storage account data-reader", "storageAccountKeyOperator", storageAccountKeyOperator)
 							count++
 							storageAccountKeyOperators.KeyOperators = append(storageAccountKeyOperators.KeyOperators, storageAccountKeyOperator)
+						} else if roleDefinitionId == constants.UserAccessAdminRoleID {
+							storageAccountUserAccessAdmin := models.StorageAccountUserAccessAdmin{
+								UserAccessAdmin:  item.Ok,
+								StorageAccountId: item.ParentId,
+							}
+							log.V(2).Info("found storage account user access admin", "storageAccountUserAccessAdmin", storageAccountUserAccessAdmin)
+							count++
+							storageAccountUserAccessAdmins.UserAccessAdmins = append(storageAccountUserAccessAdmins.UserAccessAdmins, storageAccountUserAccessAdmin)
 						}
 					}
 				}
 				out <- []AzureWrapper{
 					{
-						Kind: enums.KindAZSAOwner,
+						Kind: enums.KindAZStorageAccountOwner,
 						Data: storageAccountOwners,
 					},
 					{
-						Kind: enums.KindAZSAContributor,
+						Kind: enums.KindAZStorageAccountContributor,
 						Data: storageAccountContributors,
 					},
 					{
-						Kind: enums.KindAZSADataReader,
+						Kind: enums.KindAZStorageAccountDataReader,
 						Data: storageAccountDataReaders,
 					},
 					{
-						Kind: enums.KindAZSAKeyOperator,
+						Kind: enums.KindAZStorageAccountKeyOperator,
 						Data: storageAccountKeyOperators,
+					},
+					{
+						Kind: enums.KindAZStorageAccountUserAccessAdmin,
+						Data: storageAccountUserAccessAdmins,
 					},
 				}
 				log.V(1).Info("finished listing storage account owners", "storageAccountId", id, "count", count)
