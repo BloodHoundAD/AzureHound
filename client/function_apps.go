@@ -27,12 +27,12 @@ import (
 	"github.com/bloodhoundad/azurehound/models/azure"
 )
 
-func (s *azureClient) GetAzureWorkflow(ctx context.Context, subscriptionId, groupName, workflowName, expand string) (*azure.Workflow, error) {
+func (s *azureClient) GetAzureFunctionApp(ctx context.Context, subscriptionId, groupName, functionAppName, expand string) (*azure.FunctionApp, error) {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Logic/workflows/%s", subscriptionId, groupName, workflowName)
-		params   = query.Params{ApiVersion: "2016-06-01", Expand: expand}.AsMap()
+		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Web/sites/%s", subscriptionId, groupName, functionAppName)
+		params   = query.Params{ApiVersion: "2022-03-01", Expand: expand}.AsMap()
 		headers  map[string]string
-		response azure.Workflow
+		response azure.FunctionApp
 	)
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
 		return nil, err
@@ -43,12 +43,12 @@ func (s *azureClient) GetAzureWorkflow(ctx context.Context, subscriptionId, grou
 	}
 }
 
-func (s *azureClient) GetAzureWorkflows(ctx context.Context, subscriptionId string, statusOnly bool) (azure.WorkflowList, error) {
+func (s *azureClient) GetAzureFunctionApps(ctx context.Context, subscriptionId string, statusOnly bool) (azure.FunctionAppList, error) {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Logic/workflows", subscriptionId)
-		params   = query.Params{ApiVersion: "2016-06-01", StatusOnly: statusOnly}.AsMap()
+		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Web/sites", subscriptionId)
+		params   = query.Params{ApiVersion: "2022-03-01", StatusOnly: statusOnly}.AsMap()
 		headers  map[string]string
-		response azure.WorkflowList
+		response azure.FunctionAppList
 	)
 
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
@@ -60,30 +60,30 @@ func (s *azureClient) GetAzureWorkflows(ctx context.Context, subscriptionId stri
 	}
 }
 
-func (s *azureClient) ListAzureWorkflows(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.WorkflowResult {
-	out := make(chan azure.WorkflowResult)
+func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.FunctionAppResult {
+	out := make(chan azure.FunctionAppResult)
 
 	go func() {
 		defer close(out)
 
 		var (
-			errResult = azure.WorkflowResult{
+			errResult = azure.FunctionAppResult{
 				SubscriptionId: subscriptionId,
 			}
 			nextLink string
 		)
 
-		if result, err := s.GetAzureWorkflows(ctx, subscriptionId, statusOnly); err != nil {
+		if result, err := s.GetAzureFunctionApps(ctx, subscriptionId, statusOnly); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {
 			for _, u := range result.Value {
-				out <- azure.WorkflowResult{SubscriptionId: subscriptionId, Ok: u}
+				out <- azure.FunctionAppResult{SubscriptionId: subscriptionId, Ok: u}
 			}
 
 			nextLink = result.NextLink
 			for nextLink != "" {
-				var list azure.WorkflowList
+				var list azure.FunctionAppList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
 					out <- errResult
@@ -102,7 +102,7 @@ func (s *azureClient) ListAzureWorkflows(ctx context.Context, subscriptionId str
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.WorkflowResult{
+						out <- azure.FunctionAppResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
 						}

@@ -49,7 +49,7 @@ func (s Workflow) ResourceGroupId() string {
 
 type WorkflowList struct {
 	NextLink string     `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []Workflow `json:"value"`              // A list of virtual machines.
+	Value    []Workflow `json:"value"`              // A list of workflows.
 }
 
 type WorkflowResult struct {
