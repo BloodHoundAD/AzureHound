@@ -35,17 +35,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listStoraceAccountContributor)
+	listRootCmd.AddCommand(listStoraceAccountKeyOperator)
 }
 
-var listStoraceAccountContributor = &cobra.Command{
-	Use:          "storage-account-contributors",
-	Long:         "Lists Azure Storage Account Contributors",
-	Run:          listStoraceAccountContributorImpl,
+var listStoraceAccountKeyOperator = &cobra.Command{
+	Use:          "storage-account-key-operators",
+	Long:         "Lists Azure Storage Account KeyOperators",
+	Run:          listStoraceAccountKeyOperatorImpl,
 	SilenceUsage: true,
 }
 
-func listStoraceAccountContributorImpl(cmd *cobra.Command, args []string) {
+func listStoraceAccountKeyOperatorImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -55,17 +55,17 @@ func listStoraceAccountContributorImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure storage account contributors...")
+		log.Info("collecting azure storage account key-operators...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listStorageAccountContributors(ctx, azClient, listStorageAccounts(ctx, azClient, subscriptions))
+		stream := listStorageAccountKeyOperators(ctx, azClient, listStorageAccounts(ctx, azClient, subscriptions))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listStorageAccountContributors(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
+func listStorageAccountKeyOperators(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -78,7 +78,7 @@ func listStorageAccountContributors(ctx context.Context, client client.AzureClie
 
 		for result := range pipeline.OrDone(ctx.Done(), storageAccounts) {
 			if storageAccount, ok := result.(AzureWrapper).Data.(models.StorageAccount); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating storage account contributors", "result", result)
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating storage account key-operators", "result", result)
 				return
 			} else {
 				ids <- storageAccount.Id
@@ -93,33 +93,33 @@ func listStorageAccountContributors(ctx context.Context, client client.AzureClie
 			defer wg.Done()
 			for id := range stream {
 				var (
-					storageAccountContributors = models.StorageAccountContributors{
+					storageAccountKeyOperators = models.StorageAccountKeyOperators{
 						StorageAccountId: id.(string),
 					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing contributors for this storage account", "storageAccountId", id)
+						log.Error(item.Error, "unable to continue processing key-operators for this storage account", "storageAccountId", id)
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if (roleDefinitionId == constants.ContributorRoleID) || (roleDefinitionId == constants.AzStorageAccountContributorRoleID) {
-							storageAccountContributor := models.StorageAccountContributor{
-								Contributor:      item.Ok,
+						if roleDefinitionId == constants.KeyOperatorRoleID {
+							storageAccountKeyOperator := models.StorageAccountKeyOperator{
+								KeyOperator:      item.Ok,
 								StorageAccountId: item.ParentId,
 							}
-							log.V(2).Info("found storage account contributor", "storageAccountContributor", storageAccountContributor)
+							log.V(2).Info("found storage account data-reader", "storageAccountKeyOperator", storageAccountKeyOperator)
 							count++
-							storageAccountContributors.Contributors = append(storageAccountContributors.Contributors, storageAccountContributor)
+							storageAccountKeyOperators.KeyOperators = append(storageAccountKeyOperators.KeyOperators, storageAccountKeyOperator)
 						}
 					}
 				}
 				out <- AzureWrapper{
-					Kind: enums.KindAZSAContributor,
-					Data: storageAccountContributors,
+					Kind: enums.KindAZSAKeyOperator,
+					Data: storageAccountKeyOperators,
 				}
-				log.V(1).Info("finished listing storage account contributors", "storageAccountId", id, "count", count)
+				log.V(1).Info("finished listing storage account key-operators", "storageAccountId", id, "count", count)
 			}
 		}()
 	}
@@ -127,7 +127,7 @@ func listStorageAccountContributors(ctx context.Context, client client.AzureClie
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all storage account contributors")
+		log.Info("finished listing all storage account key-operators")
 	}()
 
 	return out
