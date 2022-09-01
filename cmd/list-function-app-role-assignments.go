@@ -99,6 +99,9 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 					functionAppContributors = models.FunctionAppContributors{
 						FunctionAppId: id.(string),
 					}
+					functionAppUserAccessAdmins = models.FunctionAppUserAccessAdmins{
+						FunctionAppId: id.(string),
+					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
@@ -124,6 +127,14 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 							log.V(2).Info("found function app contributor", "functionAppContributor", functionAppContributor)
 							count++
 							functionAppContributors.Contributors = append(functionAppContributors.Contributors, functionAppContributor)
+						} else if roleDefinitionId == constants.UserAccessAdminRoleID {
+							functionAppUserAccessAdmin := models.FunctionAppUserAccessAdmin{
+								UserAccessAdmin: item.Ok,
+								FunctionAppId:   item.ParentId,
+							}
+							log.V(2).Info("found function app user access admin", "functionAppUserAccessAdmin", functionAppUserAccessAdmin)
+							count++
+							functionAppUserAccessAdmins.UserAccessAdmins = append(functionAppUserAccessAdmins.UserAccessAdmins, functionAppUserAccessAdmin)
 						}
 					}
 				}
@@ -135,6 +146,10 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 					{
 						Kind: enums.KindAZFunctionAppContributor,
 						Data: functionAppContributors,
+					},
+					{
+						Kind: enums.KindAZFunctionAppUserAccessAdmin,
+						Data: functionAppUserAccessAdmins,
 					},
 				}
 				log.V(1).Info("finished listing function app owners", "functionAppId", id, "count", count)

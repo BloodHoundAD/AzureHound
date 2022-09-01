@@ -99,6 +99,9 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 					automationAccountContributors = models.AutomationAccountContributors{
 						AutomationAccountId: id.(string),
 					}
+					automationAccountUserAccessAdmins = models.AutomationAccountUserAccessAdmins{
+						AutomationAccountId: id.(string),
+					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
@@ -124,6 +127,14 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 							log.V(2).Info("found automation account contributor", "automationAccountContributor", automationAccountContributor)
 							count++
 							automationAccountContributors.Contributors = append(automationAccountContributors.Contributors, automationAccountContributor)
+						} else if roleDefinitionId == constants.UserAccessAdminRoleID {
+							automationAccountUserAccessAdmin := models.AutomationAccountUserAccessAdmin{
+								UserAccessAdmin:     item.Ok,
+								AutomationAccountId: item.ParentId,
+							}
+							log.V(2).Info("found automation account user access admin", "automationAccountUserAccessAdmin", automationAccountUserAccessAdmin)
+							count++
+							automationAccountUserAccessAdmins.UserAccessAdmins = append(automationAccountUserAccessAdmins.UserAccessAdmins, automationAccountUserAccessAdmin)
 						}
 					}
 				}
@@ -135,6 +146,10 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 					{
 						Kind: enums.KindAZAutomationAccountContributor,
 						Data: automationAccountContributors,
+					},
+					{
+						Kind: enums.KindAZAutomationAccountUserAccessAdmin,
+						Data: automationAccountUserAccessAdmins,
 					},
 				}
 				log.V(1).Info("finished listing automation account owners", "automationAccountId", id, "count", count)
