@@ -155,6 +155,7 @@ type AzureClient interface {
 	ListAzureStorageAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.StorageAccountResult
 	ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, statusOnly bool) <-chan azure.StorageContainerResult
 	ListAzureAutomationAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.AutomationAccountResult
+	ListAzureWorkflows(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.WorkflowResult
 	ListResourceRoleAssignments(ctx context.Context, subscriptionId string, filter string, expand string) <-chan azure.RoleAssignmentResult
 	ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter string) <-chan azure.RoleAssignmentResult
 	ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipal, filter, search, orderBy, expand string, selectCols []string) <-chan azure.AppRoleAssignmentResult

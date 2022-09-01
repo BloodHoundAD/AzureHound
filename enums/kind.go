@@ -67,4 +67,7 @@ const (
 	KindAZAutomationAccount              Kind = "AZAutomationAccount"
 	KindAZAutomationAccountOwner         Kind = "AZAutomationAccountOwner"
 	KindAZAutomationAccountContributor   Kind = "AZAutomationAccountContributor"
+	KindAZWorkflow                       Kind = "AZWorkflow"
+	KindAZWorkflowOwner                  Kind = "AZWorkflowOwner"
+	KindAZWorkflowContributor            Kind = "AZWorkflowContributor"
 )
