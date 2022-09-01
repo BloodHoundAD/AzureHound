@@ -35,17 +35,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listStoraceAccountKeyOperator)
+	listRootCmd.AddCommand(listStorageAccountKeyOperator)
 }
 
-var listStoraceAccountKeyOperator = &cobra.Command{
+var listStorageAccountKeyOperator = &cobra.Command{
 	Use:          "storage-account-key-operators",
 	Long:         "Lists Azure Storage Account KeyOperators",
-	Run:          listStoraceAccountKeyOperatorImpl,
+	Run:          listStorageAccountKeyOperatorImpl,
 	SilenceUsage: true,
 }
 
-func listStoraceAccountKeyOperatorImpl(cmd *cobra.Command, args []string) {
+func listStorageAccountKeyOperatorImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 

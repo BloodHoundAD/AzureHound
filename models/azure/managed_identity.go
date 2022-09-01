@@ -19,20 +19,20 @@ package azure
 
 import "github.com/bloodhoundad/azurehound/enums"
 
-// Identity for the virtual machine.
-type VirtualMachineIdentity struct {
-	// The principal id of the virtual machine identity. The property will only be provided for a system assigned
+// Managed identity.
+type ManagedIdentity struct {
+	// The principal id of the managed identity. The property will only be provided for a system assigned
 	// identity.
 	PrincipalId string `json:"principalId"`
 
-	// The tenant id associated with the virtual machine. This property will only be provided for a system assigned
+	// The tenant id associated with the managed identity. This property will only be provided for a system assigned
 	// identity.
 	TenantId string `json:"tenantId"`
 
-	// The type of identity used for the virtual machine.
+	// The type of identity used.
 	Type enums.Identity `json:"type"`
 
-	// The list of user identities associated with the Virtual Machine. The user identity dictionary key references will be
+	// The list of user identities associated with the Managed identity. The user identity dictionary key references will be
 	// ARM resource ids in the form:
 	// '/subscriptions/{subscriptionId}/resourceGroups/{groupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}'
 	UserAssignedIdentities map[string]UserAssignedIdentity `json:"userAssignedIdentities"`

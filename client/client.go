@@ -154,6 +154,7 @@ type AzureClient interface {
 	ListAzureVirtualMachines(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.VirtualMachineResult
 	ListAzureStorageAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.StorageAccountResult
 	ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, statusOnly bool) <-chan azure.StorageContainerResult
+	ListAzureAutomationAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.AutomationAccountResult
 	ListResourceRoleAssignments(ctx context.Context, subscriptionId string, filter string, expand string) <-chan azure.RoleAssignmentResult
 	ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter string) <-chan azure.RoleAssignmentResult
 	TenantInfo() azure.Tenant
