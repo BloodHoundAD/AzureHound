@@ -119,7 +119,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 							count++
 							functionAppOwners.Owners = append(functionAppOwners.Owners, functionAppOwner)
 						} else if (roleDefinitionId == constants.ContributorRoleID) ||
-							(roleDefinitionId == constants.AzWebsiteContributor) {
+							(roleDefinitionId == constants.WebsiteContributorRoleID) {
 							functionAppContributor := models.FunctionAppContributor{
 								Contributor:   item.Ok,
 								FunctionAppId: item.ParentId,

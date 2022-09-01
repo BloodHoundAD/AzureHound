@@ -136,10 +136,11 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 							log.V(2).Info("found storage account contributor", "storageAccountContributor", storageAccountContributor)
 							count++
 							storageAccountContributors.Contributors = append(storageAccountContributors.Contributors, storageAccountContributor)
-						} else if (roleDefinitionId == constants.DataReaderRoleID) ||
-							(roleDefinitionId == constants.AzStorageBlobDataReaderRoleID) ||
-							(roleDefinitionId == constants.AzStorageQueueMessageProcessorRoleID) ||
-							(roleDefinitionId == constants.AzStorageQueueDataReaderRoleID) {
+						} else if (roleDefinitionId == constants.ReaderandDataAccessRoleID) ||
+							(roleDefinitionId == constants.StorageBlobDataReaderRoleID) ||
+							(roleDefinitionId == constants.StorageQueueDataMessageProcessorRoleID) ||
+							(roleDefinitionId == constants.StorageQueueDataReaderRoleID) ||
+							(roleDefinitionId == constants.StorageTableDataReaderRoleID) {
 							storageAccountDataReader := models.StorageAccountDataReader{
 								DataReader:       item.Ok,
 								StorageAccountId: item.ParentId,
@@ -147,7 +148,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 							log.V(2).Info("found storage account data-reader", "storageAccountDataReader", storageAccountDataReader)
 							count++
 							storageAccountDataReaders.DataReaders = append(storageAccountDataReaders.DataReaders, storageAccountDataReader)
-						} else if roleDefinitionId == constants.AzStorageAccountKeyOperatorRoleID {
+						} else if roleDefinitionId == constants.StorageAccountKeyOperatorServiceRoleID {
 							storageAccountKeyOperator := models.StorageAccountKeyOperator{
 								KeyOperator:      item.Ok,
 								StorageAccountId: item.ParentId,

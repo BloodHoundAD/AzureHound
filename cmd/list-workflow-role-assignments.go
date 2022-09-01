@@ -119,7 +119,7 @@ func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, 
 							count++
 							workflowOwners.Owners = append(workflowOwners.Owners, workflowOwner)
 						} else if (roleDefinitionId == constants.ContributorRoleID) ||
-							(roleDefinitionId == constants.AzLogicAppContributor) {
+							(roleDefinitionId == constants.LogicAppContributorRoleID) {
 							workflowContributor := models.WorkflowContributor{
 								Contributor: item.Ok,
 								WorkflowId:  item.ParentId,
