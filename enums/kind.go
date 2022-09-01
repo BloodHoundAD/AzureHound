@@ -67,4 +67,7 @@ const (
 	KindAZWorkflow                       Kind = "AZWorkflow"
 	KindAZWorkflowOwner                  Kind = "AZWorkflowOwner"
 	KindAZWorkflowContributor            Kind = "AZWorkflowContributor"
+	KindAZFunctionApp                    Kind = "AZFunctionApp"
+	KindAZFunctionAppOwner               Kind = "AZFunctionAppOwner"
+	KindAZFunctionAppContributor         Kind = "AZFunctionAppContributor"
 )

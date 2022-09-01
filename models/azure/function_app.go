@@ -19,17 +19,18 @@ package azure
 
 import "strings"
 
-type AutomationAccount struct {
+type FunctionApp struct {
 	Entity
 
-	Location string            `json:"location,omitempty"`
-	Name     string            `json:"name,omitempty"`
-	Identity ManagedIdentity   `json:"identity,omitempty"`
-	Tags     map[string]string `json:"tags,omitempty"`
-	Type     string            `json:"type,omitempty"`
+	Location   string                `json:"location,omitempty"`
+	Name       string                `json:"name,omitempty"`
+	Identity   ManagedIdentity       `json:"identity,omitempty"`
+	Tags       map[string]string     `json:"tags,omitempty"`
+	Type       string                `json:"type,omitempty"`
+	Properties FunctionAppProperties `json:"properties,omitempty"`
 }
 
-func (s AutomationAccount) ResourceGroupName() string {
+func (s FunctionApp) ResourceGroupName() string {
 	parts := strings.Split(s.Id, "/")
 	if len(parts) > 4 {
 		return parts[4]
@@ -38,7 +39,7 @@ func (s AutomationAccount) ResourceGroupName() string {
 	}
 }
 
-func (s AutomationAccount) ResourceGroupId() string {
+func (s FunctionApp) ResourceGroupId() string {
 	parts := strings.Split(s.Id, "/")
 	if len(parts) > 5 {
 		return strings.Join(parts[:5], "/")
@@ -47,13 +48,13 @@ func (s AutomationAccount) ResourceGroupId() string {
 	}
 }
 
-type AutomationAccountList struct {
-	NextLink string              `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []AutomationAccount `json:"value"`              // A list of automation accounts.
+type FunctionAppList struct {
+	NextLink string        `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
+	Value    []FunctionApp `json:"value"`              // A list of function apps
 }
 
-type AutomationAccountResult struct {
+type FunctionAppResult struct {
 	SubscriptionId string
 	Error          error
-	Ok             AutomationAccount
+	Ok             FunctionApp
 }

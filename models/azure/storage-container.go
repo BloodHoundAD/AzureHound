@@ -66,7 +66,7 @@ func (s StorageContainer) StorageAccountId() string {
 
 type StorageContainerList struct {
 	NextLink string             `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []StorageContainer `json:"value"`              // A list of virtual machines.
+	Value    []StorageContainer `json:"value"`              // A list of storage containers.
 }
 
 type StorageContainerResult struct {

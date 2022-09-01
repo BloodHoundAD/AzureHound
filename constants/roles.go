@@ -36,4 +36,5 @@ const (
 	AzStorageQueueDataReaderRoleID       string = "19e7f393-937e-4f77-808e-94535e297925"
 	AzAutomationAccountContributorRoleID string = "f353d9bd-d4a6-484e-a77a-8050b599b867"
 	AzLogicAppContributor                string = "87a39d53-fc1b-424a-814c-f7e04687dc9e"
+	AzWebsiteContributor                 string = "de139f84-1756-47ae-9be6-808fbbe84772"
 )
