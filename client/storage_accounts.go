@@ -34,7 +34,6 @@ func (s *azureClient) GetAzureStorageAccount(ctx context.Context, subscriptionId
 		headers  map[string]string
 		response azure.StorageAccount
 	)
-	fmt.Println(saName)
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
 		return nil, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
@@ -103,6 +102,97 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 				} else {
 					for _, u := range list.Value {
 						out <- azure.StorageAccountResult{
+							SubscriptionId: "/subscriptions/" + subscriptionId,
+							Ok:             u,
+						}
+					}
+					nextLink = list.NextLink
+				}
+			}
+		}
+	}()
+	return out
+}
+
+// ==
+// Storage containers
+// ==
+
+func (s *azureClient) GetAzureStorageContainer(ctx context.Context, subscriptionId, groupName, saName, scName, expand string) (*azure.StorageContainer, error) {
+	var (
+		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers/%s", subscriptionId, groupName, saName, scName)
+		params   = query.Params{ApiVersion: "2022-05-01", Expand: expand}.AsMap()
+		headers  map[string]string
+		response azure.StorageContainer
+	)
+	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+		return nil, err
+	} else if err := rest.Decode(res.Body, &response); err != nil {
+		return nil, err
+	} else {
+		return &response, nil
+	}
+}
+
+func (s *azureClient) GetAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, statusOnly bool) (azure.StorageContainerList, error) {
+	var (
+		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers", subscriptionId, resourceGroupName, saName)
+		params   = query.Params{ApiVersion: "2022-05-01", StatusOnly: statusOnly}.AsMap()
+		headers  map[string]string
+		response azure.StorageContainerList
+	)
+	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+		return response, err
+	} else if err := rest.Decode(res.Body, &response); err != nil {
+		return response, err
+	} else {
+		return response, nil
+	}
+}
+
+func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, statusOnly bool) <-chan azure.StorageContainerResult {
+	out := make(chan azure.StorageContainerResult)
+
+	go func() {
+		defer close(out)
+
+		var (
+			errResult = azure.StorageContainerResult{
+				SubscriptionId: subscriptionId,
+			}
+			nextLink string
+		)
+
+		if result, err := s.GetAzureStorageContainers(ctx, subscriptionId, resourceGroupName, saName, statusOnly); err != nil {
+			errResult.Error = err
+			out <- errResult
+		} else {
+			for _, u := range result.Value {
+				out <- azure.StorageContainerResult{SubscriptionId: subscriptionId, Ok: u}
+			}
+
+			nextLink = result.NextLink
+			for nextLink != "" {
+				var list azure.StorageContainerList
+				if url, err := url.Parse(nextLink); err != nil {
+					errResult.Error = err
+					out <- errResult
+					nextLink = ""
+				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
+					errResult.Error = err
+					out <- errResult
+					nextLink = ""
+				} else if res, err := s.resourceManager.Send(req); err != nil {
+					errResult.Error = err
+					out <- errResult
+					nextLink = ""
+				} else if err := rest.Decode(res.Body, &list); err != nil {
+					errResult.Error = err
+					out <- errResult
+					nextLink = ""
+				} else {
+					for _, u := range list.Value {
+						out <- azure.StorageContainerResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
 						}

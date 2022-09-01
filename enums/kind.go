@@ -62,4 +62,6 @@ const (
 	KindAZSAContributor                  Kind = "AZSAContributor"
 	KindAZSAOwner                        Kind = "AZSAOwner"
 	KindAZSADataReader                   Kind = "AZSADataReader"
+	KindAZSAKeyOperator                  Kind = "AZSAKeyOperator"
+	KindAZStorageContainer               Kind = "AZStorageContainer"
 )

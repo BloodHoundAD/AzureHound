@@ -33,17 +33,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listStorageAccountsCmd)
+	listRootCmd.AddCommand(listStorageContainersCmd)
 }
 
-var listStorageAccountsCmd = &cobra.Command{
-	Use:          "storage-accounts",
-	Long:         "Lists Azure Storage Accounts",
-	Run:          listStorageAccountsCmdImpl,
+var listStorageContainersCmd = &cobra.Command{
+	Use:          "storage-containers",
+	Long:         "Lists Azure Storage Containers",
+	Run:          listStorageContainersCmdImpl,
 	SilenceUsage: true,
 }
 
-func listStorageAccountsCmdImpl(cmd *cobra.Command, args []string) {
+func listStorageContainersCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -53,31 +53,33 @@ func listStorageAccountsCmdImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure storage accounts...")
+		log.Info("collecting azure storage containers...")
 		start := time.Now()
-		stream := listStorageAccounts(ctx, azClient, listSubscriptions(ctx, azClient))
+		subscriptions := listSubscriptions(ctx, azClient)
+		storageAccounts := listStorageAccounts(ctx, azClient, subscriptions)
+		stream := listStorageContainers(ctx, azClient, storageAccounts)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listStorageAccounts(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listStorageContainers(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
-		ids     = make(chan string)
+		ids     = make(chan interface{})
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
 	)
 
 	go func() {
 		defer close(ids)
-		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
-			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating storage accounts", "result", result)
+		for result := range pipeline.OrDone(ctx.Done(), storageAccounts) {
+			if storageAccount, ok := result.(AzureWrapper).Data.(models.StorageAccount); !ok {
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating storage containers", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				ids <- storageAccount
 			}
 		}
 	}()
@@ -87,30 +89,31 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, subscri
 		stream := streams[i]
 		go func() {
 			defer wg.Done()
-			for id := range stream {
+			for stAccount := range stream {
 				count := 0
-				for item := range client.ListAzureStorageAccounts(ctx, id.(string), false) {
+				for item := range client.ListAzureStorageContainers(ctx, stAccount.(models.StorageAccount).SubscriptionId, stAccount.(models.StorageAccount).ResourceGroupName, stAccount.(models.StorageAccount).Name, false) {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing storage accounts for this subscription", "subscriptionId", id)
+						log.Error(item.Error, "unable to continue processing storage containers for this subscription", "subscriptionId", stAccount.(models.StorageAccount).SubscriptionId, "storageAccountName", stAccount.(models.StorageAccount).Name)
 					} else {
 						resourceGroupId := item.Ok.ResourceGroupId()
 						resourceGroupName := item.Ok.ResourceGroupName()
-						storageAccount := models.StorageAccount{
-							StorageAccount:    item.Ok,
+						storageContainer := models.StorageContainer{
+							StorageContainer:  item.Ok,
+							StorageAccountId:  stAccount.(models.StorageAccount).StorageAccount.Id,
 							SubscriptionId:    item.SubscriptionId,
 							ResourceGroupId:   resourceGroupId,
 							ResourceGroupName: resourceGroupName,
 							TenantId:          client.TenantInfo().TenantId,
 						}
-						log.V(2).Info("found storage account", "storageAccount", storageAccount)
+						log.V(2).Info("found storage container", "storageContainer", storageContainer)
 						count++
 						out <- AzureWrapper{
-							Kind: enums.KindAZStorageAccount,
-							Data: storageAccount,
+							Kind: enums.KindAZStorageContainer,
+							Data: storageContainer,
 						}
 					}
+					log.V(1).Info("finished listing storage containers", "subscriptionId", stAccount.(models.StorageAccount).SubscriptionId, "count", count)
 				}
-				log.V(1).Info("finished listing storage accounts", "subscriptionId", id, "count", count)
 			}
 		}()
 	}
@@ -118,7 +121,7 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, subscri
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all storage accounts")
+		log.Info("finished listing all storage containers")
 	}()
 
 	return out

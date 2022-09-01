@@ -17,11 +17,11 @@
 
 package azure
 
-type StorageAcccountProperties struct {
+type StorageAccountProperties struct {
 	DnsEndpointType              string                          `json:"dnsEndpointType,omitempty"`
 	DefaultToOAuthAuthentication bool                            `json:"defaultToOAuthAuthentication,omitempty"`
 	PublicNetworkAccess          string                          `json:"availabilitySet,omitempty"`
-	KeyCreationTime              string                          `json:"keyCreationTime,omitempty"`
+	KeyCreationTime              map[string]string               `json:"keyCreationTime,omitempty"`
 	AllowCrossTenantReplication  bool                            `json:"allowCrossTenantReplication,omitempty"`
 	PrivateEndpointConnections   []PrivateEndpointConnectionItem `json:"privateEndpointConnections"`
 	MinimumTlsVersion            string                          `json:"minimumTlsVersion,omitempty"`
@@ -29,11 +29,11 @@ type StorageAcccountProperties struct {
 	AllowSharedKeyAccess         bool                            `json:"allowSharedKeyAccess,omitempty"`
 	NetworkAcls                  NetworkRuleSet                  `json:"networkAcls"`
 	SupportsHttpsTrafficOnly     bool                            `json:"supportsHttpsTrafficOnly,omitempty"`
-	Encryption                   string                          `json:"encryption,omitempty"`
 	AccessTier                   string                          `json:"accessTier,omitempty"`
 	ProvisioningState            string                          `json:"provisioningState,omitempty"`
 	creationTime                 string                          `json:"creationTime,omitempty"`
 	primaryEndpoints             SAPrimaryEndpoints              `json:"primaryEndpoints,omitempty"`
 	primaryLocation              string                          `json:"primaryLocation,omitempty"`
 	statusOfPrimary              string                          `json:"statusOfPrimary,omitempty"`
+	//Encryption                   string                          `json:"encryption,omitempty"`
 }

@@ -19,10 +19,12 @@ package models
 
 import "github.com/bloodhoundad/azurehound/models/azure"
 
-type StorageAccount struct {
-	azure.StorageAccount
-	SubscriptionId    string `json:"subscriptionId"`
-	ResourceGroupId   string `json:"resourceGroupId"`
-	ResourceGroupName string `json:"resourceGroupName"`
-	TenantId          string `json:"tenantId"`
+type StorageContainerContributor struct {
+	Contributor        azure.RoleAssignment `json:"contributor"`
+	StorageContainerId string               `json:"storageContainerId"`
+}
+
+type StorageContainerContributors struct {
+	Contributors       []StorageContainerContributor `json:"contributors"`
+	StorageContainerId string                        `json:"storageContainerId"`
 }
