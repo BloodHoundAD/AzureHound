@@ -35,17 +35,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listStoraceAccountOwner)
+	listRootCmd.AddCommand(listStorageAccountOwner)
 }
 
-var listStoraceAccountOwner = &cobra.Command{
+var listStorageAccountOwner = &cobra.Command{
 	Use:          "storage-account-owners",
 	Long:         "Lists Azure Storage Account Owners",
-	Run:          listStoraceAccountOwnerImpl,
+	Run:          listStorageAccountOwnerImpl,
 	SilenceUsage: true,
 }
 
-func listStoraceAccountOwnerImpl(cmd *cobra.Command, args []string) {
+func listStorageAccountOwnerImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 

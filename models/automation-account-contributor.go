@@ -19,12 +19,12 @@ package models
 
 import "github.com/bloodhoundad/azurehound/models/azure"
 
-type StorageAccountKeyOperator struct {
-	KeyOperator      azure.RoleAssignment `json:"keyOperator"`
-	StorageAccountId string               `json:"storageAccountId"`
+type AutomationAccountContributor struct {
+	Contributor         azure.RoleAssignment `json:"contributor"`
+	AutomationAccountId string               `json:"automationAccountId"`
 }
 
-type StorageAccountKeyOperators struct {
-	KeyOperators     []StorageAccountKeyOperator `json:"keyOperators"`
-	StorageAccountId string                      `json:"storageAccountId"`
+type AutomationAccountContributors struct {
+	Contributors        []AutomationAccountContributor `json:"contributors"`
+	AutomationAccountId string                         `json:"automationAccountId"`
 }

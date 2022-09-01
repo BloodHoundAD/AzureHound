@@ -35,17 +35,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listStorageAccountDataReader)
+	listRootCmd.AddCommand(listAutomationAccountOwner)
 }
 
-var listStorageAccountDataReader = &cobra.Command{
-	Use:          "storage-account-data-readers",
-	Long:         "Lists Azure Storage Account DataReaders",
-	Run:          listStorageAccountDataReaderImpl,
+var listAutomationAccountOwner = &cobra.Command{
+	Use:          "automation-account-owners",
+	Long:         "Lists Azure Automation Account Owners",
+	Run:          listAutomationAccountOwnerImpl,
 	SilenceUsage: true,
 }
 
-func listStorageAccountDataReaderImpl(cmd *cobra.Command, args []string) {
+func listAutomationAccountOwnerImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -55,17 +55,17 @@ func listStorageAccountDataReaderImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure storage account data-readers...")
+		log.Info("collecting azure automation account owners...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listStorageAccountDataReaders(ctx, azClient, listStorageAccounts(ctx, azClient, subscriptions))
+		stream := listAutomationAccountOwners(ctx, azClient, listAutomationAccounts(ctx, azClient, subscriptions))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listStorageAccountDataReaders(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
+func listAutomationAccountOwners(ctx context.Context, client client.AzureClient, automationAccounts <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -76,12 +76,12 @@ func listStorageAccountDataReaders(ctx context.Context, client client.AzureClien
 	go func() {
 		defer close(ids)
 
-		for result := range pipeline.OrDone(ctx.Done(), storageAccounts) {
-			if storageAccount, ok := result.(AzureWrapper).Data.(models.StorageAccount); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating storage account data-readers", "result", result)
+		for result := range pipeline.OrDone(ctx.Done(), automationAccounts) {
+			if automationAccount, ok := result.(AzureWrapper).Data.(models.AutomationAccount); !ok {
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating automation account owners", "result", result)
 				return
 			} else {
-				ids <- storageAccount.Id
+				ids <- automationAccount.Id
 			}
 		}
 	}()
@@ -93,35 +93,33 @@ func listStorageAccountDataReaders(ctx context.Context, client client.AzureClien
 			defer wg.Done()
 			for id := range stream {
 				var (
-					storageAccountDataReaders = models.StorageAccountDataReaders{
-						StorageAccountId: id.(string),
+					automationAccountOwners = models.AutomationAccountOwners{
+						AutomationAccountId: id.(string),
 					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing data-readers for this storage account", "storageAccountId", id)
+						log.Error(item.Error, "unable to continue processing owners for this automation account", "automationAccountId", id)
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
-						if (roleDefinitionId == constants.DataReaderRoleID) ||
-							(roleDefinitionId == constants.AzStorageBlobDataReaderRoleID) ||
-							(roleDefinitionId == constants.AzStorageQueueMessageProcessorRoleID) ||
-							(roleDefinitionId == constants.AzStorageQueueDataReaderRoleID) {
-							storageAccountDataReader := models.StorageAccountDataReader{
-								DataReader:       item.Ok,
-								StorageAccountId: item.ParentId,
+
+						if roleDefinitionId == constants.OwnerRoleID {
+							automationAccountOwner := models.AutomationAccountOwner{
+								Owner:               item.Ok,
+								AutomationAccountId: item.ParentId,
 							}
-							log.V(2).Info("found storage account data-reader", "storageAccountDataReader", storageAccountDataReader)
+							log.V(2).Info("found automation account owner", "automationAccountOwner", automationAccountOwner)
 							count++
-							storageAccountDataReaders.DataReaders = append(storageAccountDataReaders.DataReaders, storageAccountDataReader)
+							automationAccountOwners.Owners = append(automationAccountOwners.Owners, automationAccountOwner)
 						}
 					}
 				}
 				out <- AzureWrapper{
-					Kind: enums.KindAZSADataReader,
-					Data: storageAccountDataReaders,
+					Kind: enums.KindAZAutomationAccountOwner,
+					Data: automationAccountOwners,
 				}
-				log.V(1).Info("finished listing storage account data-readers", "storageAccountId", id, "count", count)
+				log.V(1).Info("finished listing automation account owners", "automationAccountId", id, "count", count)
 			}
 		}()
 	}
@@ -129,7 +127,7 @@ func listStorageAccountDataReaders(ctx context.Context, client client.AzureClien
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all storage account data-readers")
+		log.Info("finished listing all automation account owners")
 	}()
 
 	return out
