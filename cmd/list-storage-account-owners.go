@@ -104,7 +104,7 @@ func listStorageAccountOwners(ctx context.Context, client client.AzureClient, st
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.OwnerRoleID {
+						if (roleDefinitionId == constants.OwnerRoleID) || (roleDefinitionId == constants.AzStorageBlobDataOwnerRoleID) {
 							storageAccountOwner := models.StorageAccountOwner{
 								Owner:            item.Ok,
 								StorageAccountId: item.ParentId,

@@ -104,7 +104,10 @@ func listStorageAccountContributors(ctx context.Context, client client.AzureClie
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if (roleDefinitionId == constants.ContributorRoleID) || (roleDefinitionId == constants.AzStorageAccountContributorRoleID) {
+						if (roleDefinitionId == constants.ContributorRoleID) ||
+							(roleDefinitionId == constants.AzStorageAccountContributorRoleID) ||
+							(roleDefinitionId == constants.AzStorageBlobContributorRoleID) ||
+							(roleDefinitionId == constants.AzStorageQueueContributorRoleID) {
 							storageAccountContributor := models.StorageAccountContributor{
 								Contributor:      item.Ok,
 								StorageAccountId: item.ParentId,

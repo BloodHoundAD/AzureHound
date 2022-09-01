@@ -103,8 +103,10 @@ func listStorageAccountDataReaders(ctx context.Context, client client.AzureClien
 						log.Error(item.Error, "unable to continue processing data-readers for this storage account", "storageAccountId", id)
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
-
-						if roleDefinitionId == constants.DataReaderRoleID {
+						if (roleDefinitionId == constants.DataReaderRoleID) ||
+							(roleDefinitionId == constants.AzStorageBlobDataReaderRoleID) ||
+							(roleDefinitionId == constants.AzStorageQueueMessageProcessorRoleID) ||
+							(roleDefinitionId == constants.AzStorageQueueDataReaderRoleID) {
 							storageAccountDataReader := models.StorageAccountDataReader{
 								DataReader:       item.Ok,
 								StorageAccountId: item.ParentId,

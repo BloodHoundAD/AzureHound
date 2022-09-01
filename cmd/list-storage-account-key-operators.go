@@ -104,7 +104,7 @@ func listStorageAccountKeyOperators(ctx context.Context, client client.AzureClie
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.KeyOperatorRoleID {
+						if roleDefinitionId == constants.AzStorageAccountKeyOperatorRoleID {
 							storageAccountKeyOperator := models.StorageAccountKeyOperator{
 								KeyOperator:      item.Ok,
 								StorageAccountId: item.ParentId,
