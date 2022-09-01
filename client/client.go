@@ -128,6 +128,8 @@ type AzureClient interface {
 	GetAzureSubscriptions(ctx context.Context) (azure.SubscriptionList, error)
 	GetAzureVirtualMachine(ctx context.Context, subscriptionId, groupName, vmName, expand string) (*azure.VirtualMachine, error)
 	GetAzureVirtualMachines(ctx context.Context, subscriptionId string, statusOnly bool) (azure.VirtualMachineList, error)
+	GetAzureStorageAccount(ctx context.Context, subscriptionId, groupName, saName, expand string) (*azure.StorageAccount, error)
+	GetAzureStorageAccounts(ctx context.Context, subscriptionId string, statusOnly bool) (azure.StorageAccountList, error)
 	GetResourceRoleAssignments(ctx context.Context, subscriptionId string, filter string, expand string) (azure.RoleAssignmentList, error)
 	GetRoleAssignmentsForResource(ctx context.Context, resourceId string, filter string) (azure.RoleAssignmentList, error)
 	ListAzureADAppMemberObjects(ctx context.Context, objectId string, securityEnabledOnly bool) <-chan azure.MemberObjectResult
@@ -150,6 +152,7 @@ type AzureClient interface {
 	ListAzureResourceGroups(ctx context.Context, subscriptionId, filter string) <-chan azure.ResourceGroupResult
 	ListAzureSubscriptions(ctx context.Context) <-chan azure.SubscriptionResult
 	ListAzureVirtualMachines(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.VirtualMachineResult
+	ListAzureStorageAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.StorageAccountResult
 	ListResourceRoleAssignments(ctx context.Context, subscriptionId string, filter string, expand string) <-chan azure.RoleAssignmentResult
 	ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter string) <-chan azure.RoleAssignmentResult
 	ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipal, filter, search, orderBy, expand string, selectCols []string) <-chan azure.AppRoleAssignmentResult
