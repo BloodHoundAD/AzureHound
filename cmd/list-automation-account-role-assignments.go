@@ -35,17 +35,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listAutomationAccountOwner)
+	listRootCmd.AddCommand(listAutomationAccountRoleAssignment)
 }
 
-var listAutomationAccountOwner = &cobra.Command{
-	Use:          "automation-account-owners",
-	Long:         "Lists Azure Automation Account Owners",
-	Run:          listAutomationAccountOwnerImpl,
+var listAutomationAccountRoleAssignment = &cobra.Command{
+	Use:          "automation-account-role-assignments",
+	Long:         "Lists Azure Automation Account Role Assignments",
+	Run:          listAutomationAccountRoleAssignmentImpl,
 	SilenceUsage: true,
 }
 
-func listAutomationAccountOwnerImpl(cmd *cobra.Command, args []string) {
+func listAutomationAccountRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -55,17 +55,17 @@ func listAutomationAccountOwnerImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure automation account owners...")
+		log.Info("collecting azure automation account role assignments...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listAutomationAccountOwners(ctx, azClient, listAutomationAccounts(ctx, azClient, subscriptions))
+		stream := listAutomationAccountRoleAssignments(ctx, azClient, listAutomationAccounts(ctx, azClient, subscriptions))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listAutomationAccountOwners(ctx context.Context, client client.AzureClient, automationAccounts <-chan interface{}) <-chan interface{} {
+func listAutomationAccountRoleAssignments(ctx context.Context, client client.AzureClient, automationAccounts <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -78,7 +78,7 @@ func listAutomationAccountOwners(ctx context.Context, client client.AzureClient,
 
 		for result := range pipeline.OrDone(ctx.Done(), automationAccounts) {
 			if automationAccount, ok := result.(AzureWrapper).Data.(models.AutomationAccount); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating automation account owners", "result", result)
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating automation account role assignments", "result", result)
 				return
 			} else {
 				ids <- automationAccount.Id
@@ -96,11 +96,14 @@ func listAutomationAccountOwners(ctx context.Context, client client.AzureClient,
 					automationAccountOwners = models.AutomationAccountOwners{
 						AutomationAccountId: id.(string),
 					}
+					automationAccountContributors = models.AutomationAccountContributors{
+						AutomationAccountId: id.(string),
+					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing owners for this automation account", "automationAccountId", id)
+						log.Error(item.Error, "unable to continue processing role assignments for this automation account", "automationAccountId", id)
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
@@ -112,12 +115,27 @@ func listAutomationAccountOwners(ctx context.Context, client client.AzureClient,
 							log.V(2).Info("found automation account owner", "automationAccountOwner", automationAccountOwner)
 							count++
 							automationAccountOwners.Owners = append(automationAccountOwners.Owners, automationAccountOwner)
+						} else if (roleDefinitionId == constants.ContributorRoleID) ||
+							(roleDefinitionId == constants.AzAutomationAccountContributorRoleID) {
+							automationAccountContributor := models.AutomationAccountContributor{
+								Contributor:         item.Ok,
+								AutomationAccountId: item.ParentId,
+							}
+							log.V(2).Info("found automation account contributor", "automationAccountContributor", automationAccountContributor)
+							count++
+							automationAccountContributors.Contributors = append(automationAccountContributors.Contributors, automationAccountContributor)
 						}
 					}
 				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZAutomationAccountOwner,
-					Data: automationAccountOwners,
+				out <- []AzureWrapper{
+					{
+						Kind: enums.KindAZAutomationAccountOwner,
+						Data: automationAccountOwners,
+					},
+					{
+						Kind: enums.KindAZAutomationAccountContributor,
+						Data: automationAccountContributors,
+					},
 				}
 				log.V(1).Info("finished listing automation account owners", "automationAccountId", id, "count", count)
 			}

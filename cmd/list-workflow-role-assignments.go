@@ -35,17 +35,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listWorkflowOwner)
+	listRootCmd.AddCommand(listWorkflowRoleAssignment)
 }
 
-var listWorkflowOwner = &cobra.Command{
-	Use:          "workflow-owners",
-	Long:         "Lists Azure Workflow (Logic apps) Owners",
-	Run:          listWorkflowOwnerImpl,
+var listWorkflowRoleAssignment = &cobra.Command{
+	Use:          "workflow-role-assignments",
+	Long:         "Lists Azure Workflow (Logic apps) Owners and Contributors",
+	Run:          listWorkflowRoleAssignmentImpl,
 	SilenceUsage: true,
 }
 
-func listWorkflowOwnerImpl(cmd *cobra.Command, args []string) {
+func listWorkflowRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -55,17 +55,17 @@ func listWorkflowOwnerImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure workflow owners...")
+		log.Info("collecting azure workflow role assignments...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listWorkflowOwners(ctx, azClient, listWorkflows(ctx, azClient, subscriptions))
+		stream := listWorkflowRoleAsignments(ctx, azClient, listWorkflows(ctx, azClient, subscriptions))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listWorkflowOwners(ctx context.Context, client client.AzureClient, workflows <-chan interface{}) <-chan interface{} {
+func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, workflows <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -78,7 +78,7 @@ func listWorkflowOwners(ctx context.Context, client client.AzureClient, workflow
 
 		for result := range pipeline.OrDone(ctx.Done(), workflows) {
 			if workflow, ok := result.(AzureWrapper).Data.(models.Workflow); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating workflow owners", "result", result)
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating workflow role assignments", "result", result)
 				return
 			} else {
 				ids <- workflow.Id
@@ -96,11 +96,14 @@ func listWorkflowOwners(ctx context.Context, client client.AzureClient, workflow
 					workflowOwners = models.WorkflowOwners{
 						WorkflowId: id.(string),
 					}
+					workflowContributors = models.WorkflowContributors{
+						WorkflowId: id.(string),
+					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing owners for this workflow", "workflowId", id)
+						log.Error(item.Error, "unable to continue processing role assignments for this workflow", "workflowId", id)
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
@@ -112,12 +115,26 @@ func listWorkflowOwners(ctx context.Context, client client.AzureClient, workflow
 							log.V(2).Info("found workflow owner", "workflowOwner", workflowOwner)
 							count++
 							workflowOwners.Owners = append(workflowOwners.Owners, workflowOwner)
+						} else if (roleDefinitionId == constants.ContributorRoleID) ||
+							(roleDefinitionId == constants.AzLogicAppContributor) {
+							workflowContributor := models.WorkflowContributor{
+								Contributor: item.Ok,
+								WorkflowId:  item.ParentId,
+							}
+							log.V(2).Info("found workflow contributor", "workflowContributor", workflowContributor)
+							count++
+							workflowContributors.Contributors = append(workflowContributors.Contributors, workflowContributor)
 						}
 					}
 				}
-				out <- AzureWrapper{
+				out <- []AzureWrapper{{
 					Kind: enums.KindAZWorkflowOwner,
 					Data: workflowOwners,
+				},
+					{
+						Kind: enums.KindAZWorkflowContributor,
+						Data: workflowContributors,
+					},
 				}
 				log.V(1).Info("finished listing workflow owners", "workflowId", id, "count", count)
 			}
