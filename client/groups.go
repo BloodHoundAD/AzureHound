@@ -47,7 +47,7 @@ func (s *azureClient) GetAzureADGroup(ctx context.Context, objectId string, sele
 
 func (s *azureClient) GetAzureADGroupOwners(ctx context.Context, objectId string, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.DirectoryObjectList, error) {
 	var (
-		path     = fmt.Sprintf("/%s/groups/%s/owners", constants.GraphApiVersion, objectId)
+		path     = fmt.Sprintf("/%s/groups/%s/owners", constants.GraphApiBetaVersion, objectId)
 		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count}.AsMap()
 		response azure.DirectoryObjectList
 	)
@@ -62,7 +62,7 @@ func (s *azureClient) GetAzureADGroupOwners(ctx context.Context, objectId string
 
 func (s *azureClient) GetAzureADGroupMembers(ctx context.Context, objectId string, filter string, search string, count bool) (azure.MemberObjectList, error) {
 	var (
-		path     = fmt.Sprintf("/%s/groups/%s/members", constants.GraphApiVersion, objectId)
+		path     = fmt.Sprintf("/%s/groups/%s/members", constants.GraphApiBetaVersion, objectId)
 		params   = query.Params{Filter: filter, Search: search, Count: count}.AsMap()
 		response azure.MemberObjectList
 	)

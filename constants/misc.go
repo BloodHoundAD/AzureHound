@@ -39,5 +39,6 @@ func UserAgent() string {
 
 // Azure Services
 const (
-	GraphApiVersion string = "v1.0"
+	GraphApiBetaVersion string = "beta"
+	GraphApiVersion     string = "v1.0"
 )
