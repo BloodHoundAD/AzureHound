@@ -47,7 +47,7 @@ func (s *azureClient) GetAzureADApp(ctx context.Context, objectId string, select
 
 func (s *azureClient) GetAzureADAppOwners(ctx context.Context, objectId string, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.DirectoryObjectList, error) {
 	var (
-		path     = fmt.Sprintf("/%s/applications/%s/owners", constants.GraphApiVersion, objectId)
+		path     = fmt.Sprintf("/%s/applications/%s/owners", constants.GraphApiBetaVersion, objectId)
 		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count}.AsMap()
 		response azure.DirectoryObjectList
 	)
