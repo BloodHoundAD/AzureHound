@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 // Package mocks is a generated GoMock package.
 package mocks
 
@@ -426,6 +425,36 @@ func (mr *MockAzureClientMockRecorder) GetAzureResourceGroups(arg0, arg1, arg2, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureResourceGroups", reflect.TypeOf((*MockAzureClient)(nil).GetAzureResourceGroups), arg0, arg1, arg2, arg3)
 }
 
+// GetAzureStorageAccount mocks base method.
+func (m *MockAzureClient) GetAzureStorageAccount(arg0 context.Context, arg1, arg2, arg3, arg4 string) (*azure.StorageAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAzureStorageAccount", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*azure.StorageAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAzureStorageAccount indicates an expected call of GetAzureStorageAccount.
+func (mr *MockAzureClientMockRecorder) GetAzureStorageAccount(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureStorageAccount", reflect.TypeOf((*MockAzureClient)(nil).GetAzureStorageAccount), arg0, arg1, arg2, arg3, arg4)
+}
+
+// GetAzureStorageAccounts mocks base method.
+func (m *MockAzureClient) GetAzureStorageAccounts(arg0 context.Context, arg1 string, arg2 bool) (azure.StorageAccountList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAzureStorageAccounts", arg0, arg1, arg2)
+	ret0, _ := ret[0].(azure.StorageAccountList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAzureStorageAccounts indicates an expected call of GetAzureStorageAccounts.
+func (mr *MockAzureClientMockRecorder) GetAzureStorageAccounts(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureStorageAccounts", reflect.TypeOf((*MockAzureClient)(nil).GetAzureStorageAccounts), arg0, arg1, arg2)
+}
+
 // GetAzureSubscription mocks base method.
 func (m *MockAzureClient) GetAzureSubscription(arg0 context.Context, arg1 string) (*azure.Subscription, error) {
 	m.ctrl.T.Helper()
@@ -698,6 +727,20 @@ func (mr *MockAzureClientMockRecorder) ListAzureADUsers(arg0, arg1, arg2, arg3, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADUsers", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADUsers), arg0, arg1, arg2, arg3, arg4)
 }
 
+// ListAzureAutomationAccounts mocks base method.
+func (m *MockAzureClient) ListAzureAutomationAccounts(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.AutomationAccountResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureAutomationAccounts", arg0, arg1, arg2)
+	ret0, _ := ret[0].(<-chan azure.AutomationAccountResult)
+	return ret0
+}
+
+// ListAzureAutomationAccounts indicates an expected call of ListAzureAutomationAccounts.
+func (mr *MockAzureClientMockRecorder) ListAzureAutomationAccounts(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureAutomationAccounts", reflect.TypeOf((*MockAzureClient)(nil).ListAzureAutomationAccounts), arg0, arg1, arg2)
+}
+
 // ListAzureDeviceRegisteredOwners mocks base method.
 func (m *MockAzureClient) ListAzureDeviceRegisteredOwners(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.DeviceRegisteredOwnerResult {
 	m.ctrl.T.Helper()
@@ -724,6 +767,20 @@ func (m *MockAzureClient) ListAzureDevices(arg0 context.Context, arg1, arg2, arg
 func (mr *MockAzureClientMockRecorder) ListAzureDevices(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureDevices", reflect.TypeOf((*MockAzureClient)(nil).ListAzureDevices), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// ListAzureFunctionApps mocks base method.
+func (m *MockAzureClient) ListAzureFunctionApps(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.FunctionAppResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureFunctionApps", arg0, arg1, arg2)
+	ret0, _ := ret[0].(<-chan azure.FunctionAppResult)
+	return ret0
+}
+
+// ListAzureFunctionApps indicates an expected call of ListAzureFunctionApps.
+func (mr *MockAzureClientMockRecorder) ListAzureFunctionApps(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureFunctionApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureFunctionApps), arg0, arg1, arg2)
 }
 
 // ListAzureKeyVaults mocks base method.
@@ -782,6 +839,34 @@ func (mr *MockAzureClientMockRecorder) ListAzureResourceGroups(arg0, arg1, arg2 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureResourceGroups", reflect.TypeOf((*MockAzureClient)(nil).ListAzureResourceGroups), arg0, arg1, arg2)
 }
 
+// ListAzureStorageAccounts mocks base method.
+func (m *MockAzureClient) ListAzureStorageAccounts(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.StorageAccountResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureStorageAccounts", arg0, arg1, arg2)
+	ret0, _ := ret[0].(<-chan azure.StorageAccountResult)
+	return ret0
+}
+
+// ListAzureStorageAccounts indicates an expected call of ListAzureStorageAccounts.
+func (mr *MockAzureClientMockRecorder) ListAzureStorageAccounts(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureStorageAccounts", reflect.TypeOf((*MockAzureClient)(nil).ListAzureStorageAccounts), arg0, arg1, arg2)
+}
+
+// ListAzureStorageContainers mocks base method.
+func (m *MockAzureClient) ListAzureStorageContainers(arg0 context.Context, arg1, arg2, arg3 string, arg4 bool) <-chan azure.StorageContainerResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureStorageContainers", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(<-chan azure.StorageContainerResult)
+	return ret0
+}
+
+// ListAzureStorageContainers indicates an expected call of ListAzureStorageContainers.
+func (mr *MockAzureClientMockRecorder) ListAzureStorageContainers(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureStorageContainers", reflect.TypeOf((*MockAzureClient)(nil).ListAzureStorageContainers), arg0, arg1, arg2, arg3, arg4)
+}
+
 // ListAzureSubscriptions mocks base method.
 func (m *MockAzureClient) ListAzureSubscriptions(arg0 context.Context) <-chan azure.SubscriptionResult {
 	m.ctrl.T.Helper()
@@ -808,6 +893,20 @@ func (m *MockAzureClient) ListAzureVirtualMachines(arg0 context.Context, arg1 st
 func (mr *MockAzureClientMockRecorder) ListAzureVirtualMachines(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureVirtualMachines", reflect.TypeOf((*MockAzureClient)(nil).ListAzureVirtualMachines), arg0, arg1, arg2)
+}
+
+// ListAzureWorkflows mocks base method.
+func (m *MockAzureClient) ListAzureWorkflows(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.WorkflowResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureWorkflows", arg0, arg1, arg2)
+	ret0, _ := ret[0].(<-chan azure.WorkflowResult)
+	return ret0
+}
+
+// ListAzureWorkflows indicates an expected call of ListAzureWorkflows.
+func (mr *MockAzureClientMockRecorder) ListAzureWorkflows(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureWorkflows", reflect.TypeOf((*MockAzureClient)(nil).ListAzureWorkflows), arg0, arg1, arg2)
 }
 
 // ListResourceRoleAssignments mocks base method.
