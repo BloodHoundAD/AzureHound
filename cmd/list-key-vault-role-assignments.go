@@ -33,17 +33,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listVirtualMachineRoleAssignmentsCmd)
+	listRootCmd.AddCommand(listKeyVaultRoleAssignmentsCmd)
 }
 
-var listVirtualMachineRoleAssignmentsCmd = &cobra.Command{
-	Use:          "virtual-machine-role-assignments",
-	Long:         "Lists Virtual Machine Role Assignments",
-	Run:          listVirtualMachineRoleAssignmentsCmdImpl,
+var listKeyVaultRoleAssignmentsCmd = &cobra.Command{
+	Use:          "key-vault-role-assignments",
+	Long:         "Lists Key Vault Role Assignments",
+	Run:          listKeyVaultRoleAssignmentsCmdImpl,
 	SilenceUsage: true,
 }
 
-func listVirtualMachineRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
+func listKeyVaultRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -53,17 +53,17 @@ func listVirtualMachineRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string)
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure virtual machine role assignments...")
+		log.Info("collecting azure key vault role assignments...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listVirtualMachineRoleAssignments(ctx, azClient, listVirtualMachines(ctx, azClient, subscriptions))
+		stream := listKeyVaultRoleAssignments(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureClient, virtualMachines <-chan interface{}) <-chan interface{} {
+func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -74,12 +74,12 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 	go func() {
 		defer close(ids)
 
-		for result := range pipeline.OrDone(ctx.Done(), virtualMachines) {
-			if virtualMachine, ok := result.(AzureWrapper).Data.(models.VirtualMachine); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine role assignments", "result", result)
+		for result := range pipeline.OrDone(ctx.Done(), keyVaults) {
+			if keyVault, ok := result.(AzureWrapper).Data.(models.KeyVault); !ok {
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating key vault role assignments", "result", result)
 				return
 			} else {
-				ids <- virtualMachine.Id
+				ids <- keyVault.Id
 			}
 		}
 	}()
@@ -91,29 +91,29 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 			defer wg.Done()
 			for id := range stream {
 				var (
-					virtualMachineRoleAssignments = models.VirtualMachineRoleAssignments{
-						VirtualMachineId: id.(string),
+					keyVaultRoleAssignments = models.KeyVaultRoleAssignments{
+						KeyVaultId: id.(string),
 					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing role assignments for this virtual machine", "virtualMachineId", id)
+						log.Error(item.Error, "unable to continue processing role assignments for this key vault", "keyVaultId", id)
 					} else {
-						virtualMachineRoleAssignment := models.VirtualMachineRoleAssignment{
-							VirtualMachineId: item.ParentId,
-							RoleAssignment:   item.Ok,
+						keyVaultRoleAssignment := models.KeyVaultRoleAssignment{
+							KeyVaultId:     item.ParentId,
+							RoleAssignment: item.Ok,
 						}
-						log.V(2).Info("found virtual machine role assignment", "virtualMachineRoleAssignment", virtualMachineRoleAssignment)
+						log.V(2).Info("found key vault role assignment", "keyVaultRoleAssignment", keyVaultRoleAssignment)
 						count++
-						virtualMachineRoleAssignments.RoleAssignments = append(virtualMachineRoleAssignments.RoleAssignments, virtualMachineRoleAssignment)
+						keyVaultRoleAssignments.RoleAssignments = append(keyVaultRoleAssignments.RoleAssignments, keyVaultRoleAssignment)
 					}
 				}
 				out <- AzureWrapper{
 					Kind: enums.KindAZVMRoleAssignment,
-					Data: virtualMachineRoleAssignments,
+					Data: keyVaultRoleAssignments,
 				}
-				log.V(1).Info("finished listing virtual machine role assignments", "virtualMachineId", id, "count", count)
+				log.V(1).Info("finished listing key vault role assignments", "keyVaultId", id, "count", count)
 			}
 		}()
 	}
@@ -121,7 +121,7 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all virtual machine role assignments")
+		log.Info("finished listing all key vault role assignments")
 	}()
 
 	return out

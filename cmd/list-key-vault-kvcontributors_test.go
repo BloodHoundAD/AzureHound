@@ -32,7 +32,7 @@ func init() {
 	setupLogger()
 }
 
-func TestListKeyVaultContributors(t *testing.T) {
+func TestListKeyVaultKVContributors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := context.Background()
@@ -42,7 +42,7 @@ func TestListKeyVaultContributors(t *testing.T) {
 	mockRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listKeyVaultContributors(ctx, mockClient, mockRoleAssignmentsChannel)
+	channel := listKeyVaultKVContributors(ctx, mockClient, mockRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockRoleAssignmentsChannel)
@@ -53,9 +53,9 @@ func TestListKeyVaultContributors(t *testing.T) {
 				RoleAssignments: []models.KeyVaultRoleAssignment{
 					{
 						RoleAssignment: azure.RoleAssignment{
-							Name: constants.ContributorRoleID,
+							Name: constants.KeyVaultContributorRoleID,
 							Properties: azure.RoleAssignmentPropertiesWithScope{
-								RoleDefinitionId: constants.ContributorRoleID,
+								RoleDefinitionId: constants.KeyVaultContributorRoleID,
 							},
 						},
 					},
@@ -68,8 +68,8 @@ func TestListKeyVaultContributors(t *testing.T) {
 		t.Fatalf("failed to receive from channel")
 	} else if wrapper, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if _, ok := wrapper.Data.(models.KeyVaultContributors); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.KeyVaultContributors{})
+	} else if _, ok := wrapper.Data.(models.KeyVaultKVContributors); !ok {
+		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.KeyVaultKVContributors{})
 	}
 
 	if _, ok := <-channel; ok {

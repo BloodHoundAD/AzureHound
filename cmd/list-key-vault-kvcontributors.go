@@ -34,17 +34,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listKeyVaultUserAccessAdminsCmd)
+	listRootCmd.AddCommand(listKeyVaultKVContributorsCmd)
 }
 
-var listKeyVaultUserAccessAdminsCmd = &cobra.Command{
-	Use:          "key-vault-user-access-admins",
-	Long:         "Lists Azure Key Vault User Access Admins",
-	Run:          listKeyVaultUserAccessAdminsCmdImpl,
+var listKeyVaultKVContributorsCmd = &cobra.Command{
+	Use:          "key-vault-kvcontributors",
+	Long:         "Lists Azure Key Vault KVContributors",
+	Run:          listKeyVaultKVContributorsCmdImpl,
 	SilenceUsage: true,
 }
 
-func listKeyVaultUserAccessAdminsCmdImpl(cmd *cobra.Command, args []string) {
+func listKeyVaultKVContributorsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -54,19 +54,19 @@ func listKeyVaultUserAccessAdminsCmdImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure key vault user access admins...")
+		log.Info("collecting azure key vault kvcontributors...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
 		keyVaults := listKeyVaults(ctx, azClient, subscriptions)
 		kvRoleAssignments := listKeyVaultRoleAssignments(ctx, azClient, keyVaults)
-		stream := listKeyVaultUserAccessAdmins(ctx, azClient, kvRoleAssignments)
+		stream := listKeyVaultKVContributors(ctx, azClient, kvRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listKeyVaultUserAccessAdmins(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
+func listKeyVaultKVContributors(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
@@ -74,11 +74,11 @@ func listKeyVaultUserAccessAdmins(ctx context.Context, client client.AzureClient
 
 		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {
 			if roleAssignments, ok := result.(AzureWrapper).Data.(models.KeyVaultRoleAssignments); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating key vault userAccessAdmins", "result", result)
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating key vault kvContributors", "result", result)
 				return
 			} else {
 				var (
-					keyVaultUserAccessAdmins = models.KeyVaultUserAccessAdmins{
+					keyVaultKVContributors = models.KeyVaultKVContributors{
 						KeyVaultId: roleAssignments.KeyVaultId,
 					}
 					count = 0
@@ -86,24 +86,24 @@ func listKeyVaultUserAccessAdmins(ctx context.Context, client client.AzureClient
 				for _, item := range roleAssignments.RoleAssignments {
 					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
 
-					if roleDefinitionId == constants.UserAccessAdminRoleID {
-						keyVaultUserAccessAdmin := models.KeyVaultUserAccessAdmin{
-							UserAccessAdmin: item.RoleAssignment,
-							KeyVaultId:      item.KeyVaultId,
+					if roleDefinitionId == constants.KeyVaultContributorRoleID {
+						keyVaultKVContributor := models.KeyVaultKVContributor{
+							KVContributor: item.RoleAssignment,
+							KeyVaultId:    item.KeyVaultId,
 						}
-						log.V(2).Info("found key vault userAccessAdmin", "keyVaultUserAccessAdmin", keyVaultUserAccessAdmin)
+						log.V(2).Info("found key vault kvContributor", "keyVaultKVContributor", keyVaultKVContributor)
 						count++
-						keyVaultUserAccessAdmins.UserAccessAdmins = append(keyVaultUserAccessAdmins.UserAccessAdmins, keyVaultUserAccessAdmin)
+						keyVaultKVContributors.KVContributors = append(keyVaultKVContributors.KVContributors, keyVaultKVContributor)
 					}
 				}
 				out <- AzureWrapper{
-					Kind: enums.KindAZVMUserAccessAdmin,
-					Data: keyVaultUserAccessAdmins,
+					Kind: enums.KindAZKeyVaultContributor,
+					Data: keyVaultKVContributors,
 				}
-				log.V(1).Info("finished listing key vault userAccessAdmins", "keyVaultId", roleAssignments.KeyVaultId, "count", count)
+				log.V(1).Info("finished listing key vault kvContributors", "keyVaultId", roleAssignments.KeyVaultId, "count", count)
 			}
 		}
-		log.Info("finished listing all key vault userAccessAdmins")
+		log.Info("finished listing all key vault kvContributors")
 	}()
 
 	return out
