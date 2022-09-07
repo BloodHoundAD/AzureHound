@@ -23,5 +23,6 @@ import (
 
 type AppRoleAssignment struct {
 	azure.AppRoleAssignment
+	AppId    string `json:"appId"`
 	TenantId string `json:"tenantId"`
 }

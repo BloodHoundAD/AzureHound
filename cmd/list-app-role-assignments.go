@@ -65,14 +65,14 @@ func listAppRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 
 func listAppRoleAssignments(ctx context.Context, client client.AzureClient, servicePrincipals <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
-		wg      sync.WaitGroup
+		out         = make(chan interface{})
+		filteredSPs = make(chan models.ServicePrincipal)
+		streams     = pipeline.Demux(ctx.Done(), filteredSPs, 25)
+		wg          sync.WaitGroup
 	)
 
 	go func() {
-		defer close(ids)
+		defer close(filteredSPs)
 
 		for result := range pipeline.OrDone(ctx.Done(), servicePrincipals) {
 			if servicePrincipal, ok := result.(AzureWrapper).Data.(models.ServicePrincipal); !ok {
@@ -80,7 +80,7 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 				return
 			} else {
 				if len(servicePrincipal.AppRoles) != 0 {
-					ids <- servicePrincipal.Id
+					filteredSPs <- servicePrincipal
 				}
 			}
 		}
@@ -91,13 +91,14 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 		stream := streams[i]
 		go func() {
 			defer wg.Done()
-			for id := range stream {
+			for sp := range stream {
 				var (
 					count = 0
 				)
-				for item := range client.ListAzureADAppRoleAssignments(ctx, id.(string), "", "", "", "", nil) {
+				servicePrincipal := sp.(models.ServicePrincipal)
+				for item := range client.ListAzureADAppRoleAssignments(ctx, servicePrincipal.Id, "", "", "", "", nil) {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing app role assignments for this service principal", "servicePrincipalId", id)
+						log.Error(item.Error, "unable to continue processing app role assignments for this service principal", "servicePrincipalId", sp)
 					} else {
 						log.V(2).Info("found app role assignment", "roleAssignments", item)
 						count++
@@ -105,12 +106,13 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 							Kind: enums.KindAZAppRoleAssignment,
 							Data: models.AppRoleAssignment{
 								AppRoleAssignment: item.Ok,
+								AppId:             servicePrincipal.AppId,
 								TenantId:          client.TenantInfo().TenantId,
 							},
 						}
 					}
 				}
-				log.V(1).Info("finished listing app role assignments", "servicePrincipalId", id, "count", count)
+				log.V(1).Info("finished listing app role assignments", "appId", servicePrincipal.AppId, "servicePrincipalId", servicePrincipal.Id, "count", count)
 			}
 		}()
 	}
