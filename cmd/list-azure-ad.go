@@ -81,6 +81,7 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 
 		servicePrincipals  = make(chan interface{})
 		servicePrincipals2 = make(chan interface{})
+		servicePrincipals3 = make(chan interface{})
 
 		tenants = make(chan interface{})
 	)
@@ -99,7 +100,7 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 	groupMembers := listGroupMembers(ctx, client, groups3)
 
 	// Enumerate ServicePrincipals and ServicePrincipalOwners
-	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2)
+	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2, servicePrincipals3)
 	servicePrincipalOwners := listServicePrincipalOwners(ctx, client, servicePrincipals2)
 
 	// Enumerate Tenants
@@ -112,8 +113,12 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 	pipeline.Tee(ctx.Done(), listRoles(ctx, client), roles, roles2)
 	roleAssignments := listRoleAssignments(ctx, client, roles2)
 
+	// Enumerate AppRoleAssignments
+	appRoleAssignments := listAppRoleAssignments(ctx, client, servicePrincipals3)
+
 	return pipeline.Mux(ctx.Done(),
 		appOwners,
+		appRoleAssignments,
 		apps,
 		deviceOwners,
 		devices,

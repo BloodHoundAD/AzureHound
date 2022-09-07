@@ -99,6 +99,7 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 
 		servicePrincipals  = make(chan interface{})
 		servicePrincipals2 = make(chan interface{})
+		servicePrincipals3 = make(chan interface{})
 
 		subscriptions  = make(chan interface{})
 		subscriptions2 = make(chan interface{})
@@ -157,7 +158,7 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 	resourceGroupUserAccessAdmins := listResourceGroupUserAccessAdmins(ctx, client, resourceGroups3)
 
 	// Enumerate ServicePrincipals and ServicePrincipalOwners
-	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2)
+	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2, servicePrincipals3)
 	servicePrincipalOwners := listServicePrincipalOwners(ctx, client, servicePrincipals2)
 
 	// Enumerate Tenants
@@ -181,8 +182,12 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 	virtualMachineUserAccessAdmins := listVirtualMachineUserAccessAdmins(ctx, client, vmRoleAssignments5)
 	virtualMachineVMContributors := listVirtualMachineVMContributors(ctx, client, vmRoleAssignments6)
 
+	// Enumerate AppRoleAssignments
+	appRoleAssignments := listAppRoleAssignments(ctx, client, servicePrincipals3)
+
 	return pipeline.Mux(ctx.Done(),
 		appOwners,
+		appRoleAssignments,
 		apps,
 		deviceOwners,
 		devices,
