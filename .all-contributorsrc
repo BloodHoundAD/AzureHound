@@ -64,6 +64,15 @@
         "code",
         "maintenance"
       ]
+    },
+    {
+      "login": "hugo-syn",
+      "name": "hugo-syn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61210734?v=4",
+      "profile": "https://github.com/hugo-syn",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7

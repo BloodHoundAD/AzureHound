@@ -1,6 +1,6 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 ## Contributors ✨
 
@@ -16,6 +16,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://blog.cptjesus.com/"><img src="https://avatars.githubusercontent.com/u/5720446?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Rohan Vazarkar</b></sub></a><br /><a href="https://github.com/BloodHoundAD/AzureHound/commits?author=rvazarkar" title="Code">💻</a> <a href="#maintenance-rvazarkar" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://ulises.io/"><img src="https://avatars.githubusercontent.com/u/16910931?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ulises Rangel</b></sub></a><br /><a href="https://github.com/BloodHoundAD/AzureHound/commits?author=urangel" title="Code">💻</a> <a href="#maintenance-urangel" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/joshgantt"><img src="https://avatars.githubusercontent.com/u/29784250?v=4?s=100" width="100px;" alt=""/><br /><sub><b>joshgantt</b></sub></a><br /><a href="https://github.com/BloodHoundAD/AzureHound/commits?author=joshgantt" title="Code">💻</a> <a href="#maintenance-joshgantt" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="https://github.com/hugo-syn"><img src="https://avatars.githubusercontent.com/u/61210734?v=4?s=100" width="100px;" alt=""/><br /><sub><b>hugo-syn</b></sub></a><br /><a href="https://github.com/BloodHoundAD/AzureHound/commits?author=hugo-syn" title="Code">💻</a></td>
   </tr>
 </table>
 
