@@ -270,7 +270,7 @@ var (
 	OutputFile = Config{
 		Name:       "output",
 		Shorthand:  "o",
-		Usage:      "",
+		Usage:      "The path to the file in which to output data",
 		Persistent: true,
 		Default:    "",
 	}
