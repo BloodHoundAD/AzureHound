@@ -33,7 +33,7 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listVirtualMachineVMContributorsCmd)
+	listRootCmd.AddCommand(listVirtualMachineRoleAssignmentsCmd)
 }
 
 var listVirtualMachineRoleAssignmentsCmd = &cobra.Command{
