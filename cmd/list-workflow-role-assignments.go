@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/client"
-	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
@@ -93,14 +92,8 @@ func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, 
 			defer wg.Done()
 			for id := range stream {
 				var (
-					workflowOwners = models.WorkflowOwners{
-						WorkflowId: id.(string),
-					}
-					workflowContributors = models.WorkflowContributors{
-						WorkflowId: id.(string),
-					}
-					workflowUserAccessAdmins = models.WorkflowUserAccessAdmins{
-						WorkflowId: id.(string),
+					workflowRoleAssignments = models.AzureRoleAssignments{
+						ObjectId: id.(string),
 					}
 					count = 0
 				)
@@ -110,48 +103,22 @@ func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, 
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.OwnerRoleID {
-							workflowOwner := models.WorkflowOwner{
-								Owner:      item.Ok,
-								WorkflowId: item.ParentId,
-							}
-							log.V(2).Info("found workflow owner", "workflowOwner", workflowOwner)
-							count++
-							workflowOwners.Owners = append(workflowOwners.Owners, workflowOwner)
-						} else if (roleDefinitionId == constants.ContributorRoleID) ||
-							(roleDefinitionId == constants.LogicAppContributorRoleID) {
-							workflowContributor := models.WorkflowContributor{
-								Contributor: item.Ok,
-								WorkflowId:  item.ParentId,
-							}
-							log.V(2).Info("found workflow contributor", "workflowContributor", workflowContributor)
-							count++
-							workflowContributors.Contributors = append(workflowContributors.Contributors, workflowContributor)
-						} else if roleDefinitionId == constants.UserAccessAdminRoleID {
-							workflowUserAccessAdmin := models.WorkflowUserAccessAdmin{
-								UserAccessAdmin: item.Ok,
-								WorkflowId:      item.ParentId,
-							}
-							log.V(2).Info("found workflow user access admin", "workflowUserAccessAdmin", workflowUserAccessAdmin)
-							count++
-							workflowUserAccessAdmins.UserAccessAdmins = append(workflowUserAccessAdmins.UserAccessAdmins, workflowUserAccessAdmin)
+						workflowRoleAssignment := models.AzureRoleAssignment{
+							Assignee:         item.Ok,
+							ObjectId:         item.ParentId,
+							RoleDefinitionId: roleDefinitionId,
 						}
+						log.V(2).Info("found workflow role assignment", "workflowRoleAssignment", workflowRoleAssignment)
+						count++
+						workflowRoleAssignments.RoleAssignments = append(workflowRoleAssignments.RoleAssignments, workflowRoleAssignment)
 					}
 				}
 				out <- []AzureWrapper{{
-					Kind: enums.KindAZWorkflowOwner,
-					Data: workflowOwners,
+					Kind: enums.KindAZWorkflowRoleAssignment,
+					Data: workflowRoleAssignments,
 				},
-					{
-						Kind: enums.KindAZWorkflowContributor,
-						Data: workflowContributors,
-					},
-					{
-						Kind: enums.KindAZWorkflowUserAccessAdmin,
-						Data: workflowUserAccessAdmins,
-					},
 				}
-				log.V(1).Info("finished listing workflow owners", "workflowId", id, "count", count)
+				log.V(1).Info("finished listing workflow role assignments", "workflowId", id, "count", count)
 			}
 		}()
 	}
@@ -159,7 +126,7 @@ func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, 
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all workflow owners")
+		log.Info("finished listing all workflow role assignments")
 	}()
 
 	return out
