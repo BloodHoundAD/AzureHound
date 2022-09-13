@@ -127,7 +127,7 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all automation account owners")
+		log.Info("finished listing all automation account role assignments")
 	}()
 
 	return out

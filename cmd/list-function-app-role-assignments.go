@@ -119,7 +119,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 						Data: functionAppRoleAssignments,
 					},
 				}
-				log.V(1).Info("finished listing function app owners", "functionAppId", id, "count", count)
+				log.V(1).Info("finished listing function app role assignments", "functionAppId", id, "count", count)
 			}
 		}()
 	}
@@ -127,7 +127,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all function app owners")
+		log.Info("finished listing all function app role assignments")
 	}()
 
 	return out

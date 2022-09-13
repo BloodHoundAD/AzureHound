@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/client"
-	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
@@ -93,20 +92,8 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 			defer wg.Done()
 			for id := range stream {
 				var (
-					storageAccountOwners = models.StorageAccountOwners{
-						StorageAccountId: id.(string),
-					}
-					storageAccountContributors = models.StorageAccountContributors{
-						StorageAccountId: id.(string),
-					}
-					storageAccountDataReaders = models.StorageAccountDataReaders{
-						StorageAccountId: id.(string),
-					}
-					storageAccountKeyOperators = models.StorageAccountKeyOperators{
-						StorageAccountId: id.(string),
-					}
-					storageAccountUserAccessAdmins = models.StorageAccountUserAccessAdmins{
-						StorageAccountId: id.(string),
+					storageAccountRoleAssignments = models.AzureRoleAssignments{
+						ObjectId: id.(string),
 					}
 					count = 0
 				)
@@ -116,80 +103,23 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.OwnerRoleID {
-							storageAccountOwner := models.StorageAccountOwner{
-								Owner:            item.Ok,
-								StorageAccountId: item.ParentId,
-							}
-							log.V(2).Info("found storage account owner", "storageAccountOwner", storageAccountOwner)
-							count++
-							storageAccountOwners.Owners = append(storageAccountOwners.Owners, storageAccountOwner)
-						} else if (roleDefinitionId == constants.ContributorRoleID) ||
-							(roleDefinitionId == constants.StorageAccountContributorRoleID) ||
-							(roleDefinitionId == constants.StorageBlobDataContributorRoleID) ||
-							(roleDefinitionId == constants.StorageQueueDataContributorRoleID) ||
-							(roleDefinitionId == constants.StorageBlobDataOwnerRoleID) {
-							storageAccountContributor := models.StorageAccountContributor{
-								Contributor:      item.Ok,
-								StorageAccountId: item.ParentId,
-							}
-							log.V(2).Info("found storage account contributor", "storageAccountContributor", storageAccountContributor)
-							count++
-							storageAccountContributors.Contributors = append(storageAccountContributors.Contributors, storageAccountContributor)
-						} else if (roleDefinitionId == constants.ReaderandDataAccessRoleID) ||
-							(roleDefinitionId == constants.StorageBlobDataReaderRoleID) ||
-							(roleDefinitionId == constants.StorageQueueDataMessageProcessorRoleID) ||
-							(roleDefinitionId == constants.StorageQueueDataReaderRoleID) ||
-							(roleDefinitionId == constants.StorageTableDataReaderRoleID) {
-							storageAccountDataReader := models.StorageAccountDataReader{
-								DataReader:       item.Ok,
-								StorageAccountId: item.ParentId,
-							}
-							log.V(2).Info("found storage account data-reader", "storageAccountDataReader", storageAccountDataReader)
-							count++
-							storageAccountDataReaders.DataReaders = append(storageAccountDataReaders.DataReaders, storageAccountDataReader)
-						} else if roleDefinitionId == constants.StorageAccountKeyOperatorServiceRoleID {
-							storageAccountKeyOperator := models.StorageAccountKeyOperator{
-								KeyOperator:      item.Ok,
-								StorageAccountId: item.ParentId,
-							}
-							log.V(2).Info("found storage account data-reader", "storageAccountKeyOperator", storageAccountKeyOperator)
-							count++
-							storageAccountKeyOperators.KeyOperators = append(storageAccountKeyOperators.KeyOperators, storageAccountKeyOperator)
-						} else if roleDefinitionId == constants.UserAccessAdminRoleID {
-							storageAccountUserAccessAdmin := models.StorageAccountUserAccessAdmin{
-								UserAccessAdmin:  item.Ok,
-								StorageAccountId: item.ParentId,
-							}
-							log.V(2).Info("found storage account user access admin", "storageAccountUserAccessAdmin", storageAccountUserAccessAdmin)
-							count++
-							storageAccountUserAccessAdmins.UserAccessAdmins = append(storageAccountUserAccessAdmins.UserAccessAdmins, storageAccountUserAccessAdmin)
+						storageAccountRoleAssignment := models.AzureRoleAssignment{
+							Assignee:         item.Ok,
+							ObjectId:         item.ParentId,
+							RoleDefinitionId: roleDefinitionId,
 						}
+						log.V(2).Info("found storage account role assignment", "storageAccountRoleAssignment", storageAccountRoleAssignment)
+						count++
+						storageAccountRoleAssignments.RoleAssignments = append(storageAccountRoleAssignments.RoleAssignments, storageAccountRoleAssignment)
 					}
 				}
 				out <- []AzureWrapper{
 					{
-						Kind: enums.KindAZStorageAccountOwner,
-						Data: storageAccountOwners,
-					},
-					{
-						Kind: enums.KindAZStorageAccountContributor,
-						Data: storageAccountContributors,
-					},
-					{
-						Kind: enums.KindAZStorageAccountDataReader,
-						Data: storageAccountDataReaders,
-					},
-					{
-						Kind: enums.KindAZStorageAccountKeyOperator,
-						Data: storageAccountKeyOperators,
-					},
-					{
-						Kind: enums.KindAZStorageAccountUserAccessAdmin,
-						Data: storageAccountUserAccessAdmins,
+						Kind: enums.KindAZStorageAccountRoleAssignment,
+						Data: storageAccountRoleAssignments,
 					},
 				}
-				log.V(1).Info("finished listing storage account owners", "storageAccountId", id, "count", count)
+				log.V(1).Info("finished listing storage account role assignments", "storageAccountId", id, "count", count)
 			}
 		}()
 	}
@@ -197,7 +127,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all storage account owners")
+		log.Info("finished listing all storage account role assignments")
 	}()
 
 	return out
