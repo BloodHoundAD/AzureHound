@@ -17,16 +17,26 @@
 
 package azure
 
+import "github.com/bloodhoundad/azurehound/enums"
+
 type StorageContainerProperties struct {
-	// ImmutableStorageWithVersioning map[string]string `json:"immutableStorageWithVersioning,omitempty"`
-	Deleted                     bool   `json:"deleted,omitempty"`
-	RemainingRetentionDays      int    `json:"remainingRetentionDays,omitempty"`
-	DefaultEncryptionScope      string `json:"defaultEncryptionScope,omitempty"`
-	DenyEncryptionScopeOverride bool   `json:"denyEncryptionScopeOverride,omitempty"`
-	PublicAccess                string `json:"publicAccess,omitempty"`
-	LeaseStatus                 string `json:"leaseStatus,omitempty"`
-	LeaseState                  string `json:"leaseState,omitempty"`
-	LastModifiedTime            string `json:"lastModifiedTime,omitempty"`
-	HasImmutabilityPolicy       bool   `json:"hasImmutabilityPolicy,omitempty"`
-	HasLegalHold                bool   `json:"hasLegalHold,omitempty"`
+	DefaultEncryptionScope         string                         `json:"defaultEncryptionScope,omitempty"`
+	Deleted                        bool                           `json:"deleted,omitempty"`
+	DeletedTime                    string                         `json:"deletedTime,omitempty"`
+	DenyEncryptionScopeOverride    bool                           `json:"denyEncryptionScopeOverride,omitempty"`
+	EnableNfsV3AllSquash           bool                           `json:"enableNfsV3AllSquash,omitempty"`
+	EnableNfsV3RootSquash          bool                           `json:"enableNfsV3RootSquash,omitempty"`
+	HasImmutabilityPolicy          bool                           `json:"hasImmutabilityPolicy,omitempty"`
+	HasLegalHold                   bool                           `json:"hasLegalHold,omitempty"`
+	ImmutabilityPolicy             ImmutabilityPolicy             `json:"immutabilityPolicy,omitempty"`
+	ImmutableStorageWithVersioning ImmutableStorageWithVersioning `json:"immutableStorageWithVersioning,omitempty"`
+	LastModifiedTime               string                         `json:"lastModifiedTime,omitempty"`
+	LeaseDuration                  enums.LeaseDuration            `json:"leaseDuration,omitempty"`
+	LeaseState                     enums.LeaseState               `json:"leaseState,omitempty"`
+	LeaseStatus                    enums.LeaseStatus              `json:"leaseStatus,omitempty"`
+	LegalHold                      LegalHoldProperties            `json:"legalHold,omitempty"`
+	//metadata missing - not returned by the API
+	PublicAccess           enums.PublicAccess `json:"publicAccess,omitempty"`
+	RemainingRetentionDays int                `json:"remainingRetentionDays,omitempty"`
+	Version                string             `json:"version,omitempty"`
 }
