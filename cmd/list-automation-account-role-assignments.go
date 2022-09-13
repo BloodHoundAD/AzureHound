@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/client"
-	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
@@ -93,14 +92,8 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 			defer wg.Done()
 			for id := range stream {
 				var (
-					automationAccountOwners = models.AutomationAccountOwners{
-						AutomationAccountId: id.(string),
-					}
-					automationAccountContributors = models.AutomationAccountContributors{
-						AutomationAccountId: id.(string),
-					}
-					automationAccountUserAccessAdmins = models.AutomationAccountUserAccessAdmins{
-						AutomationAccountId: id.(string),
+					automationAccountRoleAssignments = models.AzureRoleAssignments{
+						ObjectId: id.(string),
 					}
 					count = 0
 				)
@@ -110,49 +103,23 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.OwnerRoleID {
-							automationAccountOwner := models.AutomationAccountOwner{
-								Owner:               item.Ok,
-								AutomationAccountId: item.ParentId,
-							}
-							log.V(2).Info("found automation account owner", "automationAccountOwner", automationAccountOwner)
-							count++
-							automationAccountOwners.Owners = append(automationAccountOwners.Owners, automationAccountOwner)
-						} else if (roleDefinitionId == constants.ContributorRoleID) ||
-							(roleDefinitionId == constants.AutomationContributorRoleID) {
-							automationAccountContributor := models.AutomationAccountContributor{
-								Contributor:         item.Ok,
-								AutomationAccountId: item.ParentId,
-							}
-							log.V(2).Info("found automation account contributor", "automationAccountContributor", automationAccountContributor)
-							count++
-							automationAccountContributors.Contributors = append(automationAccountContributors.Contributors, automationAccountContributor)
-						} else if roleDefinitionId == constants.UserAccessAdminRoleID {
-							automationAccountUserAccessAdmin := models.AutomationAccountUserAccessAdmin{
-								UserAccessAdmin:     item.Ok,
-								AutomationAccountId: item.ParentId,
-							}
-							log.V(2).Info("found automation account user access admin", "automationAccountUserAccessAdmin", automationAccountUserAccessAdmin)
-							count++
-							automationAccountUserAccessAdmins.UserAccessAdmins = append(automationAccountUserAccessAdmins.UserAccessAdmins, automationAccountUserAccessAdmin)
+						automationAccountRoleAssignment := models.AzureRoleAssignment{
+							Assignee:         item.Ok,
+							ObjectId:         item.ParentId,
+							RoleDefinitionId: roleDefinitionId,
 						}
+						log.V(2).Info("found automation account role assignment", "automationAccountRoleAssignment", automationAccountRoleAssignment)
+						count++
+						automationAccountRoleAssignments.RoleAssignments = append(automationAccountRoleAssignments.RoleAssignments, automationAccountRoleAssignment)
 					}
 				}
 				out <- []AzureWrapper{
 					{
-						Kind: enums.KindAZAutomationAccountOwner,
-						Data: automationAccountOwners,
-					},
-					{
-						Kind: enums.KindAZAutomationAccountContributor,
-						Data: automationAccountContributors,
-					},
-					{
-						Kind: enums.KindAZAutomationAccountUserAccessAdmin,
-						Data: automationAccountUserAccessAdmins,
+						Kind: enums.KindAZAutomationAccountRoleAssignment,
+						Data: automationAccountRoleAssignments,
 					},
 				}
-				log.V(1).Info("finished listing automation account owners", "automationAccountId", id, "count", count)
+				log.V(1).Info("finished listing automation account role assignments", "automationAccountId", id, "count", count)
 			}
 		}()
 	}

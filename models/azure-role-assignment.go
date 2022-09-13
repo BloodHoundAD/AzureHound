@@ -19,12 +19,13 @@ package models
 
 import "github.com/bloodhoundad/azurehound/models/azure"
 
-type AutomationAccountOwner struct {
-	Owner               azure.RoleAssignment `json:"owner"`
-	AutomationAccountId string               `json:"automationAccountId"`
+type AzureRoleAssignment struct {
+	Assignee         azure.RoleAssignment `json:"assignee"`
+	ObjectId         string               `json:"objectId"`
+	RoleDefinitionId string               `json:"roleDefinitionId"`
 }
 
-type AutomationAccountOwners struct {
-	Owners              []AutomationAccountOwner `json:"owners"`
-	AutomationAccountId string                   `json:"automationAccountId"`
+type AzureRoleAssignments struct {
+	RoleAssignments []AzureRoleAssignment `json:"assignees"`
+	ObjectId        string                `json:"objectId"`
 }
