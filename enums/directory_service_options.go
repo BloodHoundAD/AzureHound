@@ -17,10 +17,10 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type DirectoryServiceOptions string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	AADDSService DirectoryServiceOptions = "AADDS"
+	ADService    DirectoryServiceOptions = "AD"
+	NoService    DirectoryServiceOptions = "None"
 )

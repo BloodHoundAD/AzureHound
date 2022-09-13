@@ -17,10 +17,10 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type AccountImmutabilityPolicyState string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	DisabledState AccountImmutabilityPolicyState = "Disabled"
+	LockedState   AccountImmutabilityPolicyState = "Locked"
+	UnlockedState AccountImmutabilityPolicyState = "Unlocked"
 )

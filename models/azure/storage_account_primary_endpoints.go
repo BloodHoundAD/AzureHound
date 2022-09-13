@@ -17,11 +17,29 @@
 
 package azure
 
-type SAPrimaryEndpoints struct {
-	DFS   string `json:"dfs"`
-	Web   string `json:"web"`
-	Blob  string `json:"blob"`
-	Queue string `json:"queue"`
-	Table string `json:"table"`
-	File  string `json:"file"`
+type Endpoints struct {
+	Blob               string                           `json:"blob,omitempty"`
+	DFS                string                           `json:"dfs,omitempty"`
+	File               string                           `json:"file,omitempty"`
+	InternetEndpoints  StorageAccountInternetEndpoints  `json:"internetEndpoints,omitempty"`
+	MicrosoftEndpoints StorageAccountMicrosoftEndpoints `json:"microsoftEndpoints,omitempty"`
+	Queue              string                           `json:"queue,omitempty"`
+	Table              string                           `json:"table,omitempty"`
+	Web                string                           `json:"web,omitempty"`
+}
+
+type StorageAccountInternetEndpoints struct {
+	Blob string `json:"blob,omitempty"`
+	DFS  string `json:"dfs,omitempty"`
+	File string `json:"file,omitempty"`
+	Web  string `json:"web,omitempty"`
+}
+
+type StorageAccountMicrosoftEndpoints struct {
+	Blob  string `json:"blob,omitempty"`
+	DFS   string `json:"dfs,omitempty"`
+	File  string `json:"file,omitempty"`
+	Queue string `json:"queue,omitempty"`
+	Table string `json:"table,omitempty"`
+	Web   string `json:"web,omitempty"`
 }

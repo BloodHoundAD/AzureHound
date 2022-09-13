@@ -17,10 +17,9 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type GenericEnabledDisabled string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	Enabled  GenericEnabledDisabled = "Enabled"
+	Disabled GenericEnabledDisabled = "Disabled"
 )

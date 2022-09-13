@@ -17,10 +17,10 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type MinimumTlsVersion string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	TLS1_0 MinimumTlsVersion = "TLS1_0"
+	TLS1_1 MinimumTlsVersion = "TLS1_1"
+	TLS1_2 MinimumTlsVersion = "TLS1_2"
 )

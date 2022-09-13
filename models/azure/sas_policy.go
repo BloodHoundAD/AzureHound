@@ -15,12 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type EncryptionKeySourceType string
+type SasPolicy struct {
 
-const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
-)
+	//according to the documentation, this can only be the string "Log"
+	ExpirationAction    string `json:"expirationAction,omitempty"`
+	SasExpirationPeriod string `json:"sasExpirationPeriod,omitempty"`
+}

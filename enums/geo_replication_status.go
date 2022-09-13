@@ -17,10 +17,10 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type GeoReplicationStatus string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	BootstrapStatus GeoReplicationStatus = "Bootstrap"
+	LiveStatus      GeoReplicationStatus = "Live"
+	Unavailable     GeoReplicationStatus = "Unavailable"
 )

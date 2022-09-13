@@ -714,17 +714,17 @@ func (mr *MockAzureClientMockRecorder) ListAzureADUsers(arg0, arg1, arg2, arg3, 
 }
 
 // ListAzureAutomationAccounts mocks base method.
-func (m *MockAzureClient) ListAzureAutomationAccounts(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.AutomationAccountResult {
+func (m *MockAzureClient) ListAzureAutomationAccounts(arg0 context.Context, arg1 string) <-chan azure.AutomationAccountResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureAutomationAccounts", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListAzureAutomationAccounts", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.AutomationAccountResult)
 	return ret0
 }
 
 // ListAzureAutomationAccounts indicates an expected call of ListAzureAutomationAccounts.
-func (mr *MockAzureClientMockRecorder) ListAzureAutomationAccounts(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureAutomationAccounts(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureAutomationAccounts", reflect.TypeOf((*MockAzureClient)(nil).ListAzureAutomationAccounts), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureAutomationAccounts", reflect.TypeOf((*MockAzureClient)(nil).ListAzureAutomationAccounts), arg0, arg1)
 }
 
 // ListAzureDeviceRegisteredOwners mocks base method.

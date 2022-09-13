@@ -17,10 +17,10 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type ProvisioningState string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	CreatingState     ProvisioningState = "Creating"
+	ResolvingDNSState ProvisioningState = "ResolvingDNS"
+	SucceededState    ProvisioningState = "Succeeded"
 )

@@ -15,12 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type EncryptionKeySourceType string
+import "github.com/bloodhoundad/azurehound/enums"
 
-const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
-)
+type RoutingPreference struct {
+	PublishInternetEndpoints  bool                `json:"publishInternetEndpoints,omitempty"`
+	PublishMicrosoftEndpoints bool                `json:"publishMicrosoftEndpoints,omitempty"`
+	RoutingChoice             enums.RoutingChoice `json:"routingChoice,omitempty"`
+}

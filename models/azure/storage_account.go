@@ -22,12 +22,15 @@ import "strings"
 type StorageAccount struct {
 	Entity
 
-	Location   string                   `json:"location,omitempty"`
-	Name       string                   `json:"name,omitempty"`
-	Properties StorageAccountProperties `json:"properties,omitempty"`
-	Tags       map[string]string        `json:"tags,omitempty"`
-	Type       string                   `json:"type,omitempty"`
-	Kind       string                   `json:"kind,omitempty"`
+	ExtendedLocation ExtendedLocation         `json:"extendedLocation,omitempty"`
+	Identity         ManagedIdentity          `json:"identity,omitempty"`
+	Kind             string                   `json:"kind,omitempty"`
+	Location         string                   `json:"location,omitempty"`
+	Name             string                   `json:"name,omitempty"`
+	Properties       StorageAccountProperties `json:"properties,omitempty"`
+	Sku              Sku                      `json:"sku,omitempty"`
+	Tags             map[string]string        `json:"tags,omitempty"`
+	Type             string                   `json:"type,omitempty"`
 }
 
 func (s StorageAccount) ResourceGroupName() string {

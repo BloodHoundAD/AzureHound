@@ -15,12 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type EncryptionKeySourceType string
+import "github.com/bloodhoundad/azurehound/enums"
 
-const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
-)
+type BlobRestoreStatus struct {
+	FailureReason string                          `json:"failureReason,omitempty"`
+	Parameters    BlobRestoreParameters           `json:"parameters,omitempty"`
+	RestoreId     string                          `json:"restoreId,omitempty"`
+	Status        enums.BlobRestoreProgressStatus `json:"status,omitempty"`
+}
+
+type BlobRestoreParameters struct {
+	BlobRanges    []BlobRestoreRange `json:"blobRanges,omitempty"`
+	TimeToRestore string             `json:"timeToRestore,omitempty"`
+}
+
+type BlobRestoreRange struct {
+	EndRange   string `json:"endRange,omitempty"`
+	StartRange string `json:"startRange,omitempty"`
+}

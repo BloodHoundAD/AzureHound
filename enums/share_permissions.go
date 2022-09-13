@@ -17,10 +17,11 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type DefaultSharePermission string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	NoPermission             DefaultSharePermission = "None"
+	ShareContributor         DefaultSharePermission = "StorageFileDataSmbShareContributor"
+	ShareElevatedContributor DefaultSharePermission = "StorageFileDataSmbShareElevatedContributor"
+	ShareReader              DefaultSharePermission = "StorageFileDataSmbShareReader"
 )

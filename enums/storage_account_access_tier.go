@@ -17,10 +17,10 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type StorageAccountAccessTier string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	CoolAccessTier    StorageAccountAccessTier = "Cool"
+	HotAccessTier     StorageAccountAccessTier = "Hot"
+	PremiumAccessTier StorageAccountAccessTier = "Premium"
 )

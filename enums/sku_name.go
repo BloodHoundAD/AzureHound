@@ -17,10 +17,15 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type SkuName string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	SKU_Premium_LRS     SkuName = "Premium_LRS"
+	SKU_Premium_ZRS     SkuName = "Premium_ZRS"
+	SKU_Standard_GRS    SkuName = "Standard_GRS"
+	SKU_Standard_GZRS   SkuName = "Standard_GZRS"
+	SKU_Standard_LRS    SkuName = "Standard_LRS"
+	SKU_Standard_RAGRS  SkuName = "Standard_RAGRS"
+	SKU_Standard_RAGZRS SkuName = "Standard_RAGZRS"
+	SKU_Standard_ZRS    SkuName = "Standard_ZRS"
 )

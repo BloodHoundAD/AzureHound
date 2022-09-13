@@ -17,10 +17,10 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type BlobRestoreProgressStatus string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	CompletedStatus BlobRestoreProgressStatus = "Complete"
+	FailedStatus    BlobRestoreProgressStatus = "Failed"
+	InProgress      BlobRestoreProgressStatus = "InProgress"
 )

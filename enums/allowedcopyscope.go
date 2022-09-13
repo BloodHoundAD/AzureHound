@@ -17,10 +17,9 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type AllowedCopyScope string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	AADScope         AllowedCopyScope = "AAD"
+	PrivateLinkScope AllowedCopyScope = "PrivateLink"
 )

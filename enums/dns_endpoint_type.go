@@ -17,10 +17,9 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type DnsEndpointType string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	AzureDnsZone DnsEndpointType = "AzureDnsZone"
+	StandardZone DnsEndpointType = "Standard"
 )

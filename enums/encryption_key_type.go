@@ -17,10 +17,9 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type EncryptionKeyType string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	AccountKeyType EncryptionKeyType = "Account"
+	ServiceKeyType EncryptionKeyType = "Service"
 )

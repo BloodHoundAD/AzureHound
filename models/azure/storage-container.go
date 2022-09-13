@@ -22,7 +22,7 @@ import "strings"
 type StorageContainer struct {
 	Entity
 
-	Location   string                     `json:"location,omitempty"`
+	Type       string                     `json:"type,omitempty"`
 	Name       string                     `json:"name,omitempty"`
 	Etag       string                     `json:"etag,omitempty"`
 	Properties StorageContainerProperties `json:"properties,omitempty"`

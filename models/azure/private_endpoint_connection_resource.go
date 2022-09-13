@@ -15,12 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type EncryptionKeySourceType string
-
-const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
-)
+// Private endpoint connection item.
+type PrivateEndpointConnectionResource struct {
+	Id         string                   `json:"id"`
+	Name       string                   `json:"name,omitempty"`
+	Properties ConnectionItemProperties `json:"properties"`
+	Type       string                   `json:"type,omitempty"`
+}

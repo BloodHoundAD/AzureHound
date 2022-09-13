@@ -17,19 +17,45 @@
 
 package azure
 
-type EncryptionProperties struct {
-	Identity           ManagedIdentity         `json:"identity,omitempty"`
-	KeySource          EncryptionKeySourceType `json:"keySource,omitempty"`
-	KeyVaultProperties KeyVaultProperties      `json:"keyVaultProperties,omitempty"`
+import "github.com/bloodhoundad/azurehound/enums"
+
+type AutomationAccountEncryptionProperties struct {
+	Identity           ManagedIdentity               `json:"identity,omitempty"`
+	KeySource          enums.EncryptionKeySourceType `json:"keySource,omitempty"`
+	KeyVaultProperties KeyVaultProperties            `json:"keyVaultProperties,omitempty"`
 }
 
-type EncryptionKeySourceType struct {
-	Automation string `json:"Microsoft.Automation,omitempty"`
-	Keyvault   string `json:"Microsoft.Keyvault,omitempty"`
+type StorageAccountEncryptionProperties struct {
+	Identity                        StorageAccountEncryptionIdentity `json:"identity,omitempty"`
+	KeySource                       enums.EncryptionKeySourceType    `json:"keySource,omitempty"`
+	Keyvaultproperties              KeyVaultProperties               `json:"keyvaultproperties,omitempty"`
+	RequireInfrastructureEncryption bool                             `json:"requireInfrastructureEncryption,omitempty"`
+	Services                        EncryptionServices               `json:"services,omitempty"`
 }
 
 type KeyVaultProperties struct {
-	KeyName     string `json:"keyName,omitempty"`
-	KeyVersion  string `json:"keyVersion,omitempty"`
-	KeyvaultUri string `json:"keyvaultUri,omitempty"`
+	CurrentVersionedKeyExpirationTimestamp string `json:"currentVersionedKeyExpirationTimestamp,omitempty"`
+	CurrentVersionedKeyIdentifier          string `json:"currentVersionedKeyIdentifier,omitempty"`
+	KeyName                                string `json:"keyName,omitempty"`
+	KeyVersion                             string `json:"keyVersion,omitempty"`
+	KeyvaultUri                            string `json:"keyvaultUri,omitempty"`
+	LastKeyRotationTimestamp               string `json:"lastKeyRotationTimestamp,omitempty"`
+}
+
+type StorageAccountEncryptionIdentity struct {
+	FederatedIdentityClientId string `json:"federatedIdentityClientId,omitempty"`
+	UserAssignedIdentity      string `json:"userAssignedIdentity,omitempty"`
+}
+
+type EncryptionServices struct {
+	Blob  EncryptionService `json:"blob,omitempty"`
+	File  EncryptionService `json:"file,omitempty"`
+	Queue EncryptionService `json:"queue,omitempty"`
+	Table EncryptionService `json:"table,omitempty"`
+}
+
+type EncryptionService struct {
+	Enabled         bool                    `json:"enabled,omitempty"`
+	KeyType         enums.EncryptionKeyType `json:"keyType,omitempty"`
+	LastEnabledTime string                  `json:"lastEnabledTime,omitempty"`
 }

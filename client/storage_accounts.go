@@ -118,10 +118,10 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 // Storage containers
 // ==
 
-func (s *azureClient) GetAzureStorageContainer(ctx context.Context, subscriptionId, groupName, saName, scName, expand string) (*azure.StorageContainer, error) {
+func (s *azureClient) GetAzureStorageContainer(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, scName string, filter string, includeDeleted string, maxPageSize string) (*azure.StorageContainer, error) {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers/%s", subscriptionId, groupName, saName, scName)
-		params   = query.Params{ApiVersion: "2022-05-01", Expand: expand}.AsMap()
+		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers/%s", subscriptionId, resourceGroupName, saName, scName)
+		params   = query.Params{ApiVersion: "2022-05-01", Filter: filter, IncludeDeleted: includeDeleted, MaxPageSize: maxPageSize}.AsMap()
 		headers  map[string]string
 		response azure.StorageContainer
 	)

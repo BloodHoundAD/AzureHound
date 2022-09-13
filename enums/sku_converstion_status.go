@@ -17,10 +17,10 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type SkuConversionStatus string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	FailedConversionStatus     SkuConversionStatus = "Failed"
+	InProgressConversionStatus SkuConversionStatus = "InProgress"
+	SucceededConversionStatus  SkuConversionStatus = "Succeeded"
 )

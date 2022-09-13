@@ -17,10 +17,9 @@
 
 package enums
 
-type EncryptionKeySourceType string
+type RoutingChoice string
 
 const (
-	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
-	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault"
-	StorageSource    EncryptionKeySourceType = "Microsoft.Storage"
+	InternetRouting  RoutingChoice = "InternetRouting"
+	MicrosoftRouting RoutingChoice = "MicrosoftRouting"
 )
