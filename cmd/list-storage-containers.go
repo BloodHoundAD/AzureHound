@@ -91,7 +91,7 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 			defer wg.Done()
 			for stAccount := range stream {
 				count := 0
-				for item := range client.ListAzureStorageContainers(ctx, stAccount.(models.StorageAccount).SubscriptionId, stAccount.(models.StorageAccount).ResourceGroupName, stAccount.(models.StorageAccount).Name, false) {
+				for item := range client.ListAzureStorageContainers(ctx, stAccount.(models.StorageAccount).SubscriptionId, stAccount.(models.StorageAccount).ResourceGroupName, stAccount.(models.StorageAccount).Name, "", "deleted", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing storage containers for this subscription", "subscriptionId", stAccount.(models.StorageAccount).SubscriptionId, "storageAccountName", stAccount.(models.StorageAccount).Name)
 					} else {

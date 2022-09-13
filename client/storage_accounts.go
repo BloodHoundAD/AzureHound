@@ -43,10 +43,10 @@ func (s *azureClient) GetAzureStorageAccount(ctx context.Context, subscriptionId
 	}
 }
 
-func (s *azureClient) GetAzureStorageAccounts(ctx context.Context, subscriptionId string, statusOnly bool) (azure.StorageAccountList, error) {
+func (s *azureClient) GetAzureStorageAccounts(ctx context.Context, subscriptionId string) (azure.StorageAccountList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Storage/storageAccounts", subscriptionId)
-		params   = query.Params{ApiVersion: "2022-05-01", StatusOnly: statusOnly}.AsMap()
+		params   = query.Params{ApiVersion: "2022-05-01"}.AsMap()
 		headers  map[string]string
 		response azure.StorageAccountList
 	)
@@ -59,7 +59,7 @@ func (s *azureClient) GetAzureStorageAccounts(ctx context.Context, subscriptionI
 	}
 }
 
-func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.StorageAccountResult {
+func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscriptionId string) <-chan azure.StorageAccountResult {
 	out := make(chan azure.StorageAccountResult)
 
 	go func() {
@@ -72,7 +72,7 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 			nextLink string
 		)
 
-		if result, err := s.GetAzureStorageAccounts(ctx, subscriptionId, statusOnly); err != nil {
+		if result, err := s.GetAzureStorageAccounts(ctx, subscriptionId); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {
@@ -134,10 +134,10 @@ func (s *azureClient) GetAzureStorageContainer(ctx context.Context, subscription
 	}
 }
 
-func (s *azureClient) GetAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, statusOnly bool) (azure.StorageContainerList, error) {
+func (s *azureClient) GetAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) (azure.StorageContainerList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers", subscriptionId, resourceGroupName, saName)
-		params   = query.Params{ApiVersion: "2022-05-01", StatusOnly: statusOnly}.AsMap()
+		params   = query.Params{ApiVersion: "2022-05-01", Filter: filter, IncludeDeleted: includeDeleted, MaxPageSize: maxPageSize}.AsMap()
 		headers  map[string]string
 		response azure.StorageContainerList
 	)
@@ -150,7 +150,7 @@ func (s *azureClient) GetAzureStorageContainers(ctx context.Context, subscriptio
 	}
 }
 
-func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, statusOnly bool) <-chan azure.StorageContainerResult {
+func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) <-chan azure.StorageContainerResult {
 	out := make(chan azure.StorageContainerResult)
 
 	go func() {
@@ -163,7 +163,7 @@ func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscripti
 			nextLink string
 		)
 
-		if result, err := s.GetAzureStorageContainers(ctx, subscriptionId, resourceGroupName, saName, statusOnly); err != nil {
+		if result, err := s.GetAzureStorageContainers(ctx, subscriptionId, resourceGroupName, saName, filter, includeDeleted, maxPageSize); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {
