@@ -43,10 +43,10 @@ func (s *azureClient) GetAzureAutomationAccount(ctx context.Context, subscriptio
 	}
 }
 
-func (s *azureClient) GetAzureAutomationAccounts(ctx context.Context, subscriptionId string, statusOnly bool) (azure.AutomationAccountList, error) {
+func (s *azureClient) GetAzureAutomationAccounts(ctx context.Context, subscriptionId string) (azure.AutomationAccountList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Automation/automationAccounts", subscriptionId)
-		params   = query.Params{ApiVersion: "2021-06-22", StatusOnly: statusOnly}.AsMap()
+		params   = query.Params{ApiVersion: "2021-06-22"}.AsMap()
 		headers  map[string]string
 		response azure.AutomationAccountList
 	)
@@ -60,7 +60,7 @@ func (s *azureClient) GetAzureAutomationAccounts(ctx context.Context, subscripti
 	}
 }
 
-func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.AutomationAccountResult {
+func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscriptionId string) <-chan azure.AutomationAccountResult {
 	out := make(chan azure.AutomationAccountResult)
 
 	go func() {
@@ -73,7 +73,7 @@ func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscript
 			nextLink string
 		)
 
-		if result, err := s.GetAzureAutomationAccounts(ctx, subscriptionId, statusOnly); err != nil {
+		if result, err := s.GetAzureAutomationAccounts(ctx, subscriptionId); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {

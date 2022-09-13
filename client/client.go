@@ -154,7 +154,7 @@ type AzureClient interface {
 	ListAzureVirtualMachines(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.VirtualMachineResult
 	ListAzureStorageAccounts(ctx context.Context, subscriptionId string) <-chan azure.StorageAccountResult
 	ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) <-chan azure.StorageContainerResult
-	ListAzureAutomationAccounts(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.AutomationAccountResult
+	ListAzureAutomationAccounts(ctx context.Context, subscriptionId string) <-chan azure.AutomationAccountResult
 	ListAzureWorkflows(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.WorkflowResult
 	ListAzureFunctionApps(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.FunctionAppResult
 	ListResourceRoleAssignments(ctx context.Context, subscriptionId string, filter string, expand string) <-chan azure.RoleAssignmentResult

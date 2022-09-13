@@ -22,11 +22,14 @@ import "strings"
 type AutomationAccount struct {
 	Entity
 
-	Location string            `json:"location,omitempty"`
-	Name     string            `json:"name,omitempty"`
-	Identity ManagedIdentity   `json:"identity,omitempty"`
-	Tags     map[string]string `json:"tags,omitempty"`
-	Type     string            `json:"type,omitempty"`
+	Etag       string                      `json:"etag,omitempty"`
+	Identity   ManagedIdentity             `json:"identity,omitempty"`
+	Location   string                      `json:"location,omitempty"`
+	Name       string                      `json:"name,omitempty"`
+	Properties AutomationAccountProperties `json:"properties,omitempty"`
+	SystemData AutomationAccountSystemData `json:"systemData,omitempty"`
+	Tags       map[string]string           `json:"tags,omitempty"`
+	Type       string                      `json:"type,omitempty"`
 }
 
 func (s AutomationAccount) ResourceGroupName() string {
