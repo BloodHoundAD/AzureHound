@@ -72,7 +72,5 @@ const (
 	KindAZWorkflowContributor             Kind = "AZWorkflowContributor"
 	KindAZWorkflowUserAccessAdmin         Kind = "AZWorkflowUserAccessAdmin"
 	KindAZFunctionApp                     Kind = "AZFunctionApp"
-	KindAZFunctionAppOwner                Kind = "AZFunctionAppOwner"
-	KindAZFunctionAppContributor          Kind = "AZFunctionAppContributor"
-	KindAZFunctionAppUserAccessAdmin      Kind = "AZFunctionAppUserAccessAdmin"
+	KindAZFunctionAppRoleAssignment       Kind = "AZFunctionAppRoleAssignment"
 )

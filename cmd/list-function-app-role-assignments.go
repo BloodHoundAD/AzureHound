@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/client"
-	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
@@ -93,14 +92,8 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 			defer wg.Done()
 			for id := range stream {
 				var (
-					functionAppOwners = models.FunctionAppOwners{
-						FunctionAppId: id.(string),
-					}
-					functionAppContributors = models.FunctionAppContributors{
-						FunctionAppId: id.(string),
-					}
-					functionAppUserAccessAdmins = models.FunctionAppUserAccessAdmins{
-						FunctionAppId: id.(string),
+					functionAppRoleAssignments = models.AzureRoleAssignments{
+						ObjectId: id.(string),
 					}
 					count = 0
 				)
@@ -110,46 +103,20 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.OwnerRoleID {
-							functionAppOwner := models.FunctionAppOwner{
-								Owner:         item.Ok,
-								FunctionAppId: item.ParentId,
-							}
-							log.V(2).Info("found function app owner", "functionAppOwner", functionAppOwner)
-							count++
-							functionAppOwners.Owners = append(functionAppOwners.Owners, functionAppOwner)
-						} else if (roleDefinitionId == constants.ContributorRoleID) ||
-							(roleDefinitionId == constants.WebsiteContributorRoleID) {
-							functionAppContributor := models.FunctionAppContributor{
-								Contributor:   item.Ok,
-								FunctionAppId: item.ParentId,
-							}
-							log.V(2).Info("found function app contributor", "functionAppContributor", functionAppContributor)
-							count++
-							functionAppContributors.Contributors = append(functionAppContributors.Contributors, functionAppContributor)
-						} else if roleDefinitionId == constants.UserAccessAdminRoleID {
-							functionAppUserAccessAdmin := models.FunctionAppUserAccessAdmin{
-								UserAccessAdmin: item.Ok,
-								FunctionAppId:   item.ParentId,
-							}
-							log.V(2).Info("found function app user access admin", "functionAppUserAccessAdmin", functionAppUserAccessAdmin)
-							count++
-							functionAppUserAccessAdmins.UserAccessAdmins = append(functionAppUserAccessAdmins.UserAccessAdmins, functionAppUserAccessAdmin)
+						functionAppRoleAssignment := models.AzureRoleAssignment{
+							Assignee:         item.Ok,
+							ObjectId:         item.ParentId,
+							RoleDefinitionId: roleDefinitionId,
 						}
+						log.V(2).Info("Found function app role asignment", "functionAppRoleAssignment", functionAppRoleAssignment)
+						count++
+						functionAppRoleAssignments.RoleAssignments = append(functionAppRoleAssignments.RoleAssignments, functionAppRoleAssignment)
 					}
 				}
 				out <- []AzureWrapper{
 					{
-						Kind: enums.KindAZFunctionAppOwner,
-						Data: functionAppOwners,
-					},
-					{
-						Kind: enums.KindAZFunctionAppContributor,
-						Data: functionAppContributors,
-					},
-					{
-						Kind: enums.KindAZFunctionAppUserAccessAdmin,
-						Data: functionAppUserAccessAdmins,
+						Kind: enums.KindAZFunctionAppRoleAssignment,
+						Data: functionAppRoleAssignments,
 					},
 				}
 				log.V(1).Info("finished listing function app owners", "functionAppId", id, "count", count)
