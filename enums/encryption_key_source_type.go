@@ -15,15 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package azure
+package enums
 
-import "github.com/bloodhoundad/azurehound/enums"
+type EncryptionKeySourceType string
 
-type AutomationAccountSystemData struct {
-	CreatedAt          string                              `json:"createdAt,omitempty"`
-	CreatedBy          string                              `json:"createdBy,omitempty"`
-	CreatedByType      enums.AutomationAccountIdentityType `json:"createdByType,omitempty"`
-	LastModifiedAt     string                              `json:"lastModifiedAt,omitempty"`
-	LastModifiedBy     string                              `json:"lastModifiedBy,omitempty"`
-	LastModifiedByType enums.AutomationAccountIdentityType `json:"lastModifiedByType,omitempty"`
-}
+const (
+	AutomationSource EncryptionKeySourceType = "Microsoft.Automation"
+	KeyvaultSource   EncryptionKeySourceType = "Microsoft.Keyvault "
+)

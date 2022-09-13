@@ -19,6 +19,7 @@ package azure
 
 import "strings"
 
+// Mapped according to https://docs.microsoft.com/en-us/rest/api/automation/automation-account/get?tabs=HTTP#automationaccount
 type AutomationAccount struct {
 	Entity
 
