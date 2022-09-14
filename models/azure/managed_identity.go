@@ -19,6 +19,9 @@ package azure
 
 import "github.com/bloodhoundad/azurehound/enums"
 
+// Deprecated, use ManagedIdentity
+type VirtualMachineIdentity ManagedIdentity
+
 // Managed identity.
 type ManagedIdentity struct {
 	// The principal id of the managed identity. The property will only be provided for a system assigned
