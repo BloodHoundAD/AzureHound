@@ -35,8 +35,8 @@ type StorageContainerProperties struct {
 	LeaseState                     enums.LeaseState               `json:"leaseState,omitempty"`
 	LeaseStatus                    enums.LeaseStatus              `json:"leaseStatus,omitempty"`
 	LegalHold                      LegalHoldProperties            `json:"legalHold,omitempty"`
-	//metadata missing - not returned by the API
-	PublicAccess           enums.PublicAccess `json:"publicAccess,omitempty"`
-	RemainingRetentionDays int                `json:"remainingRetentionDays,omitempty"`
-	Version                string             `json:"version,omitempty"`
+	Metadata                       interface{}                    `json:"metadata,omitempty"`
+	PublicAccess                   enums.PublicAccess             `json:"publicAccess,omitempty"`
+	RemainingRetentionDays         int                            `json:"remainingRetentionDays,omitempty"`
+	Version                        string                         `json:"version,omitempty"`
 }
