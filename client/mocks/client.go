@@ -882,17 +882,17 @@ func (mr *MockAzureClientMockRecorder) ListAzureVirtualMachines(arg0, arg1, arg2
 }
 
 // ListAzureWorkflows mocks base method.
-func (m *MockAzureClient) ListAzureWorkflows(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.WorkflowResult {
+func (m *MockAzureClient) ListAzureWorkflows(arg0 context.Context, arg1, arg2 string, arg3 int32) <-chan azure.WorkflowResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureWorkflows", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListAzureWorkflows", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(<-chan azure.WorkflowResult)
 	return ret0
 }
 
 // ListAzureWorkflows indicates an expected call of ListAzureWorkflows.
-func (mr *MockAzureClientMockRecorder) ListAzureWorkflows(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureWorkflows(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureWorkflows", reflect.TypeOf((*MockAzureClient)(nil).ListAzureWorkflows), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureWorkflows", reflect.TypeOf((*MockAzureClient)(nil).ListAzureWorkflows), arg0, arg1, arg2, arg3)
 }
 
 // ListResourceRoleAssignments mocks base method.

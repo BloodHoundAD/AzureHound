@@ -22,11 +22,12 @@ import "strings"
 type Workflow struct {
 	Entity
 
-	Location string            `json:"location,omitempty"`
-	Name     string            `json:"name,omitempty"`
-	Identity ManagedIdentity   `json:"identity,omitempty"`
-	Tags     map[string]string `json:"tags,omitempty"`
-	Type     string            `json:"type,omitempty"`
+	Identity   ManagedIdentity    `json:"identity,omitempty"`
+	Location   string             `json:"location,omitempty"`
+	Name       string             `json:"name,omitempty"`
+	Properties WorkflowProperties `json:"properties,omitempty"`
+	Tags       map[string]string  `json:"tags,omitempty"`
+	Type       string             `json:"type,omitempty"`
 }
 
 func (s Workflow) ResourceGroupName() string {

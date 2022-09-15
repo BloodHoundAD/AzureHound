@@ -43,10 +43,10 @@ func (s *azureClient) GetAzureWorkflow(ctx context.Context, subscriptionId, grou
 	}
 }
 
-func (s *azureClient) GetAzureWorkflows(ctx context.Context, subscriptionId string, statusOnly bool) (azure.WorkflowList, error) {
+func (s *azureClient) GetAzureWorkflows(ctx context.Context, subscriptionId string, filter string, top int32) (azure.WorkflowList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Logic/workflows", subscriptionId)
-		params   = query.Params{ApiVersion: "2016-06-01", StatusOnly: statusOnly}.AsMap()
+		params   = query.Params{ApiVersion: "2016-06-01", Filter: filter, Top: top}.AsMap()
 		headers  map[string]string
 		response azure.WorkflowList
 	)
@@ -60,7 +60,7 @@ func (s *azureClient) GetAzureWorkflows(ctx context.Context, subscriptionId stri
 	}
 }
 
-func (s *azureClient) ListAzureWorkflows(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.WorkflowResult {
+func (s *azureClient) ListAzureWorkflows(ctx context.Context, subscriptionId string, filter string, top int32) <-chan azure.WorkflowResult {
 	out := make(chan azure.WorkflowResult)
 
 	go func() {
@@ -73,7 +73,7 @@ func (s *azureClient) ListAzureWorkflows(ctx context.Context, subscriptionId str
 			nextLink string
 		)
 
-		if result, err := s.GetAzureWorkflows(ctx, subscriptionId, statusOnly); err != nil {
+		if result, err := s.GetAzureWorkflows(ctx, subscriptionId, filter, top); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {
