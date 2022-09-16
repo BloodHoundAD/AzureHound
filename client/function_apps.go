@@ -43,10 +43,10 @@ func (s *azureClient) GetAzureFunctionApp(ctx context.Context, subscriptionId, g
 	}
 }
 
-func (s *azureClient) GetAzureFunctionApps(ctx context.Context, subscriptionId string, statusOnly bool) (azure.FunctionAppList, error) {
+func (s *azureClient) GetAzureFunctionApps(ctx context.Context, subscriptionId string) (azure.FunctionAppList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Web/sites", subscriptionId)
-		params   = query.Params{ApiVersion: "2022-03-01", StatusOnly: statusOnly}.AsMap()
+		params   = query.Params{ApiVersion: "2022-03-01"}.AsMap()
 		headers  map[string]string
 		response azure.FunctionAppList
 	)
@@ -60,7 +60,7 @@ func (s *azureClient) GetAzureFunctionApps(ctx context.Context, subscriptionId s
 	}
 }
 
-func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.FunctionAppResult {
+func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId string) <-chan azure.FunctionAppResult {
 	out := make(chan azure.FunctionAppResult)
 
 	go func() {
@@ -73,7 +73,7 @@ func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId 
 			nextLink string
 		)
 
-		if result, err := s.GetAzureFunctionApps(ctx, subscriptionId, statusOnly); err != nil {
+		if result, err := s.GetAzureFunctionApps(ctx, subscriptionId); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {

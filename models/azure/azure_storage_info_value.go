@@ -15,16 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type MinimumTlsVersion string
-type SupportedTlsVersions string
+import "github.com/bloodhoundad/azurehound/enums"
 
-const (
-	TLS1_0 MinimumTlsVersion    = "TLS1_0"
-	TLS1_1 MinimumTlsVersion    = "TLS1_1"
-	TLS1_2 MinimumTlsVersion    = "TLS1_2"
-	TLS10  SupportedTlsVersions = "1.0"
-	TLS11  SupportedTlsVersions = "1.1"
-	TLS12  SupportedTlsVersions = "1.2"
-)
+type AzureStorageInfoValue struct {
+	AccessKey   string                  `json:"accessKey,omitempty"`
+	AccountName string                  `json:"accountName,omitempty"`
+	MountPath   string                  `json:"mountPath,omitempty"`
+	ShareName   string                  `json:"shareName,omitempty"`
+	State       enums.AzureStorageState `json:"state,omitempty"`
+	Type        enums.AzureStorageType  `json:"type,omitempty"`
+}

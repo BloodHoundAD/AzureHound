@@ -15,16 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type MinimumTlsVersion string
-type SupportedTlsVersions string
+type VirtualApplication struct {
+	PhysicalPath       string             `json:"physicalPath,omitempty"`
+	PreloadEnabled     bool               `json:"preloadEnabled,omitempty"`
+	VirtualDirectories []VirtualDirectory `json:"virtualDirectories,omitempty"`
+	VirtualPath        string             `json:"virtualPath,omitempty"`
+}
 
-const (
-	TLS1_0 MinimumTlsVersion    = "TLS1_0"
-	TLS1_1 MinimumTlsVersion    = "TLS1_1"
-	TLS1_2 MinimumTlsVersion    = "TLS1_2"
-	TLS10  SupportedTlsVersions = "1.0"
-	TLS11  SupportedTlsVersions = "1.1"
-	TLS12  SupportedTlsVersions = "1.2"
-)
+type VirtualDirectory struct {
+	PhysicalPath string `json:"physicalPath,omitempty"`
+	VirtualPath  string `json:"virtualPath,omitempty"`
+}

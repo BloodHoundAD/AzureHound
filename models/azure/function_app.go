@@ -22,12 +22,14 @@ import "strings"
 type FunctionApp struct {
 	Entity
 
-	Location   string                `json:"location,omitempty"`
-	Name       string                `json:"name,omitempty"`
-	Identity   ManagedIdentity       `json:"identity,omitempty"`
-	Tags       map[string]string     `json:"tags,omitempty"`
-	Type       string                `json:"type,omitempty"`
-	Properties FunctionAppProperties `json:"properties,omitempty"`
+	ExtendedLocation ExtendedLocation      `json:"extendedLocation,omitempty"`
+	Identity         ManagedIdentity       `json:"identity,omitempty"`
+	Kind             string                `json:"kind,omitempty"`
+	Location         string                `json:"location,omitempty"`
+	Name             string                `json:"name,omitempty"`
+	Properties       FunctionAppProperties `json:"properties,omitempty"`
+	Tags             map[string]string     `json:"tags,omitempty"`
+	Type             string                `json:"type,omitempty"`
 }
 
 func (s FunctionApp) ResourceGroupName() string {

@@ -15,16 +15,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type MinimumTlsVersion string
-type SupportedTlsVersions string
+type PushSettings struct {
+	Id         string                 `json:"id,omitempty"`
+	Kind       string                 `json:"kind,omitempty"`
+	Name       string                 `json:"name,omitempty"`
+	Properties PushSettingsProperties `json:"properties,omitempty"`
+	Type       string                 `json:"type,omitempty"`
+}
 
-const (
-	TLS1_0 MinimumTlsVersion    = "TLS1_0"
-	TLS1_1 MinimumTlsVersion    = "TLS1_1"
-	TLS1_2 MinimumTlsVersion    = "TLS1_2"
-	TLS10  SupportedTlsVersions = "1.0"
-	TLS11  SupportedTlsVersions = "1.1"
-	TLS12  SupportedTlsVersions = "1.2"
-)
+type PushSettingsProperties struct {
+	DynamicTagsJson   string `json:"dynamicTagsJson,omitempty"`
+	IsPushEnabled     bool   `json:"isPushEnabled,omitempty"`
+	TagWhitelistJson  string `json:"tagWhitelistJson,omitempty"`
+	TagsRequiringAuth string `json:"tagsRequiringAuth,omitempty"`
+}

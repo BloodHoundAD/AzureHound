@@ -15,16 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type MinimumTlsVersion string
-type SupportedTlsVersions string
-
-const (
-	TLS1_0 MinimumTlsVersion    = "TLS1_0"
-	TLS1_1 MinimumTlsVersion    = "TLS1_1"
-	TLS1_2 MinimumTlsVersion    = "TLS1_2"
-	TLS10  SupportedTlsVersions = "1.0"
-	TLS11  SupportedTlsVersions = "1.1"
-	TLS12  SupportedTlsVersions = "1.2"
-)
+type SiteMachineKey struct {
+	Decryption    string `json:"decryption,omitempty"`
+	DecryptionKey string `json:"decryptionKey,omitempty"`
+	Validation    string `json:"validation,omitempty"`
+	ValidationKey string `json:"validationKey,omitempty"`
+}

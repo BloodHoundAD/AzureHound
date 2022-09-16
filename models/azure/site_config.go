@@ -17,91 +17,136 @@
 
 package azure
 
+import "github.com/bloodhoundad/azurehound/enums"
+
 type SiteConfig struct {
-	NumberOfWorkers int `json:"numberOfWorkers,omitempty"`
-	// DefaultDocuments string                       :
-	NetFrameworkVersion string `json:"netFrameworkVersion,omitemtpy"`
-	PhpVersion          string `json:"phpVersion,omitemtpy"`
-	PythonVersion       string `json:"pythonVersion,omitemtpy"`
-	NodeVersion         string `json:"nodeVersion,omitemtpy"`
-	PowerShellVersion   string `json:"powerShellVersion,omitemtpy"`
-	LinuxFxVersion      string `json:"linuxFxVersion,omitemtpy"`
-	WindowsFxVersion    string `json:"windowsFxVersion,omitemtpy"`
-	// RequestTracingEnabled                  string `json:",omitemtpy"`
-	// RemoteDebuggingEnabled                 string `json:",omitemtpy"`
-	// RemoteDebuggingVersion                 string `json:",omitemtpy"`
-	// HttpLoggingEnabled                     string `json:",omitemtpy"`
-	// AzureMonitorLogCategories              string `json:",omitemtpy"`
-	AcrUseManagedIdentityCreds bool `json:"acrUseManagedIdentityCreds,omitemtpy"`
-	AcrUserManagedIdentityID   bool `json:"acrUserManagedIdentityID,omitemtpy"`
-	// LogsDirectorySizeLimit                 string `json:",omitemtpy"`
-	// DetailedErrorLoggingEnabled            string `json:",omitemtpy"`
-	PublishingUsername string `json:"publishingUsername,omitemtpy"`
-	PublishingPassword string `json:"publishingPassword,omitemtpy"`
-	// AppSettings                            string `json:",omitemtpy"`
-	// Metadata                               string `json:",omitemtpy"`
-	ConnectionStrings string `json:"connectionStrings,omitemtpy"`
-	// MachineKey                             string `json:",omitemtpy"`
-	// HandlerMappings                        string `json:",omitemtpy"`
-	// DocumentRoot                           string `json:",omitemtpy"`
-	// ScmType                                string `json:",omitemtpy"`
-	// Use32BitWorkerProcess                  string `json:",omitemtpy"`
-	// WebSocketsEnabled                      string `json:",omitemtpy"`
-	// AlwaysOn                               string `json:",omitemtpy"`
-	JavaVersion string `json:"javaVersion,omitemtpy"`
-	// JavaContainer                          string `json:",omitemtpy"`
-	// JavaContainerVersion                   string `json:",omitemtpy"`
-	AppCommandLine string `json:"appCommandLine,omitemtpy"`
-	// ManagedPipelineMode                    string `json:",omitemtpy"`
-	// VirtualApplications                    string `json:",omitemtpy"`
-	// WinAuthAdminState                      string `json:",omitemtpy"`
-	// WinAuthTenantState                     string `json:",omitemtpy"`
-	// CustomAppPoolIdentityAdminState        string `json:",omitemtpy"`
-	// CustomAppPoolIdentityTenantState       string `json:",omitemtpy"`
-	RuntimeADUser         string `json:"runtimeADUser,omitemtpy"`
-	RuntimeADUserPassword string `json:"runtimeADUserPassword,omitemtpy"`
-	// LoadBalancing                          string `json:",omitemtpy"`
-	// RoutingRules                           string `json:",omitemtpy"`
-	// Experiments                            string `json:",omitemtpy"`
-	// Limits                                 string `json:",omitemtpy"`
-	// AutoHealEnabled                        string `json:",omitemtpy"`
-	// AutoHealRules                          string `json:",omitemtpy"`
-	// TracingOptions                         string `json:",omitemtpy"`
-	// VnetName                               string `json:",omitemtpy"`
-	// VnetRouteAllEnabled                    string `json:",omitemtpy"`
-	// VnetPrivatePortsCount                  string `json:",omitemtpy"`
-	// PublicNetworkAccess                    string `json:",omitemtpy"`
-	// Cors                                   string `json:",omitemtpy"`
-	// Push                                   string `json:",omitemtpy"`
-	// ApiDefinition                          string `json:",omitemtpy"`
-	// ApiManagementConfig                    string `json:",omitemtpy"`
-	// AutoSwapSlotName                       string `json:",omitemtpy"`
-	// LocalMySqlEnabled                      string `json:",omitemtpy"`
-	// ManagedServiceIdentityId               string `json:",omitemtpy"`
-	// XManagedServiceIdentityId              string `json:",omitemtpy"`
-	// KeyVaultReferenceIdentity              string `json:",omitemtpy"`
-	// IpSecurityRestrictions                 string `json:",omitemtpy"`
-	// IpSecurityRestrictionsDefaultAction    string `json:",omitemtpy"`
-	// ScmIpSecurityRestrictions              string `json:",omitemtpy"`
-	// ScmIpSecurityRestrictionsDefaultAction string `json:",omitemtpy"`
-	// ScmIpSecurityRestrictionsUseMain       string `json:",omitemtpy"`
-	// Http20Enabled                          string `json:",omitemtpy"`
-	// MinTlsVersion                          string `json:",omitemtpy"`
-	// MinTlsCipherSuite                      string `json:",omitemtpy"`
-	// SupportedTlsCipherSuites               string `json:",omitemtpy"`
-	// ScmMinTlsVersion                       string `json:",omitemtpy"`
-	// FtpsState                              string `json:",omitemtpy"`
-	// PreWarmedInstanceCount                 string `json:",omitemtpy"`
-	// FunctionAppScaleLimit                  string `json:",omitemtpy"`
-	// ElasticWebAppScaleLimit                string `json:",omitemtpy"`
-	// HealthCheckPath                        string `json:",omitemtpy"`
-	// FileChangeAuditEnabled                 string `json:",omitemtpy"`
-	// FunctionsRuntimeScaleMonitoringEnabled string `json:",omitemtpy"`
-	// WebsiteTimeZone                        string `json:",omitemtpy"`
-	// MinimumElasticInstanceCount            string `json:",omitemtpy"`
-	// AzureStorageAccounts                   string `json:",omitemtpy"`
-	// Http20ProxyFlag                        string `json:",omitemtpy"`
-	// SitePort                               string `json:",omitemtpy"`
-	// AntivirusScanEnabled                   string `json:",omitemtpy"`
-	// StorageType                            string `json:",omitemtpy"`
+	AcrUseManagedIdentityCreds             bool                             `json:"acrUseManagedIdentityCreds,omitemtpy"`
+	AcrUserManagedIdentityID               string                           `json:"acrUserManagedIdentityID,omitemtpy"`
+	AlwaysOn                               bool                             `json:"alwaysOn,omitemtpy"`
+	ApiDefinition                          ApiDefinitionInfo                `json:"apiDefinition,omitemtpy"`
+	ApiManagementConfig                    ApiManagementConfig              `json:"apiManagementConfig,omitemtpy"`
+	AppCommandLine                         string                           `json:"appCommandLine,omitemtpy"`
+	AppSettings                            []NameValuePair                  `json:"appSettings,omitemtpy"`
+	AutoHealEnabled                        bool                             `json:"autoHealEnabled,omitemtpy"`
+	AutoHealRules                          string                           `json:"autoHealRules,omitemtpy"`
+	AutoSwapSlotName                       string                           `json:"autoSwapSlotName,omitemtpy"`
+	AzureStorageAccounts                   map[string]AzureStorageInfoValue `json:"azureStorageAccounts,omitemtpy"`
+	ConnectionStrings                      []ConnStringInfo                 `json:"connectionStrings,omitemtpy"`
+	Cors                                   CorsSettings                     `json:"cors,omitempty"`
+	DefaultDocuments                       []string                         `json:"defaultDocuments,omitempty"`
+	DetailedErrorLoggingEnabled            bool                             `json:"detailedErrorLoggingEnabled,omitempty"`
+	DocumentRoot                           string                           `json:"documentRoot,omitempty"`
+	Experiments                            Experiments                      `json:"experiments,omitempty"`
+	FtpsState                              enums.FtpsState                  `json:"ftpsState,omitempty"`
+	FunctionAppScaleLimit                  int                              `json:"functionAppScaleLimit,omitempty"`
+	FunctionsRuntimeScaleMonitoringEnabled bool                             `json:"functionsRuntimeScaleMonitoringEnabled,omitempty"`
+	HandlerMappings                        []HandlerMapping                 `json:"handlerMappings,omitempty"`
+	HealthCheckPath                        string                           `json:"healthCheckPath,omitempty"`
+	Http20Enabled                          bool                             `json:"http20Enabled,omitempty"`
+	HttpLoggingEnabled                     bool                             `json:"httpLoggingEnabled,omitempty"`
+	IpSecurityRestrictions                 []IpSecurityRestriction          `json:"ipSecurityRestrictions,omitempty"`
+	JavaContainer                          string                           `json:"javaContainer,omitempty"`
+	JavaContainerVersion                   string                           `json:"javaContainerVersion,omitempty"`
+	JavaVersion                            string                           `json:"javaVersion,omitempty"`
+	KeyVaultReferenceIdentity              string                           `json:"keyVaultReferenceIdentity,omitempty"`
+	Limits                                 SiteLimits                       `json:"limits,omitempty"`
+	LinuxFxVersion                         string                           `json:"linuxFxVersion,omitempty"`
+	LoadBalancing                          enums.SiteLoadBalancing          `json:"loadBalancing,omitempty"`
+	LocalMySqlEnabled                      bool                             `json:"localMySqlEnabled,omitempty"`
+	LogsDirectorySizeLimit                 int                              `json:"logsDirectorySizeLimit,omitempty"`
+	MachineKey                             SiteMachineKey                   `json:"machineKey,omitempty"`
+	ManagedPipelineMode                    enums.ManagedPipelineMode        `json:"managedPipelineMode,omitempty"`
+	ManagedServiceIdentityId               int                              `json:"managedServiceIdentityId,omitempty"`
+	MinTlsVersion                          enums.SupportedTlsVersions       `json:"minTlsVersion,omitempty"`
+	MinimumElasticInstanceCount            int                              `json:"minimumElasticInstanceCount,omitempty"`
+	NetFrameworkVersion                    string                           `json:"netFrameworkVersion,omitempty"`
+	NodeVersion                            string                           `json:"nodeVersion,omitempty"`
+	NumberOfWorkers                        int                              `json:"numberOfWorkers,omitempty"`
+	PhpVersion                             string                           `json:"phpVersion,omitempty"`
+	PowerShellVersion                      string                           `json:"powerShellVersion,omitempty"`
+	PreWarmedInstanceCount                 int                              `json:"preWarmedInstanceCount,omitempty"`
+	PublicNetworkAccess                    string                           `json:"publicNetworkAccess,omitempty"`
+	PublishingUsername                     string                           `json:"publishingUsername,omitempty"`
+	Push                                   PushSettings                     `json:"push,omitempty"`
+	PythonVersion                          string                           `json:"pythonVersion,omitempty"`
+	RemoteDebuggingEnabled                 bool                             `json:"remoteDebuggingEnabled,omitempty"`
+	RemoteDebuggingVersion                 string                           `json:"remoteDebuggingVersion,omitempty"`
+	RequestTracingEnabled                  bool                             `json:"requestTracingEnabled,omitempty"`
+	RequestTracingExpirationTime           string                           `json:"requestTracingExpirationTime,omitempty"`
+	ScmIpSecurityRestrictions              []IpSecurityRestriction          `json:"scmIpSecurityRestrictions,omitempty"`
+	ScmIpSecurityRestrictionsUseMain       bool                             `json:"scmIpSecurityRestrictionsUseMain,omitempty"`
+	ScmMinTlsVersion                       enums.SupportedTlsVersions       `json:"scmMinTlsVersion,omitempty"`
+	ScmType                                enums.ScmType                    `json:"scmType,omitempty"`
+	TracingOptions                         string                           `json:"tracingOptions,omitempty"`
+	Use32BitWorkerProcess                  bool                             `json:"use32BitWorkerProcess,omitempty"`
+	VirtualApplications                    []VirtualApplication             `json:"virtualApplications,omitempty"`
+	VnetName                               string                           `json:"vnetName,omitempty"`
+	VnetPrivatePortsCount                  int                              `json:"vnetPrivatePortsCount,omitempty"`
+	VnetRouteAllEnabled                    bool                             `json:"vnetRouteAllEnabled,omitempty"`
+	WebSocketsEnabled                      bool                             `json:"webSocketsEnabled,omitempty"`
+	WebsiteTimeZone                        string                           `json:"websiteTimeZone,omitempty"`
+	WindowsFxVersion                       string                           `json:"windowsFxVersion,omitempty"`
+	XManagedServiceIdentityId              int                              `json:"xManagedServiceIdentityId,omitempty"`
+
+	//Following ones have been found in testing, but not present in the documentation
+	AntivirusScanEnabled                   bool        `json:"antivirusScanEnabled,omitemtpy"`
+	AzureMonitorLogCategories              interface{} `json:"azureMonitorLogCategories,omitemtpy"`
+	CustomAppPoolIdentityAdminState        interface{} `json:"customAppPoolIdentityAdminState,omitemtpy"`
+	CustomAppPoolIdentityTenantState       interface{} `json:"customAppPoolIdentityTenantState,omitemtpy"`
+	ElasticWebAppScaleLimit                interface{} `json:"elasticWebAppScaleLimit,omitemtpy"`
+	FileChangeAuditEnabled                 bool        `json:"fileChangeAuditEnabled,omitemtpy"`
+	Http20ProxyFlag                        interface{} `json:"http20ProxyFlag,omitemtpy"`
+	IpSecurityRestrictionsDefaultAction    interface{} `json:"ipSecurityRestrictionsDefaultAction,omitemtpy"`
+	Metadata                               interface{} `json:"metadata,omitemtpy"`
+	MinTlsCipherSuite                      interface{} `json:"minTlsCipherSuite,omitemtpy"`
+	PublishingPassword                     interface{} `json:"publishingPassword,omitemtpy"`
+	RoutingRules                           interface{} `json:"routingRules,omitemtpy"`
+	RuntimeADUser                          interface{} `json:"runtimeADUser,omitemtpy"`
+	RuntimeADUserPassword                  interface{} `json:"runtimeADUserPassword,omitemtpy"`
+	ScmIpSecurityRestrictionsDefaultAction interface{} `json:"scmIpSecurityRestrictionsDefaultAction,omitemtpy"`
+	SitePort                               interface{} `json:"sitePort,omitemtpy"`
+	StorageType                            interface{} `json:"storageType,omitemtpy"`
+	SupportedTlsCipherSuites               interface{} `json:"supportedTlsCipherSuites,omitemtpy"`
+	WinAuthAdminState                      interface{} `json:"winAuthAdminState,omitemtpy"`
+	WinAuthTenantState                     interface{} `json:"winAuthTenantState,omitemtpy"`
+}
+
+type ApiDefinitionInfo struct {
+	Url string `json:"url,omitempty"`
+}
+
+type ApiManagementConfig struct {
+	Id string `json:"id,omitempty"`
+}
+
+type CorsSettings struct {
+	AllowedOrigins     []string `json:"allowedOrigins,omitempty"`
+	SupportCredentials bool     `json:"supportCredentials,omitempty"`
+}
+
+type Experiments struct {
+	RampUpRules []RampUpRule `json:"rampUpRules,omitempty"`
+}
+
+type RampUpRule struct {
+	ActionHostName            string `json:"actionHostName,omitempty"`
+	ChangeDecisionCallbackUrl string `json:"changeDecisionCallbackUrl,omitempty"`
+	ChangeIntervalInMinutes   int    `json:"changeIntervalInMinutes,omitempty"`
+	ChangeStep                int    `json:"changeStep,omitempty"`
+	MaxReroutePercentage      int    `json:"maxReroutePercentage,omitempty"`
+	MinReroutePercentage      int    `json:"minReroutePercentage,omitempty"`
+	Name                      string `json:"name,omitempty"`
+	ReroutePercentage         int    `json:"reroutePercentage,omitempty"`
+}
+
+type HandlerMapping struct {
+	Arguments       string `json:"arguments,omitempty"`
+	Extension       string `json:"extension,omitempty"`
+	ScriptProcessor string `json:"scriptProcessor,omitempty"`
+}
+
+type SiteLimits struct {
+	MaxDiskSizeInMb  int `json:"maxDiskSizeInMb,omitempty"`
+	MaxMemoryInMb    int `json:"maxMemoryInMb,omitempty"`
+	MaxPercentageCpu int `json:"maxPercentageCpu,omitempty"`
 }

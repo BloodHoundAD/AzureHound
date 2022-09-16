@@ -756,17 +756,17 @@ func (mr *MockAzureClientMockRecorder) ListAzureDevices(arg0, arg1, arg2, arg3, 
 }
 
 // ListAzureFunctionApps mocks base method.
-func (m *MockAzureClient) ListAzureFunctionApps(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.FunctionAppResult {
+func (m *MockAzureClient) ListAzureFunctionApps(arg0 context.Context, arg1 string) <-chan azure.FunctionAppResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureFunctionApps", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListAzureFunctionApps", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.FunctionAppResult)
 	return ret0
 }
 
 // ListAzureFunctionApps indicates an expected call of ListAzureFunctionApps.
-func (mr *MockAzureClientMockRecorder) ListAzureFunctionApps(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureFunctionApps(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureFunctionApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureFunctionApps), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureFunctionApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureFunctionApps), arg0, arg1)
 }
 
 // ListAzureKeyVaults mocks base method.
