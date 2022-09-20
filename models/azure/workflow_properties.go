@@ -28,7 +28,7 @@ type WorkflowProperties struct {
 	// Note: in testing this does not get populated, instead the parameters are listed within the definition
 	Parameters        map[string]WorkflowParameter    `json:"parameters,omitempty"`
 	ProvisioningState enums.WorkflowProvisioningState `json:"provisioningState,omitempty"`
-	Sku               Sku                             `json:"sku,omitempty"`
+	Sku               WorkflowSku                     `json:"sku,omitempty"`
 	State             enums.WorkflowState             `json:"state,omitempty"`
 	Version           string                          `json:"version,omitempty"`
 

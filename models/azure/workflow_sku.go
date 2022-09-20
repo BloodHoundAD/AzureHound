@@ -15,23 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package azure
 
-type SkuName string
+import "github.com/bloodhoundad/azurehound/enums"
 
-const (
-	SKU_Premium_LRS     SkuName = "Premium_LRS"
-	SKU_Premium_ZRS     SkuName = "Premium_ZRS"
-	SKU_Standard_GRS    SkuName = "Standard_GRS"
-	SKU_Standard_GZRS   SkuName = "Standard_GZRS"
-	SKU_Standard_LRS    SkuName = "Standard_LRS"
-	SKU_Standard_RAGRS  SkuName = "Standard_RAGRS"
-	SKU_Standard_RAGZRS SkuName = "Standard_RAGZRS"
-	SKU_Standard_ZRS    SkuName = "Standard_ZRS"
-	SKU_Basic           SkuName = "Basic"
-	SKU_Free            SkuName = "Free"
-	SKU_NotSpecified    SkuName = "NotSpecified"
-	SKU_Premium         SkuName = "Premium"
-	SKU_Shared          SkuName = "Shared"
-	SKU_Standard        SkuName = "Standard"
-)
+type WorkflowSku struct {
+	Name enums.SkuName     `json:"name,omitempty"`
+	Plan ResourceReference `json:"plan,omitempty"`
+}
