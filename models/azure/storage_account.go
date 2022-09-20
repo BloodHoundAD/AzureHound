@@ -19,22 +19,21 @@ package azure
 
 import "strings"
 
-type VirtualMachine struct {
+type StorageAccount struct {
 	Entity
 
-	ExtendedLocation ExtendedLocation          `json:"extendedLocation,omitempty"`
-	Identity         ManagedIdentity           `json:"identity,omitempty"`
-	Location         string                    `json:"location,omitempty"`
-	Name             string                    `json:"name,omitempty"`
-	Plan             Plan                      `json:"plan,omitempty"`
-	Properties       VirtualMachineProperties  `json:"properties,omitempty"`
-	Resources        []VirtualMachineExtension `json:"resources,omitempty"`
-	Tags             map[string]string         `json:"tags,omitempty"`
-	Type             string                    `json:"type,omitempty"`
-	Zones            []string                  `json:"zones,omitempty"`
+	ExtendedLocation ExtendedLocation         `json:"extendedLocation,omitempty"`
+	Identity         ManagedIdentity          `json:"identity,omitempty"`
+	Kind             string                   `json:"kind,omitempty"`
+	Location         string                   `json:"location,omitempty"`
+	Name             string                   `json:"name,omitempty"`
+	Properties       StorageAccountProperties `json:"properties,omitempty"`
+	Sku              Sku                      `json:"sku,omitempty"`
+	Tags             map[string]string        `json:"tags,omitempty"`
+	Type             string                   `json:"type,omitempty"`
 }
 
-func (s VirtualMachine) ResourceGroupName() string {
+func (s StorageAccount) ResourceGroupName() string {
 	parts := strings.Split(s.Id, "/")
 	if len(parts) > 4 {
 		return parts[4]
@@ -43,7 +42,7 @@ func (s VirtualMachine) ResourceGroupName() string {
 	}
 }
 
-func (s VirtualMachine) ResourceGroupId() string {
+func (s StorageAccount) ResourceGroupId() string {
 	parts := strings.Split(s.Id, "/")
 	if len(parts) > 5 {
 		return strings.Join(parts[:5], "/")
@@ -52,13 +51,13 @@ func (s VirtualMachine) ResourceGroupId() string {
 	}
 }
 
-type VirtualMachineList struct {
+type StorageAccountList struct {
 	NextLink string           `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []VirtualMachine `json:"value"`              // A list of virtual machines.
+	Value    []StorageAccount `json:"value"`              // A list of storage accounts.
 }
 
-type VirtualMachineResult struct {
+type StorageAccountResult struct {
 	SubscriptionId string
 	Error          error
-	Ok             VirtualMachine
+	Ok             StorageAccount
 }
