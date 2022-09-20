@@ -20,8 +20,8 @@ package azure
 type Definition struct {
 	Schema string `json:"$schema,omitempty"`
 	// Certain actions can be nested, have different elements based on the name(key) of given action - Condition is an example
-	// To capture it completely recommend a interface{} definition
-	Actions        map[string]Action       `json:"actions,omitempty"`
+	// Actions        map[string]Action       `json:"actions,omitempty"`
+	Actions        map[string]interface{}  `json:"actions,omitempty"`
 	ContentVersion string                  `json:"contentVersion,omitempty"`
 	Outputs        map[string]Output       `json:"outputs,omitempty"`
 	Parameters     map[string]Parameter    `json:"parameters,omitempty"`
