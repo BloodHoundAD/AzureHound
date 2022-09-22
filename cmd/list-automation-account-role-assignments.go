@@ -93,11 +93,11 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 			for id := range stream {
 				var (
 					automationAccountRoleAssignments = models.AzureRoleAssignments{
-						ObjectId: id.(string),
+						ObjectId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this automation account", "automationAccountId", id)
 					} else {

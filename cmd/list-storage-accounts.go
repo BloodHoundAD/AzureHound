@@ -89,7 +89,7 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, subscri
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureStorageAccounts(ctx, id.(string)) {
+				for item := range client.ListAzureStorageAccounts(ctx, id) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing storage accounts for this subscription", "subscriptionId", id)
 					} else {

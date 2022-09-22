@@ -93,11 +93,11 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 			for id := range stream {
 				var (
 					functionAppRoleAssignments = models.AzureRoleAssignments{
-						ObjectId: id.(string),
+						ObjectId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this function app", "functionAppId", id)
 					} else {

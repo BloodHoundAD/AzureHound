@@ -89,7 +89,7 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureFunctionApps(ctx, id.(string)) {
+				for item := range client.ListAzureFunctionApps(ctx, id) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing function apps for this subscription", "subscriptionId", id)
 					} else {

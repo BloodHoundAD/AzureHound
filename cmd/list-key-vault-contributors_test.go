@@ -43,7 +43,7 @@ func TestListKeyVaultContributors(t *testing.T) {
 	mockRoleAssignmentsChannel := make(chan azureWrapper[models.KeyVaultRoleAssignments])
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listKeyVaultContributors(ctx, mockClient, mockRoleAssignmentsChannel)
+	channel := listKeyVaultContributors(ctx, mockRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockRoleAssignmentsChannel)
