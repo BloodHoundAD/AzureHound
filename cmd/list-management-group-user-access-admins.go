@@ -94,11 +94,11 @@ func listManagementGroupUserAccessAdmins(ctx context.Context, client client.Azur
 			for id := range stream {
 				var (
 					mgmtGroupUserAccessAdmins = models.ManagementGroupUserAccessAdmins{
-						ManagementGroupId: id.(string),
+						ManagementGroupId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing user access admins for this management group", "managementGroupId", id)
 					} else {

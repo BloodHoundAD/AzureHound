@@ -63,9 +63,9 @@ func listKeyVaultRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan interface{} {
+func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan azureWrapper[models.KeyVaultRoleAssignments] {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -92,11 +92,11 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 			for id := range stream {
 				var (
 					keyVaultRoleAssignments = models.KeyVaultRoleAssignments{
-						KeyVaultId: id.(string),
+						KeyVaultId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this key vault", "keyVaultId", id)
 					} else {
@@ -109,10 +109,7 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 						keyVaultRoleAssignments.RoleAssignments = append(keyVaultRoleAssignments.RoleAssignments, keyVaultRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZVMRoleAssignment,
-					Data: keyVaultRoleAssignments,
-				}
+				out <- NewAzureWrapper(enums.KindAZKeyVaultRoleAssignment, keyVaultRoleAssignments)
 				log.V(1).Info("finished listing key vault role assignments", "keyVaultId", id, "count", count)
 			}
 		}()

@@ -94,11 +94,11 @@ func listResourceGroupUserAccessAdmins(ctx context.Context, client client.AzureC
 			for id := range stream {
 				var (
 					resourceGroupUserAccessAdmins = models.ResourceGroupUserAccessAdmins{
-						ResourceGroupId: id.(string),
+						ResourceGroupId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing user access admins for this resource group", "resourceGroupId", id)
 					} else {

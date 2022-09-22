@@ -27,7 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/pipeline"
 )
 
-func WriteToFile(ctx context.Context, filePath string, stream <-chan interface{}) error {
+func WriteToFile[T any](ctx context.Context, filePath string, stream <-chan T) error {
 
 	if file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0666); err != nil {
 		return err

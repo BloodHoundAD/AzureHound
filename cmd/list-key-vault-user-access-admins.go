@@ -19,15 +19,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/internal"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
@@ -59,52 +57,30 @@ func listKeyVaultUserAccessAdminsCmdImpl(cmd *cobra.Command, args []string) {
 		subscriptions := listSubscriptions(ctx, azClient)
 		keyVaults := listKeyVaults(ctx, azClient, subscriptions)
 		kvRoleAssignments := listKeyVaultRoleAssignments(ctx, azClient, keyVaults)
-		stream := listKeyVaultUserAccessAdmins(ctx, azClient, kvRoleAssignments)
+		stream := listKeyVaultUserAccessAdmins(ctx, kvRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listKeyVaultUserAccessAdmins(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
-	out := make(chan interface{})
+func listKeyVaultUserAccessAdmins(
+	ctx context.Context,
+	kvRoleAssignments <-chan azureWrapper[models.KeyVaultRoleAssignments],
+) <-chan any {
+	return pipeline.Map(ctx.Done(), kvRoleAssignments, func(ra azureWrapper[models.KeyVaultRoleAssignments]) any {
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, kvRoleAssignmentFilter(constants.UserAccessAdminRoleID))
 
-	go func() {
-		defer close(out)
-
-		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {
-			if roleAssignments, ok := result.(AzureWrapper).Data.(models.KeyVaultRoleAssignments); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating key vault userAccessAdmins", "result", result)
-				return
-			} else {
-				var (
-					keyVaultUserAccessAdmins = models.KeyVaultUserAccessAdmins{
-						KeyVaultId: roleAssignments.KeyVaultId,
-					}
-					count = 0
-				)
-				for _, item := range roleAssignments.RoleAssignments {
-					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
-
-					if roleDefinitionId == constants.UserAccessAdminRoleID {
-						keyVaultUserAccessAdmin := models.KeyVaultUserAccessAdmin{
-							UserAccessAdmin: item.RoleAssignment,
-							KeyVaultId:      item.KeyVaultId,
-						}
-						log.V(2).Info("found key vault userAccessAdmin", "keyVaultUserAccessAdmin", keyVaultUserAccessAdmin)
-						count++
-						keyVaultUserAccessAdmins.UserAccessAdmins = append(keyVaultUserAccessAdmins.UserAccessAdmins, keyVaultUserAccessAdmin)
-					}
-				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZVMUserAccessAdmin,
-					Data: keyVaultUserAccessAdmins,
-				}
-				log.V(1).Info("finished listing key vault userAccessAdmins", "keyVaultId", roleAssignments.KeyVaultId, "count", count)
+		kvContributors := internal.Map(filteredAssignments, func(ra models.KeyVaultRoleAssignment) models.KeyVaultUserAccessAdmin {
+			return models.KeyVaultUserAccessAdmin{
+				UserAccessAdmin: ra.RoleAssignment,
+				KeyVaultId:      ra.KeyVaultId,
 			}
-		}
-		log.Info("finished listing all key vault userAccessAdmins")
-	}()
+		})
 
-	return out
+		return NewAzureWrapper(enums.KindAZKeyVaultUserAccessAdmin, models.KeyVaultUserAccessAdmins{
+			KeyVaultId:       ra.Data.KeyVaultId,
+			UserAccessAdmins: kvContributors,
+		})
+	})
 }

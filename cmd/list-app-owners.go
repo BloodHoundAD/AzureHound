@@ -91,11 +91,11 @@ func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan i
 			for id := range stream {
 				var (
 					data = models.AppOwners{
-						AppId: id.(string),
+						AppId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADAppOwners(ctx, id.(string), "", "", "", nil) {
+				for item := range client.ListAzureADAppOwners(ctx, id, "", "", "", nil) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this app", "appId", id)
 					} else {

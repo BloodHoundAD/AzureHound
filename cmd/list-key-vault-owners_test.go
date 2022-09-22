@@ -23,6 +23,7 @@ import (
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
 	"github.com/bloodhoundad/azurehound/constants"
+	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/models/azure"
 	"github.com/golang/mock/gomock"
@@ -39,16 +40,17 @@ func TestListKeyVaultOwners(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockRoleAssignmentsChannel := make(chan interface{})
+	mockRoleAssignmentsChannel := make(chan azureWrapper[models.KeyVaultRoleAssignments])
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listKeyVaultOwners(ctx, mockClient, mockRoleAssignmentsChannel)
+	channel := listKeyVaultOwners(ctx, mockRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockRoleAssignmentsChannel)
 
-		mockRoleAssignmentsChannel <- AzureWrapper{
-			Data: models.KeyVaultRoleAssignments{
+		mockRoleAssignmentsChannel <- NewAzureWrapper(
+			enums.KindAZKeyVaultRoleAssignment,
+			models.KeyVaultRoleAssignments{
 				KeyVaultId: "foo",
 				RoleAssignments: []models.KeyVaultRoleAssignment{
 					{
@@ -61,15 +63,11 @@ func TestListKeyVaultOwners(t *testing.T) {
 					},
 				},
 			},
-		}
+		)
 	}()
 
-	if result, ok := <-channel; !ok {
+	if _, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if _, ok := wrapper.Data.(models.KeyVaultOwners); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.KeyVaultOwners{})
 	}
 
 	if _, ok := <-channel; ok {

@@ -91,11 +91,11 @@ func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, 
 			for id := range stream {
 				var (
 					servicePrincipalOwners = models.ServicePrincipalOwners{
-						ServicePrincipalId: id.(string),
+						ServicePrincipalId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADServicePrincipalOwners(ctx, id.(string), "", "", "", nil) {
+				for item := range client.ListAzureADServicePrincipalOwners(ctx, id, "", "", "", nil) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this service principal", "servicePrincipalId", id)
 					} else {

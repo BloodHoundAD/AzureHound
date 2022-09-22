@@ -24,7 +24,7 @@ import (
 	"github.com/bloodhoundad/azurehound/pipeline"
 )
 
-func WriteToConsole(ctx context.Context, stream <-chan interface{}) {
+func WriteToConsole[T any](ctx context.Context, stream <-chan T) {
 	for item := range pipeline.OrDone(ctx.Done(), stream) {
 		fmt.Println(item)
 	}

@@ -92,11 +92,11 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 			for id := range stream {
 				var (
 					virtualMachineRoleAssignments = models.VirtualMachineRoleAssignments{
-						VirtualMachineId: id.(string),
+						VirtualMachineId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this virtual machine", "virtualMachineId", id)
 					} else {

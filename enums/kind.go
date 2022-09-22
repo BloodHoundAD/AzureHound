@@ -33,6 +33,7 @@ const (
 	KindAZKeyVaultContributor            Kind = "AZKeyVaultContributor"
 	KindAZKeyVaultKVContributor          Kind = "AZKeyVaultKVContributor"
 	KindAZKeyVaultOwner                  Kind = "AZKeyVaultOwner"
+	KindAZKeyVaultRoleAssignment         Kind = "AZKeyVaultRoleAssignment"
 	KindAZKeyVaultUserAccessAdmin        Kind = "AZKeyVaultUserAccessAdmin"
 	KindAZManagementGroup                Kind = "AZManagementGroup"
 	KindAZManagementGroupOwner           Kind = "AZManagementGroupOwner"
