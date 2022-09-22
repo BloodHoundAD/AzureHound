@@ -46,7 +46,7 @@ func (s *azureClient) GetAzureDevice(ctx context.Context, objectId string, selec
 
 func (s *azureClient) GetAzureDeviceRegisteredOwners(ctx context.Context, objectId string, filter, search string, count bool) (azure.DirectoryObjectList, error) {
 	var (
-		path     = fmt.Sprintf("/%s/devices/%s/registeredOwners", constants.GraphApiVersion, objectId)
+		path     = fmt.Sprintf("/%s/devices/%s/registeredOwners", constants.GraphApiBetaVersion, objectId)
 		params   = query.Params{Filter: filter, Search: search, Count: count}.AsMap()
 		response azure.DirectoryObjectList
 	)

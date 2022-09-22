@@ -28,7 +28,9 @@ const (
 	Expand                     string = "$expand"
 	Filter                     string = "$filter"
 	Format                     string = "$format"
+	IncludeDeleted             string = "$include"
 	IncludeAllTenantCategories string = "$includeAllTenantCategories"
+	MaxPageSize                string = "$maxpagesize"
 	OrderBy                    string = "$orderby"
 	Recurse                    string = "$recurse"
 	Search                     string = "$search"
@@ -44,7 +46,9 @@ type Params struct {
 	Count                      bool
 	Expand                     string
 	Filter                     string
+	IncludeDeleted             string
 	IncludeAllTenantCategories bool
+	MaxPageSize                string
 	OrderBy                    string
 	Recurse                    bool
 	Search                     string

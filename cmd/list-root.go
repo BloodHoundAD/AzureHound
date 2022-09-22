@@ -103,13 +103,18 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 
 		servicePrincipals  = make(chan interface{})
 		servicePrincipals2 = make(chan interface{})
+		servicePrincipals3 = make(chan interface{})
 
-		subscriptions  = make(chan interface{})
-		subscriptions2 = make(chan interface{})
-		subscriptions3 = make(chan interface{})
-		subscriptions4 = make(chan interface{})
-		subscriptions5 = make(chan interface{})
-		subscriptions6 = make(chan interface{})
+		subscriptions   = make(chan interface{})
+		subscriptions2  = make(chan interface{})
+		subscriptions3  = make(chan interface{})
+		subscriptions4  = make(chan interface{})
+		subscriptions5  = make(chan interface{})
+		subscriptions6  = make(chan interface{})
+		subscriptions7  = make(chan interface{})
+		subscriptions8  = make(chan interface{})
+		subscriptions9  = make(chan interface{})
+		subscriptions10 = make(chan interface{})
 
 		tenants = make(chan interface{})
 
@@ -122,6 +127,19 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		vmRoleAssignments4 = make(chan interface{})
 		vmRoleAssignments5 = make(chan interface{})
 		vmRoleAssignments6 = make(chan interface{})
+
+		storageAccounts  = make(chan interface{})
+		storageAccounts2 = make(chan interface{})
+		storageAccounts3 = make(chan interface{})
+
+		automationAccounts  = make(chan interface{})
+		automationAccounts2 = make(chan interface{})
+
+		workflows  = make(chan interface{})
+		workflows2 = make(chan interface{})
+
+		functionApps  = make(chan interface{})
+		functionApps2 = make(chan interface{})
 	)
 
 	// Enumerate Apps, AppOwners and AppMembers
@@ -138,7 +156,7 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 	groupMembers := listGroupMembers(ctx, client, groups3)
 
 	// Enumerate Subscriptions, SubscriptionOwners and SubscriptionUserAccessAdmins
-	pipeline.Tee(ctx.Done(), listSubscriptions(ctx, client), subscriptions, subscriptions2, subscriptions3, subscriptions4, subscriptions5, subscriptions6)
+	pipeline.Tee(ctx.Done(), listSubscriptions(ctx, client), subscriptions, subscriptions2, subscriptions3, subscriptions4, subscriptions5, subscriptions6, subscriptions7, subscriptions8, subscriptions9, subscriptions10)
 	subscriptionOwners := listSubscriptionOwners(ctx, client, subscriptions5)
 	subscriptionUserAccessAdmins := listSubscriptionUserAccessAdmins(ctx, client, subscriptions6)
 
@@ -164,7 +182,7 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 	resourceGroupUserAccessAdmins := listResourceGroupUserAccessAdmins(ctx, client, resourceGroups3)
 
 	// Enumerate ServicePrincipals and ServicePrincipalOwners
-	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2)
+	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2, servicePrincipals3)
 	servicePrincipalOwners := listServicePrincipalOwners(ctx, client, servicePrincipals2)
 
 	// Enumerate Tenants
@@ -188,8 +206,29 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 	virtualMachineUserAccessAdmins := listVirtualMachineUserAccessAdmins(ctx, client, vmRoleAssignments5)
 	virtualMachineVMContributors := listVirtualMachineVMContributors(ctx, client, vmRoleAssignments6)
 
+	// Enumerate AppRoleAssignments
+	appRoleAssignments := listAppRoleAssignments(ctx, client, servicePrincipals3)
+
+	//Enumerate storage accounts
+	pipeline.Tee(ctx.Done(), listStorageAccounts(ctx, client, subscriptions7), storageAccounts, storageAccounts2, storageAccounts3)
+	storageContainers := listStorageContainers(ctx, client, storageAccounts2)
+	storageAccountRoleAssignments := listStorageAccountRoleAssignments(ctx, client, storageAccounts3)
+
+	//Enumerage automation accounts
+	pipeline.Tee(ctx.Done(), listAutomationAccounts(ctx, client, subscriptions8), automationAccounts, automationAccounts2)
+	automationAccountRoleAssignments := listAutomationAccountRoleAssignments(ctx, client, automationAccounts2)
+
+	//Enumerate workflows / logic apps
+	pipeline.Tee(ctx.Done(), listWorkflows(ctx, client, subscriptions9), workflows, workflows2)
+	workflowRoleAssignments := listWorkflowRoleAsignments(ctx, client, workflows2)
+
+	//Enumerate function apps
+	pipeline.Tee(ctx.Done(), listFunctionApps(ctx, client, subscriptions10), functionApps, functionApps2)
+	functionAppRoleAssignments := listFunctionAppRoleAssignments(ctx, client, functionApps2)
+
 	return pipeline.Mux(ctx.Done(),
 		appOwners,
+		appRoleAssignments,
 		apps,
 		deviceOwners,
 		devices,
@@ -225,5 +264,14 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		virtualMachineUserAccessAdmins,
 		virtualMachineVMContributors,
 		virtualMachines,
+		storageAccounts,
+		storageContainers,
+		storageAccountRoleAssignments,
+		automationAccounts,
+		automationAccountRoleAssignments,
+		workflows,
+		workflowRoleAssignments,
+		functionApps,
+		functionAppRoleAssignments,
 	)
 }

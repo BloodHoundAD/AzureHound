@@ -23,7 +23,7 @@ type VirtualMachine struct {
 	Entity
 
 	ExtendedLocation ExtendedLocation          `json:"extendedLocation,omitempty"`
-	Identity         VirtualMachineIdentity    `json:"identity,omitempty"`
+	Identity         ManagedIdentity           `json:"identity,omitempty"`
 	Location         string                    `json:"location,omitempty"`
 	Name             string                    `json:"name,omitempty"`
 	Plan             Plan                      `json:"plan,omitempty"`
