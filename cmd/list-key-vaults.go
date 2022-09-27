@@ -95,11 +95,13 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 						log.Error(item.Error, "unable to continue processing key vaults for this subscription", "subscriptionId", id)
 					} else {
 						resourceGroup := item.Ok.ResourceGroupId()
+						// the embedded struct's values override top-level properties so TenantId
+						// needs to be explicitly set.
 						keyVault := models.KeyVault{
 							KeyVault:       item.Ok,
 							SubscriptionId: item.SubscriptionId,
 							ResourceGroup:  resourceGroup,
-							TenantId:       client.TenantInfo().Id,
+							TenantId:       item.Ok.Properties.TenantId,
 						}
 						log.V(2).Info("found key vault", "keyVault", keyVault)
 						count++

@@ -97,6 +97,7 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 						resourceGroup := models.ResourceGroup{
 							ResourceGroup:  item.Ok,
 							SubscriptionId: item.SubscriptionId,
+							TenantId:       client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found resource group", "resourceGroup", resourceGroup)
 						count++
