@@ -94,11 +94,11 @@ func listSubscriptionOwners(ctx context.Context, client client.AzureClient, subs
 			for id := range stream {
 				var (
 					subscriptionOwners = models.SubscriptionOwners{
-						SubscriptionId: id.(string),
+						SubscriptionId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this subscription", "subscriptionId", id)
 					} else {

@@ -92,11 +92,11 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 			for id := range stream {
 				var (
 					roleAssignments = models.RoleAssignments{
-						RoleDefinitionId: id.(string),
+						RoleDefinitionId: id,
 						TenantId:         client.TenantInfo().TenantId,
 					}
 					count  = 0
-					filter = fmt.Sprintf("roleDefinitionId eq '%s'", id.(string))
+					filter = fmt.Sprintf("roleDefinitionId eq '%s'", id)
 				)
 				for item := range client.ListAzureADRoleAssignments(ctx, filter, "", "", "", nil) {
 					if item.Error != nil {

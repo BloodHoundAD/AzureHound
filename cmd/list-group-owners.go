@@ -91,11 +91,11 @@ func listGroupOwners(ctx context.Context, client client.AzureClient, groups <-ch
 			for id := range stream {
 				var (
 					groupOwners = models.GroupOwners{
-						GroupId: id.(string),
+						GroupId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADGroupOwners(ctx, id.(string), "", "", "", nil) {
+				for item := range client.ListAzureADGroupOwners(ctx, id, "", "", "", nil) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this group", "groupId", id)
 					} else {

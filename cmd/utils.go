@@ -32,6 +32,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -41,6 +42,7 @@ import (
 	"github.com/bloodhoundad/azurehound/config"
 	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/logger"
+	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/bloodhoundad/azurehound/sinks"
 	"github.com/spf13/cobra"
@@ -371,12 +373,25 @@ func setupLogger() {
 	}
 }
 
+// deprecated: use azureWrapper instead
 type AzureWrapper struct {
 	Kind enums.Kind  `json:"kind"`
 	Data interface{} `json:"data"`
 }
 
-func outputStream(ctx context.Context, stream <-chan interface{}) {
+type azureWrapper[T any] struct {
+	Kind enums.Kind `json:"kind"`
+	Data T          `json:"data"`
+}
+
+func NewAzureWrapper[T any](kind enums.Kind, data T) azureWrapper[T] {
+	return azureWrapper[T]{
+		Kind: kind,
+		Data: data,
+	}
+}
+
+func outputStream[T any](ctx context.Context, stream <-chan T) {
 	formatted := pipeline.FormatJson(ctx.Done(), stream)
 	if path := config.OutputFile.Value().(string); path != "" {
 		if err := sinks.WriteToFile(ctx, path, formatted); err != nil {
@@ -384,5 +399,11 @@ func outputStream(ctx context.Context, stream <-chan interface{}) {
 		}
 	} else {
 		sinks.WriteToConsole(ctx, formatted)
+	}
+}
+
+func kvRoleAssignmentFilter(roleId string) func(models.KeyVaultRoleAssignment) bool {
+	return func(ra models.KeyVaultRoleAssignment) bool {
+		return path.Base(ra.RoleAssignment.Properties.RoleDefinitionId) == roleId
 	}
 }

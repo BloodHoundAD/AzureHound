@@ -32,17 +32,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listKeyVaultContributorsCmd)
+	listRootCmd.AddCommand(listKeyVaultKVContributorsCmd)
 }
 
-var listKeyVaultContributorsCmd = &cobra.Command{
-	Use:          "key-vault-contributors",
-	Long:         "Lists Azure Key Vault Contributors",
-	Run:          listKeyVaultContributorsCmdImpl,
+var listKeyVaultKVContributorsCmd = &cobra.Command{
+	Use:          "key-vault-kvcontributors",
+	Long:         "Lists Azure Key Vault KVContributors",
+	Run:          listKeyVaultKVContributorsCmdImpl,
 	SilenceUsage: true,
 }
 
-func listKeyVaultContributorsCmdImpl(cmd *cobra.Command, args []string) {
+func listKeyVaultKVContributorsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -52,35 +52,35 @@ func listKeyVaultContributorsCmdImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure key vault contributors...")
+		log.Info("collecting azure key vault kvcontributors...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
 		keyVaults := listKeyVaults(ctx, azClient, subscriptions)
 		kvRoleAssignments := listKeyVaultRoleAssignments(ctx, azClient, keyVaults)
-		stream := listKeyVaultContributors(ctx, kvRoleAssignments)
+		stream := listKeyVaultKVContributors(ctx, kvRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listKeyVaultContributors(
+func listKeyVaultKVContributors(
 	ctx context.Context,
 	kvRoleAssignments <-chan azureWrapper[models.KeyVaultRoleAssignments],
 ) <-chan any {
 	return pipeline.Map(ctx.Done(), kvRoleAssignments, func(ra azureWrapper[models.KeyVaultRoleAssignments]) any {
-		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, kvRoleAssignmentFilter(constants.ContributorRoleID))
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, kvRoleAssignmentFilter(constants.KeyVaultContributorRoleID))
 
-		contributors := internal.Map(filteredAssignments, func(ra models.KeyVaultRoleAssignment) models.KeyVaultContributor {
-			return models.KeyVaultContributor{
-				ra.RoleAssignment,
-				ra.KeyVaultId,
+		kvContributors := internal.Map(filteredAssignments, func(ra models.KeyVaultRoleAssignment) models.KeyVaultKVContributor {
+			return models.KeyVaultKVContributor{
+				KVContributor: ra.RoleAssignment,
+				KeyVaultId:    ra.KeyVaultId,
 			}
 		})
 
-		return NewAzureWrapper(enums.KindAZKeyVaultContributor, models.KeyVaultContributors{
-			KeyVaultId:   ra.Data.KeyVaultId,
-			Contributors: contributors,
+		return NewAzureWrapper(enums.KindAZKeyVaultKVContributor, models.KeyVaultKVContributors{
+			KeyVaultId:     ra.Data.KeyVaultId,
+			KVContributors: kvContributors,
 		})
 	})
 }

@@ -94,11 +94,11 @@ func listResourceGroupOwners(ctx context.Context, client client.AzureClient, res
 			for id := range stream {
 				var (
 					resourceGroupOwners = models.ResourceGroupOwners{
-						ResourceGroupId: id.(string),
+						ResourceGroupId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this resource group", "resourceGroupId", id)
 					} else {

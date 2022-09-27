@@ -15,17 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package sinks
+package models
 
-import (
-	"context"
-	"fmt"
+import "github.com/bloodhoundad/azurehound/models/azure"
 
-	"github.com/bloodhoundad/azurehound/pipeline"
-)
+type KeyVaultKVContributor struct {
+	KVContributor azure.RoleAssignment `json:"kvContributor"`
+	KeyVaultId    string               `json:"keyVaultId"`
+}
 
-func WriteToConsole[T any](ctx context.Context, stream <-chan T) {
-	for item := range pipeline.OrDone(ctx.Done(), stream) {
-		fmt.Println(item)
-	}
+type KeyVaultKVContributors struct {
+	KVContributors []KeyVaultKVContributor `json:"kvContributors"`
+	KeyVaultId     string                  `json:"keyVaultId"`
 }

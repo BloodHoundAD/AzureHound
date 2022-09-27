@@ -90,11 +90,11 @@ func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-
 			for id := range stream {
 				var (
 					data = models.DeviceOwners{
-						DeviceId: id.(string),
+						DeviceId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListAzureDeviceRegisteredOwners(ctx, id.(string), false) {
+				for item := range client.ListAzureDeviceRegisteredOwners(ctx, id, false) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this device", "deviceId", id)
 					} else {

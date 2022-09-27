@@ -19,16 +19,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path"
-	"sync"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/internal"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
@@ -58,76 +55,32 @@ func listKeyVaultUserAccessAdminsCmdImpl(cmd *cobra.Command, args []string) {
 		log.Info("collecting azure key vault user access admins...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listKeyVaultUserAccessAdmins(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions))
+		keyVaults := listKeyVaults(ctx, azClient, subscriptions)
+		kvRoleAssignments := listKeyVaultRoleAssignments(ctx, azClient, keyVaults)
+		stream := listKeyVaultUserAccessAdmins(ctx, kvRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listKeyVaultUserAccessAdmins(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan interface{} {
-	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
-		wg      sync.WaitGroup
-	)
+func listKeyVaultUserAccessAdmins(
+	ctx context.Context,
+	kvRoleAssignments <-chan azureWrapper[models.KeyVaultRoleAssignments],
+) <-chan any {
+	return pipeline.Map(ctx.Done(), kvRoleAssignments, func(ra azureWrapper[models.KeyVaultRoleAssignments]) any {
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, kvRoleAssignmentFilter(constants.UserAccessAdminRoleID))
 
-	go func() {
-		defer close(ids)
-
-		for result := range pipeline.OrDone(ctx.Done(), keyVaults) {
-			if keyVault, ok := result.(AzureWrapper).Data.(models.KeyVault); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating key vault user access admins", "result", result)
-				return
-			} else {
-				ids <- keyVault.Id
+		kvContributors := internal.Map(filteredAssignments, func(ra models.KeyVaultRoleAssignment) models.KeyVaultUserAccessAdmin {
+			return models.KeyVaultUserAccessAdmin{
+				UserAccessAdmin: ra.RoleAssignment,
+				KeyVaultId:      ra.KeyVaultId,
 			}
-		}
-	}()
+		})
 
-	wg.Add(len(streams))
-	for i := range streams {
-		stream := streams[i]
-		go func() {
-			defer wg.Done()
-			for id := range stream {
-				var (
-					keyVaultUserAccessAdmins = models.KeyVaultUserAccessAdmins{
-						KeyVaultId: id.(string),
-					}
-					count = 0
-				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
-					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing user access admins for this key vault", "keyVaultId", id)
-					} else {
-						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
-
-						if roleDefinitionId == constants.UserAccessAdminRoleID {
-							keyVaultUserAccessAdmin := models.KeyVaultUserAccessAdmin{
-								UserAccessAdmin: item.Ok,
-								KeyVaultId:      item.ParentId,
-							}
-							log.V(2).Info("found key vault user access admin", "keyVaultUserAccessAdmin", keyVaultUserAccessAdmin)
-							count++
-							keyVaultUserAccessAdmins.UserAccessAdmins = append(keyVaultUserAccessAdmins.UserAccessAdmins, keyVaultUserAccessAdmin)
-						}
-					}
-				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZKeyVaultUserAccessAdmin,
-					Data: keyVaultUserAccessAdmins,
-				}
-				log.V(1).Info("finished listing key vault user access admins", "keyVaultId", id, "count", count)
-			}
-		}()
-	}
-
-	go func() {
-		wg.Wait()
-		close(out)
-		log.Info("finished listing all key vault user access admins")
-	}()
-	return out
+		return NewAzureWrapper(enums.KindAZKeyVaultUserAccessAdmin, models.KeyVaultUserAccessAdmins{
+			KeyVaultId:       ra.Data.KeyVaultId,
+			UserAccessAdmins: kvContributors,
+		})
+	})
 }

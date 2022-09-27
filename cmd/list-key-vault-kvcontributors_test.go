@@ -33,7 +33,7 @@ func init() {
 	setupLogger()
 }
 
-func TestListKeyVaultOwners(t *testing.T) {
+func TestListKeyVaultKVContributors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := context.Background()
@@ -43,7 +43,7 @@ func TestListKeyVaultOwners(t *testing.T) {
 	mockRoleAssignmentsChannel := make(chan azureWrapper[models.KeyVaultRoleAssignments])
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listKeyVaultOwners(ctx, mockRoleAssignmentsChannel)
+	channel := listKeyVaultKVContributors(ctx, mockRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockRoleAssignmentsChannel)
@@ -55,9 +55,9 @@ func TestListKeyVaultOwners(t *testing.T) {
 				RoleAssignments: []models.KeyVaultRoleAssignment{
 					{
 						RoleAssignment: azure.RoleAssignment{
-							Name: constants.OwnerRoleID,
+							Name: constants.KeyVaultContributorRoleID,
 							Properties: azure.RoleAssignmentPropertiesWithScope{
-								RoleDefinitionId: constants.OwnerRoleID,
+								RoleDefinitionId: constants.KeyVaultContributorRoleID,
 							},
 						},
 					},

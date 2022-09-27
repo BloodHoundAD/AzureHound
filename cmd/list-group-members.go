@@ -91,11 +91,11 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 			for id := range stream {
 				var (
 					data = models.GroupMembers{
-						GroupId: id.(string),
+						GroupId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADGroupMembers(ctx, id.(string), "", "", "", nil) {
+				for item := range client.ListAzureADGroupMembers(ctx, id, "", "", "", nil) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing members for this group", "groupId", id)
 					} else {

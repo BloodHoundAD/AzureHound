@@ -89,7 +89,7 @@ func listVirtualMachines(ctx context.Context, client client.AzureClient, subscri
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureVirtualMachines(ctx, id.(string), false) {
+				for item := range client.ListAzureVirtualMachines(ctx, id, false) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing virtual machines for this subscription", "subscriptionId", id)
 					} else {

@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path"
 	"sync"
 	"time"
 
@@ -34,17 +33,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listFunctionAppRoleAssignment)
+	listRootCmd.AddCommand(listKeyVaultRoleAssignmentsCmd)
 }
 
-var listFunctionAppRoleAssignment = &cobra.Command{
-	Use:          "function-app-role-assignments",
-	Long:         "Lists Azure Function App Role Assignments",
-	Run:          listFunctionAppRoleAssignmentImpl,
+var listKeyVaultRoleAssignmentsCmd = &cobra.Command{
+	Use:          "key-vault-role-assignments",
+	Long:         "Lists Key Vault Role Assignments",
+	Run:          listKeyVaultRoleAssignmentsCmdImpl,
 	SilenceUsage: true,
 }
 
-func listFunctionAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
+func listKeyVaultRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -54,19 +53,19 @@ func listFunctionAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure function app role assignments...")
+		log.Info("collecting azure key vault role assignments...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listFunctionAppRoleAssignments(ctx, azClient, listFunctionApps(ctx, azClient, subscriptions))
+		stream := listKeyVaultRoleAssignments(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClient, functionApps <-chan interface{}) <-chan interface{} {
+func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan azureWrapper[models.KeyVaultRoleAssignments] {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -75,12 +74,12 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 	go func() {
 		defer close(ids)
 
-		for result := range pipeline.OrDone(ctx.Done(), functionApps) {
-			if functionApp, ok := result.(AzureWrapper).Data.(models.FunctionApp); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating function app role assignments", "result", result)
+		for result := range pipeline.OrDone(ctx.Done(), keyVaults) {
+			if keyVault, ok := result.(AzureWrapper).Data.(models.KeyVault); !ok {
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating key vault role assignments", "result", result)
 				return
 			} else {
-				ids <- functionApp.Id
+				ids <- keyVault.Id
 			}
 		}
 	}()
@@ -92,34 +91,26 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 			defer wg.Done()
 			for id := range stream {
 				var (
-					functionAppRoleAssignments = models.AzureRoleAssignments{
-						ObjectId: id,
+					keyVaultRoleAssignments = models.KeyVaultRoleAssignments{
+						KeyVaultId: id,
 					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing role assignments for this function app", "functionAppId", id)
+						log.Error(item.Error, "unable to continue processing role assignments for this key vault", "keyVaultId", id)
 					} else {
-						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
-
-						functionAppRoleAssignment := models.AzureRoleAssignment{
-							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
-							RoleDefinitionId: roleDefinitionId,
+						keyVaultRoleAssignment := models.KeyVaultRoleAssignment{
+							KeyVaultId:     item.ParentId,
+							RoleAssignment: item.Ok,
 						}
-						log.V(2).Info("Found function app role asignment", "functionAppRoleAssignment", functionAppRoleAssignment)
+						log.V(2).Info("found key vault role assignment", "keyVaultRoleAssignment", keyVaultRoleAssignment)
 						count++
-						functionAppRoleAssignments.RoleAssignments = append(functionAppRoleAssignments.RoleAssignments, functionAppRoleAssignment)
+						keyVaultRoleAssignments.RoleAssignments = append(keyVaultRoleAssignments.RoleAssignments, keyVaultRoleAssignment)
 					}
 				}
-				out <- []AzureWrapper{
-					{
-						Kind: enums.KindAZFunctionAppRoleAssignment,
-						Data: functionAppRoleAssignments,
-					},
-				}
-				log.V(1).Info("finished listing function app role assignments", "functionAppId", id, "count", count)
+				out <- NewAzureWrapper(enums.KindAZKeyVaultRoleAssignment, keyVaultRoleAssignments)
+				log.V(1).Info("finished listing key vault role assignments", "keyVaultId", id, "count", count)
 			}
 		}()
 	}
@@ -127,7 +118,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all function app role assignments")
+		log.Info("finished listing all key vault role assignments")
 	}()
 
 	return out

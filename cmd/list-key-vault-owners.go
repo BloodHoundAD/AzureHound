@@ -19,16 +19,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path"
-	"sync"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/internal"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
@@ -58,77 +55,32 @@ func listKeyVaultOwnersCmdImpl(cmd *cobra.Command, args []string) {
 		log.Info("collecting azure key vault owners...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listKeyVaultOwners(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions))
+		keyVaults := listKeyVaults(ctx, azClient, subscriptions)
+		kvRoleAssignments := listKeyVaultRoleAssignments(ctx, azClient, keyVaults)
+		stream := listKeyVaultOwners(ctx, kvRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listKeyVaultOwners(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan interface{} {
-	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
-		wg      sync.WaitGroup
-	)
+func listKeyVaultOwners(
+	ctx context.Context,
+	kvRoleAssignments <-chan azureWrapper[models.KeyVaultRoleAssignments],
+) <-chan any {
+	return pipeline.Map(ctx.Done(), kvRoleAssignments, func(ra azureWrapper[models.KeyVaultRoleAssignments]) any {
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, kvRoleAssignmentFilter(constants.OwnerRoleID))
 
-	go func() {
-		defer close(ids)
-
-		for result := range pipeline.OrDone(ctx.Done(), keyVaults) {
-			if keyVault, ok := result.(AzureWrapper).Data.(models.KeyVault); !ok {
-				log.Error(fmt.Errorf("failed KeyVault type assertion"), "unable to continue enumerating key vault owners", "result", result)
-				return
-			} else {
-				ids <- keyVault.Id
+		kvContributors := internal.Map(filteredAssignments, func(ra models.KeyVaultRoleAssignment) models.KeyVaultOwner {
+			return models.KeyVaultOwner{
+				Owner:      ra.RoleAssignment,
+				KeyVaultId: ra.KeyVaultId,
 			}
-		}
-	}()
+		})
 
-	wg.Add(len(streams))
-	for i := range streams {
-		stream := streams[i]
-		go func() {
-			defer wg.Done()
-			for id := range stream {
-				var (
-					keyVaultOwners = models.KeyVaultOwners{
-						KeyVaultId: id.(string),
-					}
-					count = 0
-				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
-					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing owners for this key vault", "keyVaultId", id)
-					} else {
-						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
-
-						if roleDefinitionId == constants.OwnerRoleID {
-							keyVaultOwner := models.KeyVaultOwner{
-								Owner:      item.Ok,
-								KeyVaultId: item.ParentId,
-							}
-							log.V(2).Info("found key vault owner", "keyVaultOwner", keyVaultOwner)
-							count++
-							keyVaultOwners.Owners = append(keyVaultOwners.Owners, keyVaultOwner)
-						}
-					}
-				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZKeyVaultOwner,
-					Data: keyVaultOwners,
-				}
-				log.V(1).Info("finished listing key vault owners", "keyVaultId", id, "count", count)
-			}
-		}()
-	}
-
-	go func() {
-		wg.Wait()
-		close(out)
-		log.Info("finished listing all key vault owners")
-	}()
-
-	return out
+		return NewAzureWrapper(enums.KindAZKeyVaultOwner, models.KeyVaultOwners{
+			KeyVaultId: ra.Data.KeyVaultId,
+			Owners:     kvContributors,
+		})
+	})
 }

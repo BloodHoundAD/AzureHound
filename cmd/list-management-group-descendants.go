@@ -90,7 +90,7 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureManagementGroupDescendants(ctx, id.(string)) {
+				for item := range client.ListAzureManagementGroupDescendants(ctx, id) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing descendants for this management group", "managementGroupId", id)
 					} else {

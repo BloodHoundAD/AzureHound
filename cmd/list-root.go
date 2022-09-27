@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/config"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -82,8 +83,11 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		keyVaults  = make(chan interface{})
 		keyVaults2 = make(chan interface{})
 		keyVaults3 = make(chan interface{})
-		keyVaults4 = make(chan interface{})
-		keyVaults5 = make(chan interface{})
+
+		keyVaultRoleAssignments1 = make(chan azureWrapper[models.KeyVaultRoleAssignments])
+		keyVaultRoleAssignments2 = make(chan azureWrapper[models.KeyVaultRoleAssignments])
+		keyVaultRoleAssignments3 = make(chan azureWrapper[models.KeyVaultRoleAssignments])
+		keyVaultRoleAssignments4 = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 
 		mgmtGroups  = make(chan interface{})
 		mgmtGroups2 = make(chan interface{})
@@ -157,11 +161,14 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 	subscriptionUserAccessAdmins := listSubscriptionUserAccessAdmins(ctx, client, subscriptions6)
 
 	// Enumerate KeyVaults, KeyVaultOwners, KeyVaultAccessPolicies and KeyVaultUserAccessAdmins
-	pipeline.Tee(ctx.Done(), listKeyVaults(ctx, client, subscriptions2), keyVaults, keyVaults2, keyVaults3, keyVaults4, keyVaults5)
-	keyVaultOwners := listKeyVaultOwners(ctx, client, keyVaults2)
+	pipeline.Tee(ctx.Done(), listKeyVaults(ctx, client, subscriptions2), keyVaults, keyVaults2, keyVaults3)
+	pipeline.Tee(ctx.Done(), listKeyVaultRoleAssignments(ctx, client, keyVaults2), keyVaultRoleAssignments1, keyVaultRoleAssignments2, keyVaultRoleAssignments3, keyVaultRoleAssignments4)
 	keyVaultAccessPolicies := listKeyVaultAccessPolicies(ctx, client, keyVaults3, []enums.KeyVaultAccessType{enums.GetCerts, enums.GetKeys, enums.GetCerts})
-	keyVaultUserAccessAdmins := listKeyVaultUserAccessAdmins(ctx, client, keyVaults4)
-	keyVaultContributors := listKeyVaultContributors(ctx, client, keyVaults5)
+
+	keyVaultOwners := listKeyVaultOwners(ctx, keyVaultRoleAssignments1)
+	keyVaultUserAccessAdmins := listKeyVaultUserAccessAdmins(ctx, keyVaultRoleAssignments2)
+	keyVaultContributors := listKeyVaultContributors(ctx, keyVaultRoleAssignments3)
+	keyVaultKVContributors := listKeyVaultKVContributors(ctx, keyVaultRoleAssignments4)
 
 	// Enumerate ManagementGroups, ManagementGroupOwners and ManagementGroupDescendants
 	pipeline.Tee(ctx.Done(), listManagementGroups(ctx, client), mgmtGroups, mgmtGroups2, mgmtGroups3, mgmtGroups4)
@@ -230,6 +237,7 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		groups,
 		keyVaultAccessPolicies,
 		keyVaultContributors,
+		keyVaultKVContributors,
 		keyVaultOwners,
 		keyVaultUserAccessAdmins,
 		keyVaults,

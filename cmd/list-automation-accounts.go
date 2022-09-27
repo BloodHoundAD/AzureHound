@@ -89,7 +89,7 @@ func listAutomationAccounts(ctx context.Context, client client.AzureClient, subs
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureAutomationAccounts(ctx, id.(string)) {
+				for item := range client.ListAzureAutomationAccounts(ctx, id) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing automation accounts for this subscription", "subscriptionId", id)
 					} else {

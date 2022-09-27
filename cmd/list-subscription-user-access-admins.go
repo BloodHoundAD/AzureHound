@@ -94,11 +94,11 @@ func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureCl
 			for id := range stream {
 				var (
 					subscriptionUserAccessAdmins = models.SubscriptionUserAccessAdmins{
-						SubscriptionId: id.(string),
+						SubscriptionId: id,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id.(string), "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing user access admins for this subscription", "subscriptionId", id)
 					} else {

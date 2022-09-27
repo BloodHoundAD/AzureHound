@@ -19,11 +19,11 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
 	"github.com/bloodhoundad/azurehound/constants"
+	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/models/azure"
 	"github.com/golang/mock/gomock"
@@ -40,74 +40,34 @@ func TestListKeyVaultContributors(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockKeyVaultsChannel := make(chan interface{})
-	mockKeyVaultContributorChannel := make(chan azure.RoleAssignmentResult)
-	mockKeyVaultContributorChannel2 := make(chan azure.RoleAssignmentResult)
-
+	mockRoleAssignmentsChannel := make(chan azureWrapper[models.KeyVaultRoleAssignments])
 	mockTenant := azure.Tenant{}
-	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockKeyVaultContributorChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockKeyVaultContributorChannel2).Times(1)
-	channel := listKeyVaultContributors(ctx, mockClient, mockKeyVaultsChannel)
+	channel := listKeyVaultContributors(ctx, mockRoleAssignmentsChannel)
 
 	go func() {
-		defer close(mockKeyVaultsChannel)
-		mockKeyVaultsChannel <- AzureWrapper{
-			Data: models.KeyVault{},
-		}
-		mockKeyVaultsChannel <- AzureWrapper{
-			Data: models.KeyVault{},
-		}
-	}()
-	go func() {
-		defer close(mockKeyVaultContributorChannel)
-		mockKeyVaultContributorChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.ContributorRoleID,
+		defer close(mockRoleAssignmentsChannel)
+
+		mockRoleAssignmentsChannel <- NewAzureWrapper(enums.KindAZKeyVaultRoleAssignment, models.KeyVaultRoleAssignments{
+			KeyVaultId: "foo",
+			RoleAssignments: []models.KeyVaultRoleAssignment{
+				{
+					RoleAssignment: azure.RoleAssignment{
+						Name: constants.ContributorRoleID,
+						Properties: azure.RoleAssignmentPropertiesWithScope{
+							RoleDefinitionId: constants.ContributorRoleID,
+						},
+					},
 				},
 			},
-		}
-		mockKeyVaultContributorChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.ContributorRoleID,
-				},
-			},
-		}
-	}()
-	go func() {
-		defer close(mockKeyVaultContributorChannel2)
-		mockKeyVaultContributorChannel2 <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.ContributorRoleID,
-				},
-			},
-		}
-		mockKeyVaultContributorChannel2 <- azure.RoleAssignmentResult{
-			Error: mockError,
-		}
+		})
 	}()
 
-	if result, ok := <-channel; !ok {
+	if _, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.KeyVaultContributors); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.KeyVaultContributors{})
-	} else if len(data.Contributors) != 2 {
-		t.Errorf("got %v, want %v", len(data.Contributors), 2)
 	}
 
-	if result, ok := <-channel; !ok {
-		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.KeyVaultContributors); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.KeyVaultContributors{})
-	} else if len(data.Contributors) != 1 {
-		t.Errorf("got %v, want %v", len(data.Contributors), 2)
+	if _, ok := <-channel; ok {
+		t.Error("should not have recieved from channel")
 	}
 }

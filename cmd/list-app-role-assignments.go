@@ -91,14 +91,13 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 		stream := streams[i]
 		go func() {
 			defer wg.Done()
-			for sp := range stream {
+			for servicePrincipal := range stream {
 				var (
 					count = 0
 				)
-				servicePrincipal := sp.(models.ServicePrincipal)
 				for item := range client.ListAzureADAppRoleAssignments(ctx, servicePrincipal.Id, "", "", "", "", nil) {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing app role assignments for this service principal", "servicePrincipalId", sp)
+						log.Error(item.Error, "unable to continue processing app role assignments for this service principal", "servicePrincipalId", servicePrincipal)
 					} else {
 						log.V(2).Info("found app role assignment", "roleAssignments", item)
 						count++
