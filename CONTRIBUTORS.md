@@ -1,6 +1,6 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 ## Contributors ✨
 
@@ -18,6 +18,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/joshgantt"><img src="https://avatars.githubusercontent.com/u/29784250?v=4?s=100" width="100px;" alt=""/><br /><sub><b>joshgantt</b></sub></a><br /><a href="https://github.com/BloodHoundAD/AzureHound/commits?author=joshgantt" title="Code">💻</a> <a href="#maintenance-joshgantt" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/hugo-syn"><img src="https://avatars.githubusercontent.com/u/61210734?v=4?s=100" width="100px;" alt=""/><br /><sub><b>hugo-syn</b></sub></a><br /><a href="https://github.com/BloodHoundAD/AzureHound/commits?author=hugo-syn" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/crimike"><img src="https://avatars.githubusercontent.com/u/10261812?v=4?s=100" width="100px;" alt=""/><br /><sub><b>crimike</b></sub></a><br /><a href="https://github.com/BloodHoundAD/AzureHound/commits?author=crimike" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/0xffhh"><img src="https://avatars.githubusercontent.com/u/56194755?v=4?s=100" width="100px;" alt=""/><br /><sub><b>0xffhh</b></sub></a><br /><a href="https://github.com/BloodHoundAD/AzureHound/commits?author=0xffhh" title="Code">💻</a></td>
   </tr>
 </table>
 
