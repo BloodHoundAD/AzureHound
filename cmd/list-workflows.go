@@ -20,7 +20,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"math"
 	"os"
 	"os/signal"
 	"sync"
@@ -90,7 +89,12 @@ func listWorkflows(ctx context.Context, client client.AzureClient, subscriptions
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureWorkflows(ctx, id, "", math.MaxInt32) {
+				// Azure only allows requesting 100 workflows at a time. The previous
+				// value of math.MaxInt32 was causing issues and not collecting
+				// workflows at all. This is not a great fix, since it requires proper
+				// pagination in case there are more than 100 workflows, but it's better
+				// as an interim solution than it was before.
+				for item := range client.ListAzureWorkflows(ctx, id, "", 100) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing workflows for this subscription", "subscriptionId", id)
 					} else {

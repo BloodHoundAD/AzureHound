@@ -68,7 +68,12 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan interface{})
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
+		// The original size of the demuxxer cascaded into error messages for a lot of collection steps.
+		// Decreasing the demuxxer size only here is sufficient to prevent the cascade
+		// The error message with higher values for size is
+		// "The request was throttled."
+		// See issue #7: https://github.com/BloodHoundAD/AzureHound/issues/7
+		streams = pipeline.Demux(ctx.Done(), ids, 2)
 		wg      sync.WaitGroup
 	)
 
