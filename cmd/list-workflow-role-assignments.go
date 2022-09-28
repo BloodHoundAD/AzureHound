@@ -113,10 +113,9 @@ func listWorkflowRoleAsignments(ctx context.Context, client client.AzureClient, 
 						workflowRoleAssignments.RoleAssignments = append(workflowRoleAssignments.RoleAssignments, workflowRoleAssignment)
 					}
 				}
-				out <- []AzureWrapper{{
+				out <- AzureWrapper{
 					Kind: enums.KindAZWorkflowRoleAssignment,
 					Data: workflowRoleAssignments,
-				},
 				}
 				log.V(1).Info("finished listing workflow role assignments", "workflowId", id, "count", count)
 			}

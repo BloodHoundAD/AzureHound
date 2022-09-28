@@ -113,11 +113,9 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 						functionAppRoleAssignments.RoleAssignments = append(functionAppRoleAssignments.RoleAssignments, functionAppRoleAssignment)
 					}
 				}
-				out <- []AzureWrapper{
-					{
-						Kind: enums.KindAZFunctionAppRoleAssignment,
-						Data: functionAppRoleAssignments,
-					},
+				out <- AzureWrapper{
+					Kind: enums.KindAZFunctionAppRoleAssignment,
+					Data: functionAppRoleAssignments,
 				}
 				log.V(1).Info("finished listing function app role assignments", "functionAppId", id, "count", count)
 			}
