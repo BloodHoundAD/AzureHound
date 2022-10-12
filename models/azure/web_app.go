@@ -19,20 +19,20 @@ package azure
 
 import "strings"
 
-type FunctionApp struct {
+type WebApp struct {
 	Entity
 
-	ExtendedLocation ExtendedLocation      `json:"extendedLocation,omitempty"`
-	Identity         ManagedIdentity       `json:"identity,omitempty"`
-	Kind             string                `json:"kind,omitempty"`
-	Location         string                `json:"location,omitempty"`
-	Name             string                `json:"name,omitempty"`
-	Properties       FunctionAppProperties `json:"properties,omitempty"`
-	Tags             map[string]string     `json:"tags,omitempty"`
-	Type             string                `json:"type,omitempty"`
+	ExtendedLocation ExtendedLocation  `json:"extendedLocation,omitempty"`
+	Identity         ManagedIdentity   `json:"identity,omitempty"`
+	Kind             string            `json:"kind,omitempty"`
+	Location         string            `json:"location,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	Properties       WebAppProperties  `json:"properties,omitempty"`
+	Tags             map[string]string `json:"tags,omitempty"`
+	Type             string            `json:"type,omitempty"`
 }
 
-func (s FunctionApp) ResourceGroupName() string {
+func (s WebApp) ResourceGroupName() string {
 	parts := strings.Split(s.Id, "/")
 	if len(parts) > 4 {
 		return parts[4]
@@ -41,7 +41,7 @@ func (s FunctionApp) ResourceGroupName() string {
 	}
 }
 
-func (s FunctionApp) ResourceGroupId() string {
+func (s WebApp) ResourceGroupId() string {
 	parts := strings.Split(s.Id, "/")
 	if len(parts) > 5 {
 		return strings.Join(parts[:5], "/")
@@ -50,13 +50,13 @@ func (s FunctionApp) ResourceGroupId() string {
 	}
 }
 
-type FunctionAppList struct {
-	NextLink string        `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []FunctionApp `json:"value"`              // A list of function apps
+type WebAppList struct {
+	NextLink string   `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
+	Value    []WebApp `json:"value"`              // A list of web apps
 }
 
-type FunctionAppResult struct {
+type WebAppResult struct {
 	SubscriptionId string
 	Error          error
-	Ok             FunctionApp
+	Ok             WebApp
 }

@@ -27,12 +27,12 @@ import (
 	"github.com/bloodhoundad/azurehound/models/azure"
 )
 
-func (s *azureClient) GetAzureFunctionApp(ctx context.Context, subscriptionId, groupName, functionAppName, expand string) (*azure.FunctionApp, error) {
+func (s *azureClient) GetAzureWebApp(ctx context.Context, subscriptionId, groupName, webAppName, expand string) (*azure.WebApp, error) {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Web/sites/%s", subscriptionId, groupName, functionAppName)
+		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Web/sites/%s", subscriptionId, groupName, webAppName)
 		params   = query.Params{ApiVersion: "2022-03-01", Expand: expand}.AsMap()
 		headers  map[string]string
-		response azure.FunctionApp
+		response azure.WebApp
 	)
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
 		return nil, err
@@ -43,12 +43,12 @@ func (s *azureClient) GetAzureFunctionApp(ctx context.Context, subscriptionId, g
 	}
 }
 
-func (s *azureClient) GetAzureFunctionApps(ctx context.Context, subscriptionId string) (azure.FunctionAppList, error) {
+func (s *azureClient) GetAzureWebApps(ctx context.Context, subscriptionId string) (azure.WebAppList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Web/sites", subscriptionId)
 		params   = query.Params{ApiVersion: "2022-03-01"}.AsMap()
 		headers  map[string]string
-		response azure.FunctionAppList
+		response azure.WebAppList
 	)
 
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
@@ -60,30 +60,30 @@ func (s *azureClient) GetAzureFunctionApps(ctx context.Context, subscriptionId s
 	}
 }
 
-func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId string) <-chan azure.FunctionAppResult {
-	out := make(chan azure.FunctionAppResult)
+func (s *azureClient) ListAzureWebApps(ctx context.Context, subscriptionId string) <-chan azure.WebAppResult {
+	out := make(chan azure.WebAppResult)
 
 	go func() {
 		defer close(out)
 
 		var (
-			errResult = azure.FunctionAppResult{
+			errResult = azure.WebAppResult{
 				SubscriptionId: subscriptionId,
 			}
 			nextLink string
 		)
 
-		if result, err := s.GetAzureFunctionApps(ctx, subscriptionId); err != nil {
+		if result, err := s.GetAzureWebApps(ctx, subscriptionId); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {
 			for _, u := range result.Value {
-				out <- azure.FunctionAppResult{SubscriptionId: subscriptionId, Ok: u}
+				out <- azure.WebAppResult{SubscriptionId: subscriptionId, Ok: u}
 			}
 
 			nextLink = result.NextLink
 			for nextLink != "" {
-				var list azure.FunctionAppList
+				var list azure.WebAppList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
 					out <- errResult
@@ -102,7 +102,7 @@ func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId 
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.FunctionAppResult{
+						out <- azure.WebAppResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
 						}

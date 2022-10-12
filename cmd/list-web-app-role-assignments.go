@@ -34,17 +34,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listFunctionAppRoleAssignment)
+	listRootCmd.AddCommand(listWebAppRoleAssignment)
 }
 
-var listFunctionAppRoleAssignment = &cobra.Command{
-	Use:          "function-app-role-assignments",
-	Long:         "Lists Azure Function App Role Assignments",
-	Run:          listFunctionAppRoleAssignmentImpl,
+var listWebAppRoleAssignment = &cobra.Command{
+	Use:          "web-app-role-assignments",
+	Long:         "Lists Azure Web App(App Services) Role Assignments",
+	Run:          listWebAppRoleAssignmentImpl,
 	SilenceUsage: true,
 }
 
-func listFunctionAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
+func listWebAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -54,17 +54,17 @@ func listFunctionAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure function app role assignments...")
+		log.Info("collecting azure web app role assignments...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listFunctionAppRoleAssignments(ctx, azClient, listFunctionApps(ctx, azClient, subscriptions))
+		stream := listWebAppRoleAssignments(ctx, azClient, listWebApps(ctx, azClient, subscriptions))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClient, functionApps <-chan interface{}) <-chan interface{} {
+func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, webApps <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -75,12 +75,12 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 	go func() {
 		defer close(ids)
 
-		for result := range pipeline.OrDone(ctx.Done(), functionApps) {
-			if functionApp, ok := result.(AzureWrapper).Data.(models.FunctionApp); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating function app role assignments", "result", result)
+		for result := range pipeline.OrDone(ctx.Done(), webApps) {
+			if webApp, ok := result.(AzureWrapper).Data.(models.WebApp); !ok {
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating web app role assignments", "result", result)
 				return
 			} else {
-				ids <- functionApp.Id
+				ids <- webApp.Id
 			}
 		}
 	}()
@@ -92,32 +92,32 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 			defer wg.Done()
 			for id := range stream {
 				var (
-					functionAppRoleAssignments = models.AzureRoleAssignments{
+					webAppRoleAssignments = models.AzureRoleAssignments{
 						ObjectId: id,
 					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing role assignments for this function app", "functionAppId", id)
+						log.Error(item.Error, "unable to continue processing role assignments for this web app", "webAppId", id)
 					} else {
 						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
 
-						functionAppRoleAssignment := models.AzureRoleAssignment{
+						webAppRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
 							ObjectId:         item.ParentId,
 							RoleDefinitionId: roleDefinitionId,
 						}
-						log.V(2).Info("Found function app role asignment", "functionAppRoleAssignment", functionAppRoleAssignment)
+						log.V(2).Info("Found web app role asignment", "webAppRoleAssignment", webAppRoleAssignment)
 						count++
-						functionAppRoleAssignments.RoleAssignments = append(functionAppRoleAssignments.RoleAssignments, functionAppRoleAssignment)
+						webAppRoleAssignments.RoleAssignments = append(webAppRoleAssignments.RoleAssignments, webAppRoleAssignment)
 					}
 				}
 				out <- AzureWrapper{
-					Kind: enums.KindAZFunctionAppRoleAssignment,
-					Data: functionAppRoleAssignments,
+					Kind: enums.KindAZWebAppRoleAssignment,
+					Data: webAppRoleAssignments,
 				}
-				log.V(1).Info("finished listing function app role assignments", "functionAppId", id, "count", count)
+				log.V(1).Info("finished listing web app role assignments", "webAppId", id, "count", count)
 			}
 		}()
 	}
@@ -125,7 +125,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all function app role assignments")
+		log.Info("finished listing all web app role assignments")
 	}()
 
 	return out

@@ -19,7 +19,7 @@ package azure
 
 import "github.com/bloodhoundad/azurehound/enums"
 
-type FunctionAppProperties struct {
+type WebAppProperties struct {
 	AvailabilityState           enums.SiteAvailabilityState `json:"availabilityState,omitempty"`
 	ClientAffinityEnabled       bool                        `json:"clientAffinityEnabled,omitempty"`
 	ClientCertEnabled           bool                        `json:"clientCertEnabled,omitempty"`

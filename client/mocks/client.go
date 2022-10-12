@@ -755,20 +755,6 @@ func (mr *MockAzureClientMockRecorder) ListAzureDevices(arg0, arg1, arg2, arg3, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureDevices", reflect.TypeOf((*MockAzureClient)(nil).ListAzureDevices), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
-// ListAzureFunctionApps mocks base method.
-func (m *MockAzureClient) ListAzureFunctionApps(arg0 context.Context, arg1 string) <-chan azure.FunctionAppResult {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureFunctionApps", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.FunctionAppResult)
-	return ret0
-}
-
-// ListAzureFunctionApps indicates an expected call of ListAzureFunctionApps.
-func (mr *MockAzureClientMockRecorder) ListAzureFunctionApps(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureFunctionApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureFunctionApps), arg0, arg1)
-}
-
 // ListAzureKeyVaults mocks base method.
 func (m *MockAzureClient) ListAzureKeyVaults(arg0 context.Context, arg1 string, arg2 int32) <-chan azure.KeyVaultResult {
 	m.ctrl.T.Helper()
@@ -879,6 +865,20 @@ func (m *MockAzureClient) ListAzureVirtualMachines(arg0 context.Context, arg1 st
 func (mr *MockAzureClientMockRecorder) ListAzureVirtualMachines(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureVirtualMachines", reflect.TypeOf((*MockAzureClient)(nil).ListAzureVirtualMachines), arg0, arg1, arg2)
+}
+
+// ListAzureWebApps mocks base method.
+func (m *MockAzureClient) ListAzureWebApps(arg0 context.Context, arg1 string) <-chan azure.WebAppResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureWebApps", arg0, arg1)
+	ret0, _ := ret[0].(<-chan azure.WebAppResult)
+	return ret0
+}
+
+// ListAzureWebApps indicates an expected call of ListAzureWebApps.
+func (mr *MockAzureClientMockRecorder) ListAzureWebApps(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureWebApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureWebApps), arg0, arg1)
 }
 
 // ListAzureWorkflows mocks base method.

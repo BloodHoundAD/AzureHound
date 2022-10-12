@@ -67,6 +67,6 @@ const (
 	KindAZAutomationAccountRoleAssignment Kind = "AZAutomationAccountRoleAssignment"
 	KindAZWorkflow                        Kind = "AZWorkflow"
 	KindAZWorkflowRoleAssignment          Kind = "AZWorkflowRoleAssignment"
-	KindAZFunctionApp                     Kind = "AZFunctionApp"
-	KindAZFunctionAppRoleAssignment       Kind = "AZFunctionAppRoleAssignment"
+	KindAZWebApp                          Kind = "AZWebApp"
+	KindAZWebAppRoleAssignment            Kind = "AZWebAppRoleAssignment"
 )

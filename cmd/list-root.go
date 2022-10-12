@@ -138,8 +138,8 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		workflows  = make(chan interface{})
 		workflows2 = make(chan interface{})
 
-		functionApps  = make(chan interface{})
-		functionApps2 = make(chan interface{})
+		webApps  = make(chan interface{})
+		webApps2 = make(chan interface{})
 	)
 
 	// Enumerate Apps, AppOwners and AppMembers
@@ -222,9 +222,9 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 	pipeline.Tee(ctx.Done(), listWorkflows(ctx, client, subscriptions9), workflows, workflows2)
 	workflowRoleAssignments := listWorkflowRoleAsignments(ctx, client, workflows2)
 
-	//Enumerate function apps
-	pipeline.Tee(ctx.Done(), listFunctionApps(ctx, client, subscriptions10), functionApps, functionApps2)
-	functionAppRoleAssignments := listFunctionAppRoleAssignments(ctx, client, functionApps2)
+	//Enumerate web apps(app services)
+	pipeline.Tee(ctx.Done(), listWebApps(ctx, client, subscriptions10), webApps, webApps2)
+	webAppRoleAssignments := listWebAppRoleAssignments(ctx, client, webApps2)
 
 	return pipeline.Mux(ctx.Done(),
 		appOwners,
@@ -271,7 +271,7 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		automationAccountRoleAssignments,
 		workflows,
 		workflowRoleAssignments,
-		functionApps,
-		functionAppRoleAssignments,
+		webApps,
+		webAppRoleAssignments,
 	)
 }

@@ -19,8 +19,8 @@ package models
 
 import "github.com/bloodhoundad/azurehound/models/azure"
 
-type FunctionApp struct {
-	azure.FunctionApp
+type WebApp struct {
+	azure.WebApp
 	SubscriptionId    string `json:"subscriptionId"`
 	ResourceGroupId   string `json:"resourceGroupId"`
 	ResourceGroupName string `json:"resourceGroupName"`
