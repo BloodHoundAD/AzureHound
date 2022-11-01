@@ -23,7 +23,6 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"sync"
 	"time"
 
 	"github.com/bloodhoundad/azurehound/client"
@@ -58,76 +57,51 @@ func listSubscriptionOwnersCmdImpl(cmd *cobra.Command, args []string) {
 		log.Info("collecting azure subscription owners...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listSubscriptionOwners(ctx, azClient, subscriptions)
+		roleAssignments := listSubscriptionRoleAssignments(ctx, azClient, subscriptions)
+		stream := listSubscriptionOwners(ctx, azClient, roleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listSubscriptionOwners(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
-	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
-		wg      sync.WaitGroup
-	)
+func listSubscriptionOwners(ctx context.Context, client client.AzureClient, roleAssignments <-chan interface{}) <-chan interface{} {
+	out := make(chan interface{})
 
 	go func() {
-		defer close(ids)
+		defer close(out)
 
-		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
-			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
+		for result := range pipeline.OrDone(ctx.Done(), roleAssignments) {
+			if roleAssignments, ok := result.(AzureWrapper).Data.(models.SubscriptionRoleAssignments); !ok {
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating subscription owners", "result", result)
 				return
 			} else {
-				ids <- subscription.Id
-			}
-		}
-	}()
-
-	wg.Add(len(streams))
-	for i := range streams {
-		stream := streams[i]
-		go func() {
-			defer wg.Done()
-			for id := range stream {
 				var (
 					subscriptionOwners = models.SubscriptionOwners{
-						SubscriptionId: id,
+						SubscriptionId: roleAssignments.SubscriptionId,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
-					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing owners for this subscription", "subscriptionId", id)
-					} else {
-						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
+				for _, item := range roleAssignments.RoleAssignments {
+					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.OwnerRoleID {
-							subscriptionOwner := models.SubscriptionOwner{
-								Owner:          item.Ok,
-								SubscriptionId: item.ParentId,
-							}
-							log.V(2).Info("found subscription owner", "subscriptionOwner", subscriptionOwner)
-							count++
-							subscriptionOwners.Owners = append(subscriptionOwners.Owners, subscriptionOwner)
+					if roleDefinitionId == constants.OwnerRoleID {
+						subscriptionOwner := models.SubscriptionOwner{
+							Owner:          item.RoleAssignment,
+							SubscriptionId: item.SubscriptionId,
 						}
+						log.V(2).Info("found subscription owner", "subscriptionOwner", subscriptionOwner)
+						count++
+						subscriptionOwners.Owners = append(subscriptionOwners.Owners, subscriptionOwner)
 					}
 				}
 				out <- AzureWrapper{
 					Kind: enums.KindAZSubscriptionOwner,
 					Data: subscriptionOwners,
 				}
-				log.V(1).Info("finished listing subscription owners", "subscriptionId", id, "count", count)
+				log.V(1).Info("finished listing subscription owners", "subscriptionId", roleAssignments.SubscriptionId, "count", count)
 			}
-		}()
-	}
-
-	go func() {
-		wg.Wait()
-		close(out)
-		log.Info("finished listing all subscription owners")
+		}
 	}()
 
 	return out

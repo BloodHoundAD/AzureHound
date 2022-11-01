@@ -19,15 +19,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/internal"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
@@ -59,52 +57,28 @@ func listVirtualMachineAvereContributorsCmdImpl(cmd *cobra.Command, args []strin
 		subscriptions := listSubscriptions(ctx, azClient)
 		vms := listVirtualMachines(ctx, azClient, subscriptions)
 		vmRoleAssignments := listVirtualMachineRoleAssignments(ctx, azClient, vms)
-		stream := listVirtualMachineAvereContributors(ctx, azClient, vmRoleAssignments)
+		stream := listVirtualMachineAvereContributors(ctx, vmRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listVirtualMachineAvereContributors(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
-	out := make(chan interface{})
-
-	go func() {
-		defer close(out)
-
-		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {
-			if roleAssignments, ok := result.(AzureWrapper).Data.(models.VirtualMachineRoleAssignments); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine avere contributors", "result", result)
-				return
-			} else {
-				var (
-					virtualMachineAvereContributors = models.VirtualMachineAvereContributors{
-						VirtualMachineId: roleAssignments.VirtualMachineId,
-					}
-					count = 0
-				)
-				for _, item := range roleAssignments.RoleAssignments {
-					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
-
-					if roleDefinitionId == constants.AvereContributorRoleID {
-						virtualMachineAvereContributor := models.VirtualMachineAvereContributor{
-							AvereContributor: item.RoleAssignment,
-							VirtualMachineId: item.VirtualMachineId,
-						}
-						log.V(2).Info("found virtual machine avere contributor", "virtualMachineAvereContributor", virtualMachineAvereContributor)
-						count++
-						virtualMachineAvereContributors.AvereContributors = append(virtualMachineAvereContributors.AvereContributors, virtualMachineAvereContributor)
-					}
-				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZVMAvereContributor,
-					Data: virtualMachineAvereContributors,
-				}
-				log.V(1).Info("finished listing virtual machine avere contributors", "virtualMachineId", roleAssignments.VirtualMachineId, "count", count)
+func listVirtualMachineAvereContributors(
+	ctx context.Context,
+	roleAssignments <-chan azureWrapper[models.VirtualMachineRoleAssignments],
+) <-chan any {
+	return pipeline.Map(ctx.Done(), roleAssignments, func(ra azureWrapper[models.VirtualMachineRoleAssignments]) any {
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, vmRoleAssignmentFilter(constants.AvereContributorRoleID))
+		avereContributors := internal.Map(filteredAssignments, func(ra models.VirtualMachineRoleAssignment) models.VirtualMachineAvereContributor {
+			return models.VirtualMachineAvereContributor{
+				VirtualMachineId: ra.VirtualMachineId,
+				AvereContributor: ra.RoleAssignment,
 			}
-		}
-		log.Info("finished listing all virtual machine avere contributors")
-	}()
-
-	return out
+		})
+		return NewAzureWrapper(enums.KindAZVMAvereContributor, models.VirtualMachineAvereContributors{
+			VirtualMachineId:  ra.Data.VirtualMachineId,
+			AvereContributors: avereContributors,
+		})
+	})
 }

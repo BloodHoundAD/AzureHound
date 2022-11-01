@@ -19,15 +19,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/internal"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
@@ -59,51 +57,28 @@ func listVirtualMachineOwnersCmdImpl(cmd *cobra.Command, args []string) {
 		subscriptions := listSubscriptions(ctx, azClient)
 		vms := listVirtualMachines(ctx, azClient, subscriptions)
 		vmRoleAssignments := listVirtualMachineRoleAssignments(ctx, azClient, vms)
-		stream := listVirtualMachineOwners(ctx, azClient, vmRoleAssignments)
+		stream := listVirtualMachineOwners(ctx, vmRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listVirtualMachineOwners(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
-	out := make(chan interface{})
-
-	go func() {
-		defer close(out)
-
-		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {
-			if roleAssignments, ok := result.(AzureWrapper).Data.(models.VirtualMachineRoleAssignments); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine owners", "result", result)
-				return
-			} else {
-				var (
-					virtualMachineOwners = models.VirtualMachineOwners{
-						VirtualMachineId: roleAssignments.VirtualMachineId,
-					}
-					count = 0
-				)
-				for _, item := range roleAssignments.RoleAssignments {
-					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
-
-					if roleDefinitionId == constants.OwnerRoleID {
-						virtualMachineOwner := models.VirtualMachineOwner{
-							Owner:            item.RoleAssignment,
-							VirtualMachineId: item.VirtualMachineId,
-						}
-						log.V(2).Info("found virtual machine owner", "virtualMachineOwner", virtualMachineOwner)
-						count++
-						virtualMachineOwners.Owners = append(virtualMachineOwners.Owners, virtualMachineOwner)
-					}
-				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZVMOwner,
-					Data: virtualMachineOwners,
-				}
-				log.V(1).Info("finished listing virtual machine owners", "virtualMachineId", roleAssignments.VirtualMachineId, "count", count)
+func listVirtualMachineOwners(
+	ctx context.Context,
+	roleAssignments <-chan azureWrapper[models.VirtualMachineRoleAssignments],
+) <-chan any {
+	return pipeline.Map(ctx.Done(), roleAssignments, func(ra azureWrapper[models.VirtualMachineRoleAssignments]) any {
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, vmRoleAssignmentFilter(constants.OwnerRoleID))
+		owners := internal.Map(filteredAssignments, func(ra models.VirtualMachineRoleAssignment) models.VirtualMachineOwner {
+			return models.VirtualMachineOwner{
+				VirtualMachineId: ra.VirtualMachineId,
+				Owner:            ra.RoleAssignment,
 			}
-		}
-	}()
-
-	return out
+		})
+		return NewAzureWrapper(enums.KindAZVMOwner, models.VirtualMachineOwners{
+			VirtualMachineId: ra.Data.VirtualMachineId,
+			Owners:           owners,
+		})
+	})
 }

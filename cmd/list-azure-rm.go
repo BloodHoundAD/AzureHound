@@ -68,73 +68,81 @@ func listAzureRMCmdImpl(cmd *cobra.Command, args []string) {
 
 func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{} {
 	var (
-		keyVaults  = make(chan interface{})
-		keyVaults2 = make(chan interface{})
-		keyVaults3 = make(chan interface{})
-
+		keyVaults                = make(chan interface{})
+		keyVaults2               = make(chan interface{})
+		keyVaults3               = make(chan interface{})
 		keyVaultRoleAssignments1 = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 		keyVaultRoleAssignments2 = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 		keyVaultRoleAssignments3 = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 		keyVaultRoleAssignments4 = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 
-		mgmtGroups  = make(chan interface{})
-		mgmtGroups2 = make(chan interface{})
-		mgmtGroups3 = make(chan interface{})
-		mgmtGroups4 = make(chan interface{})
+		mgmtGroups                = make(chan interface{})
+		mgmtGroups2               = make(chan interface{})
+		mgmtGroups3               = make(chan interface{})
+		mgmtGroupRoleAssignments1 = make(chan azureWrapper[models.ManagementGroupRoleAssignments])
+		mgmtGroupRoleAssignments2 = make(chan azureWrapper[models.ManagementGroupRoleAssignments])
 
-		resourceGroups  = make(chan interface{})
-		resourceGroups2 = make(chan interface{})
-		resourceGroups3 = make(chan interface{})
+		resourceGroups                = make(chan interface{})
+		resourceGroups2               = make(chan interface{})
+		resourceGroupRoleAssignments1 = make(chan azureWrapper[models.ResourceGroupRoleAssignments])
+		resourceGroupRoleAssignments2 = make(chan azureWrapper[models.ResourceGroupRoleAssignments])
 
-		subscriptions  = make(chan interface{})
-		subscriptions2 = make(chan interface{})
-		subscriptions3 = make(chan interface{})
-		subscriptions4 = make(chan interface{})
-		subscriptions5 = make(chan interface{})
-		subscriptions6 = make(chan interface{})
+		subscriptions                = make(chan interface{})
+		subscriptions2               = make(chan interface{})
+		subscriptions3               = make(chan interface{})
+		subscriptions4               = make(chan interface{})
+		subscriptions5               = make(chan interface{})
+		subscriptionRoleAssignments1 = make(chan interface{})
+		subscriptionRoleAssignments2 = make(chan interface{})
 
-		virtualMachines  = make(chan interface{})
-		virtualMachines2 = make(chan interface{})
-		virtualMachines3 = make(chan interface{})
-		virtualMachines4 = make(chan interface{})
-		virtualMachines5 = make(chan interface{})
-		virtualMachines6 = make(chan interface{})
+		virtualMachines                = make(chan interface{})
+		virtualMachines2               = make(chan interface{})
+		virtualMachineRoleAssignments1 = make(chan azureWrapper[models.VirtualMachineRoleAssignments])
+		virtualMachineRoleAssignments2 = make(chan azureWrapper[models.VirtualMachineRoleAssignments])
+		virtualMachineRoleAssignments3 = make(chan azureWrapper[models.VirtualMachineRoleAssignments])
+		virtualMachineRoleAssignments4 = make(chan azureWrapper[models.VirtualMachineRoleAssignments])
+		virtualMachineRoleAssignments5 = make(chan azureWrapper[models.VirtualMachineRoleAssignments])
 	)
 
-	// Enumerate Subscriptions, SubscriptionOwners and SubscriptionUserAccessAdmins
-	pipeline.Tee(ctx.Done(), listSubscriptions(ctx, client), subscriptions, subscriptions2, subscriptions3, subscriptions4, subscriptions5, subscriptions6)
-	subscriptionOwners := listSubscriptionOwners(ctx, client, subscriptions5)
-	subscriptionUserAccessAdmins := listSubscriptionUserAccessAdmins(ctx, client, subscriptions6)
+	// Enumerate entities
+	pipeline.Tee(ctx.Done(), listManagementGroups(ctx, client), mgmtGroups, mgmtGroups2, mgmtGroups3)
+	pipeline.Tee(ctx.Done(), listSubscriptions(ctx, client), subscriptions, subscriptions2, subscriptions3, subscriptions4, subscriptions5)
+	pipeline.Tee(ctx.Done(), listResourceGroups(ctx, client, subscriptions2), resourceGroups, resourceGroups2)
+	pipeline.Tee(ctx.Done(), listKeyVaults(ctx, client, subscriptions3), keyVaults, keyVaults2, keyVaults3)
+	pipeline.Tee(ctx.Done(), listVirtualMachines(ctx, client, subscriptions4), virtualMachines, virtualMachines2)
 
-	// Enumerate KeyVaults, KeyVaultOwners, KeyVaultAccessPolicies and KeyVaultUserAccessAdmins
-	pipeline.Tee(ctx.Done(), listKeyVaults(ctx, client, subscriptions2), keyVaults, keyVaults2, keyVaults3)
+	// Enumerate Relationships
+	// ManagementGroups: Descendants, Owners and UserAccessAdmins
+	mgmtGroupDescendants := listManagementGroupDescendants(ctx, client, mgmtGroups2)
+	pipeline.Tee(ctx.Done(), listManagementGroupRoleAssignments(ctx, client, mgmtGroups3), mgmtGroupRoleAssignments1, mgmtGroupRoleAssignments2)
+	mgmtGroupOwners := listManagementGroupOwners(ctx, mgmtGroupRoleAssignments1)
+	mgmtGroupUserAccessAdmins := listManagementGroupUserAccessAdmins(ctx, mgmtGroupRoleAssignments2)
+
+	// Subscriptions: Owners and UserAccessAdmins
+	pipeline.Tee(ctx.Done(), listSubscriptionRoleAssignments(ctx, client, subscriptions5), subscriptionRoleAssignments1, subscriptionRoleAssignments2)
+	subscriptionOwners := listSubscriptionOwners(ctx, client, subscriptionRoleAssignments1)
+	subscriptionUserAccessAdmins := listSubscriptionUserAccessAdmins(ctx, client, subscriptionRoleAssignments2)
+
+	// ResourceGroups: Owners and UserAccessAdmins
+	pipeline.Tee(ctx.Done(), listResourceGroupRoleAssignments(ctx, client, resourceGroups2), resourceGroupRoleAssignments1, resourceGroupRoleAssignments2)
+	resourceGroupOwners := listResourceGroupOwners(ctx, resourceGroupRoleAssignments1)
+	resourceGroupUserAccessAdmins := listResourceGroupUserAccessAdmins(ctx, resourceGroupRoleAssignments2)
+
+	// KeyVaults: AccessPolicies, Owners, UserAccessAdmins, Contributors and KVContributors
 	pipeline.Tee(ctx.Done(), listKeyVaultRoleAssignments(ctx, client, keyVaults2), keyVaultRoleAssignments1, keyVaultRoleAssignments2, keyVaultRoleAssignments3, keyVaultRoleAssignments4)
 	keyVaultAccessPolicies := listKeyVaultAccessPolicies(ctx, client, keyVaults3, []enums.KeyVaultAccessType{enums.GetCerts, enums.GetKeys, enums.GetCerts})
-
 	keyVaultOwners := listKeyVaultOwners(ctx, keyVaultRoleAssignments1)
 	keyVaultUserAccessAdmins := listKeyVaultUserAccessAdmins(ctx, keyVaultRoleAssignments2)
 	keyVaultContributors := listKeyVaultContributors(ctx, keyVaultRoleAssignments3)
 	keyVaultKVContributors := listKeyVaultKVContributors(ctx, keyVaultRoleAssignments4)
 
-	// Enumerate ManagementGroups, ManagementGroupOwners and ManagementGroupDescendants
-	pipeline.Tee(ctx.Done(), listManagementGroups(ctx, client), mgmtGroups, mgmtGroups2, mgmtGroups3, mgmtGroups4)
-	mgmtGroupOwners := listManagementGroupOwners(ctx, client, mgmtGroups2)
-	mgmtGroupDescendants := listManagementGroupDescendants(ctx, client, mgmtGroups3)
-	mgmtGroupUserAccessAdmins := listManagementGroupUserAccessAdmins(ctx, client, mgmtGroups4)
-
-	// Enumerate ResourceGroups, ResourceGroupOwners and ResourceGroupUserAccessAdmins
-	pipeline.Tee(ctx.Done(), listResourceGroups(ctx, client, subscriptions3), resourceGroups, resourceGroups2, resourceGroups3)
-	resourceGroupOwners := listResourceGroupOwners(ctx, client, resourceGroups2)
-	resourceGroupUserAccessAdmins := listResourceGroupUserAccessAdmins(ctx, client, resourceGroups3)
-
-	// Enumerate VirtualMachines, VirtualMachineOwners, VirtualMachineAvereContributors, VirtualMachineContributors,
-	// VirtualMachineAdminLogins and VirtualMachineUserAccessAdmins
-	pipeline.Tee(ctx.Done(), listVirtualMachines(ctx, client, subscriptions4), virtualMachines, virtualMachines2, virtualMachines3, virtualMachines4, virtualMachines5, virtualMachines6)
-	virtualMachineOwners := listVirtualMachineOwners(ctx, client, virtualMachines2)
-	virtualMachineAvereContributors := listVirtualMachineAvereContributors(ctx, client, virtualMachines3)
-	virtualMachineContributors := listVirtualMachineContributors(ctx, client, virtualMachines4)
-	virtualMachineAdminLogins := listVirtualMachineAdminLogins(ctx, client, virtualMachines5)
-	virtualMachineUserAccessAdmins := listVirtualMachineUserAccessAdmins(ctx, client, virtualMachines6)
+	// VirtualMachines: Owners, AvereContributors, Contributors, AdminLogins and UserAccessAdmins
+	pipeline.Tee(ctx.Done(), listVirtualMachineRoleAssignments(ctx, client, virtualMachines2), virtualMachineRoleAssignments1, virtualMachineRoleAssignments2, virtualMachineRoleAssignments3, virtualMachineRoleAssignments4, virtualMachineRoleAssignments5)
+	virtualMachineOwners := listVirtualMachineOwners(ctx, virtualMachineRoleAssignments1)
+	virtualMachineAvereContributors := listVirtualMachineAvereContributors(ctx, virtualMachineRoleAssignments2)
+	virtualMachineContributors := listVirtualMachineContributors(ctx, virtualMachineRoleAssignments3)
+	virtualMachineAdminLogins := listVirtualMachineAdminLogins(ctx, virtualMachineRoleAssignments4)
+	virtualMachineUserAccessAdmins := listVirtualMachineUserAccessAdmins(ctx, virtualMachineRoleAssignments5)
 
 	return pipeline.Mux(ctx.Done(),
 		keyVaultAccessPolicies,

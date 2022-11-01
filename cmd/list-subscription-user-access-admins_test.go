@@ -19,7 +19,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
@@ -40,54 +39,28 @@ func TestListSubscriptionUserAccessAdmins(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockSubscriptionsChannel := make(chan interface{})
-	mockSubscriptionUserAccessAdminChannel := make(chan azure.RoleAssignmentResult)
-	mockSubscriptionUserAccessAdminChannel2 := make(chan azure.RoleAssignmentResult)
-
+	mockRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
-	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockSubscriptionUserAccessAdminChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockSubscriptionUserAccessAdminChannel2).Times(1)
-	channel := listSubscriptionUserAccessAdmins(ctx, mockClient, mockSubscriptionsChannel)
+	channel := listSubscriptionUserAccessAdmins(ctx, mockClient, mockRoleAssignmentsChannel)
 
 	go func() {
-		defer close(mockSubscriptionsChannel)
-		mockSubscriptionsChannel <- AzureWrapper{
-			Data: models.Subscription{},
-		}
-		mockSubscriptionsChannel <- AzureWrapper{
-			Data: models.Subscription{},
-		}
-	}()
-	go func() {
-		defer close(mockSubscriptionUserAccessAdminChannel)
-		mockSubscriptionUserAccessAdminChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
+		defer close(mockRoleAssignmentsChannel)
+
+		mockRoleAssignmentsChannel <- AzureWrapper{
+			Data: models.SubscriptionRoleAssignments{
+				SubscriptionId: "foo",
+				RoleAssignments: []models.SubscriptionRoleAssignment{
+					{
+						RoleAssignment: azure.RoleAssignment{
+							Name: constants.UserAccessAdminRoleID,
+							Properties: azure.RoleAssignmentPropertiesWithScope{
+								RoleDefinitionId: constants.UserAccessAdminRoleID,
+							},
+						},
+					},
 				},
 			},
-		}
-		mockSubscriptionUserAccessAdminChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
-				},
-			},
-		}
-	}()
-	go func() {
-		defer close(mockSubscriptionUserAccessAdminChannel2)
-		mockSubscriptionUserAccessAdminChannel2 <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
-				},
-			},
-		}
-		mockSubscriptionUserAccessAdminChannel2 <- azure.RoleAssignmentResult{
-			Error: mockError,
 		}
 	}()
 
@@ -95,19 +68,11 @@ func TestListSubscriptionUserAccessAdmins(t *testing.T) {
 		t.Fatalf("failed to receive from channel")
 	} else if wrapper, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.SubscriptionUserAccessAdmins); !ok {
+	} else if _, ok := wrapper.Data.(models.SubscriptionUserAccessAdmins); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.SubscriptionUserAccessAdmins{})
-	} else if len(data.UserAccessAdmins) != 2 {
-		t.Errorf("got %v, want %v", len(data.UserAccessAdmins), 2)
 	}
 
-	if result, ok := <-channel; !ok {
-		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.SubscriptionUserAccessAdmins); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.SubscriptionUserAccessAdmins{})
-	} else if len(data.UserAccessAdmins) != 1 {
-		t.Errorf("got %v, want %v", len(data.UserAccessAdmins), 2)
+	if _, ok := <-channel; ok {
+		t.Error("should not have recieved from channel")
 	}
 }

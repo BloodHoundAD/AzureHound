@@ -23,7 +23,6 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"sync"
 	"time"
 
 	"github.com/bloodhoundad/azurehound/client"
@@ -58,75 +57,51 @@ func listSubscriptionUserAccessAdminsCmdImpl(cmd *cobra.Command, args []string) 
 		log.Info("collecting azure subscription user access admins...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listSubscriptionUserAccessAdmins(ctx, azClient, subscriptions)
+		roleAssignments := listSubscriptionRoleAssignments(ctx, azClient, subscriptions)
+		stream := listSubscriptionUserAccessAdmins(ctx, azClient, roleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
-	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
-		wg      sync.WaitGroup
-	)
+func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
+	out := make(chan interface{})
 
 	go func() {
-		defer close(ids)
+		defer close(out)
 
-		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
-			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
+		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {
+			if roleAssignments, ok := result.(AzureWrapper).Data.(models.SubscriptionRoleAssignments); !ok {
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating subscription user access admins", "result", result)
 				return
 			} else {
-				ids <- subscription.Id
-			}
-		}
-	}()
-
-	wg.Add(len(streams))
-	for i := range streams {
-		stream := streams[i]
-		go func() {
-			defer wg.Done()
-			for id := range stream {
 				var (
 					subscriptionUserAccessAdmins = models.SubscriptionUserAccessAdmins{
-						SubscriptionId: id,
+						SubscriptionId: roleAssignments.SubscriptionId,
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "atScope()") {
-					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing user access admins for this subscription", "subscriptionId", id)
-					} else {
-						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
+				for _, item := range roleAssignments.RoleAssignments {
+					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
 
-						if roleDefinitionId == constants.UserAccessAdminRoleID {
-							subscriptionUserAccessAdmin := models.SubscriptionUserAccessAdmin{
-								UserAccessAdmin: item.Ok,
-								SubscriptionId:  item.ParentId,
-							}
-							log.V(2).Info("found subscription user access admin", "subscriptionUserAccessAdmin", subscriptionUserAccessAdmin)
-							count++
-							subscriptionUserAccessAdmins.UserAccessAdmins = append(subscriptionUserAccessAdmins.UserAccessAdmins, subscriptionUserAccessAdmin)
+					if roleDefinitionId == constants.UserAccessAdminRoleID {
+						subscriptionUserAccessAdmin := models.SubscriptionUserAccessAdmin{
+							UserAccessAdmin: item.RoleAssignment,
+							SubscriptionId:  item.SubscriptionId,
 						}
+						log.V(2).Info("found subscription user access admin", "subscriptionUserAccessAdmin", subscriptionUserAccessAdmin)
+						count++
+						subscriptionUserAccessAdmins.UserAccessAdmins = append(subscriptionUserAccessAdmins.UserAccessAdmins, subscriptionUserAccessAdmin)
 					}
 				}
 				out <- AzureWrapper{
 					Kind: enums.KindAZSubscriptionUserAccessAdmin,
 					Data: subscriptionUserAccessAdmins,
 				}
-				log.V(1).Info("finished listing subscription user access admins", "subscriptionId", id, "count", count)
+				log.V(1).Info("finished listing subscription user access admins", "subscriptionId", roleAssignments.SubscriptionId, "count", count)
 			}
-		}()
-	}
-
-	go func() {
-		wg.Wait()
-		close(out)
+		}
 		log.Info("finished listing all subscription user access admins")
 	}()
 

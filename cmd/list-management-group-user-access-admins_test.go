@@ -19,7 +19,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
@@ -40,54 +39,28 @@ func TestListManagementGroupUserAccessAdmins(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockManagementGroupsChannel := make(chan interface{})
-	mockManagementGroupUserAccessAdminChannel := make(chan azure.RoleAssignmentResult)
-	mockManagementGroupUserAccessAdminChannel2 := make(chan azure.RoleAssignmentResult)
-
+	mockRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
-	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockManagementGroupUserAccessAdminChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockManagementGroupUserAccessAdminChannel2).Times(1)
-	channel := listManagementGroupUserAccessAdmins(ctx, mockClient, mockManagementGroupsChannel)
+	channel := listManagementGroupUserAccessAdmins(ctx, mockClient, mockRoleAssignmentsChannel)
 
 	go func() {
-		defer close(mockManagementGroupsChannel)
-		mockManagementGroupsChannel <- AzureWrapper{
-			Data: models.ManagementGroup{},
-		}
-		mockManagementGroupsChannel <- AzureWrapper{
-			Data: models.ManagementGroup{},
-		}
-	}()
-	go func() {
-		defer close(mockManagementGroupUserAccessAdminChannel)
-		mockManagementGroupUserAccessAdminChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
+		defer close(mockRoleAssignmentsChannel)
+
+		mockRoleAssignmentsChannel <- AzureWrapper{
+			Data: models.ManagementGroupRoleAssignments{
+				ManagementGroupId: "foo",
+				RoleAssignments: []models.ManagementGroupRoleAssignment{
+					{
+						RoleAssignment: azure.RoleAssignment{
+							Name: constants.UserAccessAdminRoleID,
+							Properties: azure.RoleAssignmentPropertiesWithScope{
+								RoleDefinitionId: constants.UserAccessAdminRoleID,
+							},
+						},
+					},
 				},
 			},
-		}
-		mockManagementGroupUserAccessAdminChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
-				},
-			},
-		}
-	}()
-	go func() {
-		defer close(mockManagementGroupUserAccessAdminChannel2)
-		mockManagementGroupUserAccessAdminChannel2 <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
-				},
-			},
-		}
-		mockManagementGroupUserAccessAdminChannel2 <- azure.RoleAssignmentResult{
-			Error: mockError,
 		}
 	}()
 
@@ -95,19 +68,11 @@ func TestListManagementGroupUserAccessAdmins(t *testing.T) {
 		t.Fatalf("failed to receive from channel")
 	} else if wrapper, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.ManagementGroupUserAccessAdmins); !ok {
+	} else if _, ok := wrapper.Data.(models.ManagementGroupUserAccessAdmins); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ManagementGroupUserAccessAdmins{})
-	} else if len(data.UserAccessAdmins) != 2 {
-		t.Errorf("got %v, want %v", len(data.UserAccessAdmins), 2)
 	}
 
-	if result, ok := <-channel; !ok {
-		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.ManagementGroupUserAccessAdmins); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ManagementGroupUserAccessAdmins{})
-	} else if len(data.UserAccessAdmins) != 1 {
-		t.Errorf("got %v, want %v", len(data.UserAccessAdmins), 2)
+	if _, ok := <-channel; ok {
+		t.Error("should not have recieved from channel")
 	}
 }

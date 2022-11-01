@@ -19,7 +19,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
@@ -40,54 +39,28 @@ func TestListResourceGroupUserAccessAdmins(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockResourceGroupsChannel := make(chan interface{})
-	mockResourceGroupUserAccessAdminChannel := make(chan azure.RoleAssignmentResult)
-	mockResourceGroupUserAccessAdminChannel2 := make(chan azure.RoleAssignmentResult)
-
+	mockRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
-	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupUserAccessAdminChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupUserAccessAdminChannel2).Times(1)
-	channel := listResourceGroupUserAccessAdmins(ctx, mockClient, mockResourceGroupsChannel)
+	channel := listResourceGroupUserAccessAdmins(ctx, mockClient, mockRoleAssignmentsChannel)
 
 	go func() {
-		defer close(mockResourceGroupsChannel)
-		mockResourceGroupsChannel <- AzureWrapper{
-			Data: models.ResourceGroup{},
-		}
-		mockResourceGroupsChannel <- AzureWrapper{
-			Data: models.ResourceGroup{},
-		}
-	}()
-	go func() {
-		defer close(mockResourceGroupUserAccessAdminChannel)
-		mockResourceGroupUserAccessAdminChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
+		defer close(mockRoleAssignmentsChannel)
+
+		mockRoleAssignmentsChannel <- AzureWrapper{
+			Data: models.ResourceGroupRoleAssignments{
+				ResourceGroupId: "foo",
+				RoleAssignments: []models.ResourceGroupRoleAssignment{
+					{
+						RoleAssignment: azure.RoleAssignment{
+							Name: constants.UserAccessAdminRoleID,
+							Properties: azure.RoleAssignmentPropertiesWithScope{
+								RoleDefinitionId: constants.UserAccessAdminRoleID,
+							},
+						},
+					},
 				},
 			},
-		}
-		mockResourceGroupUserAccessAdminChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
-				},
-			},
-		}
-	}()
-	go func() {
-		defer close(mockResourceGroupUserAccessAdminChannel2)
-		mockResourceGroupUserAccessAdminChannel2 <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.UserAccessAdminRoleID,
-				},
-			},
-		}
-		mockResourceGroupUserAccessAdminChannel2 <- azure.RoleAssignmentResult{
-			Error: mockError,
 		}
 	}()
 
@@ -95,19 +68,11 @@ func TestListResourceGroupUserAccessAdmins(t *testing.T) {
 		t.Fatalf("failed to receive from channel")
 	} else if wrapper, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.ResourceGroupUserAccessAdmins); !ok {
+	} else if _, ok := wrapper.Data.(models.ResourceGroupUserAccessAdmins); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ResourceGroupUserAccessAdmins{})
-	} else if len(data.UserAccessAdmins) != 2 {
-		t.Errorf("got %v, want %v", len(data.UserAccessAdmins), 2)
 	}
 
-	if result, ok := <-channel; !ok {
-		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.ResourceGroupUserAccessAdmins); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ResourceGroupUserAccessAdmins{})
-	} else if len(data.UserAccessAdmins) != 1 {
-		t.Errorf("got %v, want %v", len(data.UserAccessAdmins), 2)
+	if _, ok := <-channel; ok {
+		t.Error("should not have recieved from channel")
 	}
 }
