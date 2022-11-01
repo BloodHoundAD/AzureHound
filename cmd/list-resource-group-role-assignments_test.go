@@ -93,21 +93,13 @@ func TestListManagementGroupRoleAssignments(t *testing.T) {
 
 	if result, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.ManagementGroupRoleAssignments); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ManagementGroupRoleAssignments{})
-	} else if len(data.RoleAssignments) != 2 {
-		t.Errorf("got %v, want %v", len(data.RoleAssignments), 2)
+	} else if len(result.Data.RoleAssignments) != 2 {
+		t.Errorf("got %v, want %v", len(result.Data.RoleAssignments), 2)
 	}
 
 	if result, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.ManagementGroupRoleAssignments); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ManagementGroupRoleAssignments{})
-	} else if len(data.RoleAssignments) != 1 {
-		t.Errorf("got %v, want %v", len(data.RoleAssignments), 2)
+	} else if len(result.Data.RoleAssignments) != 1 {
+		t.Errorf("got %v, want %v", len(result.Data.RoleAssignments), 2)
 	}
 }

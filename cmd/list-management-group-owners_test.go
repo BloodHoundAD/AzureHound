@@ -23,6 +23,7 @@ import (
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
 	"github.com/bloodhoundad/azurehound/constants"
+	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/models/azure"
 	"github.com/golang/mock/gomock"
@@ -39,16 +40,17 @@ func TestListManagementGroupOwners(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockRoleAssignmentsChannel := make(chan interface{})
+	mockRoleAssignmentsChannel := make(chan azureWrapper[models.ManagementGroupRoleAssignments])
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listManagementGroupOwners(ctx, mockClient, mockRoleAssignmentsChannel)
+	channel := listManagementGroupOwners(ctx, mockRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockRoleAssignmentsChannel)
 
-		mockRoleAssignmentsChannel <- AzureWrapper{
-			Data: models.ManagementGroupRoleAssignments{
+		mockRoleAssignmentsChannel <- NewAzureWrapper(
+			enums.KindAZManagementGroupRoleAssignment,
+			models.ManagementGroupRoleAssignments{
 				ManagementGroupId: "foo",
 				RoleAssignments: []models.ManagementGroupRoleAssignment{
 					{
@@ -61,15 +63,11 @@ func TestListManagementGroupOwners(t *testing.T) {
 					},
 				},
 			},
-		}
+		)
 	}()
 
-	if result, ok := <-channel; !ok {
+	if _, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if _, ok := wrapper.Data.(models.ManagementGroupOwners); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ManagementGroupOwners{})
 	}
 
 	if _, ok := <-channel; ok {
