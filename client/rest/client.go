@@ -280,6 +280,7 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 					} else {
 						err = fmt.Errorf("%v", errRes)
 					}
+					break
 				}
 			} else {
 				// Response OK
