@@ -276,11 +276,10 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 					// Not a status code that warrants a retry
 					var errRes map[string]interface{}
 					if err := Decode(res.Body, &errRes); err != nil {
-						err = fmt.Errorf("malformed error response, status code: %d", res.StatusCode)
+						return nil, fmt.Errorf("malformed error response, status code: %d", res.StatusCode)
 					} else {
-						err = fmt.Errorf("%v", errRes)
+						return nil, fmt.Errorf("%v", errRes)
 					}
-					break
 				}
 			} else {
 				// Response OK
