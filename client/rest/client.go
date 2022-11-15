@@ -20,12 +20,17 @@ package rest
 //go:generate go run github.com/golang/mock/mockgen -destination=./mocks/client.go -package=mocks . RestClient
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"math"
 	"net/http"
 	"net/url"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/bloodhoundad/azurehound/client/config"
 	"github.com/bloodhoundad/azurehound/constants"
@@ -213,20 +218,74 @@ func (s *restClient) Send(req *http.Request) (*http.Response, error) {
 	return s.send(req)
 }
 
-func (s *restClient) send(req *http.Request) (*http.Response, error) {
-	res, err := s.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
-		var errRes map[string]interface{}
-		if err := Decode(res.Body, &errRes); err != nil {
-			return nil, fmt.Errorf("malformed error response, status code: %d", res.StatusCode)
-		} else {
-			return nil, fmt.Errorf("Error: %v", errRes)
+func copyBody(req *http.Request) ([]byte, error) {
+	var (
+		body []byte
+		err  error
+	)
+	if req.Body != nil {
+		body, err = io.ReadAll(req.Body)
+		if body != nil {
+			req.Body = io.NopCloser(bytes.NewBuffer(body))
 		}
+	}
+	return body, err
+}
+
+func (s *restClient) send(req *http.Request) (*http.Response, error) {
+	// copy the bytes in case we need to retry the request
+	if body, err := copyBody(req); err != nil {
+		return nil, err
 	} else {
-		return res, nil
+		var (
+			res        *http.Response
+			err        error
+			maxRetries = 3
+		)
+		// Try the request up to a set number of times
+		for retry := 0; retry < maxRetries; retry++ {
+
+			// Reusing http.Request requires rewinding the request body
+			// back to a working state
+			if body != nil && retry > 0 {
+				req.Body = io.NopCloser(bytes.NewBuffer(body))
+			}
+
+			// Try the request
+			if res, err = s.http.Do(req); err != nil {
+				// client error
+				return nil, err
+			} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
+				// Error response code handling
+				// See official Retry guidance (https://learn.microsoft.com/en-us/azure/architecture/best-practices/retry-service-specific#retry-usage-guidance)
+				if res.StatusCode == http.StatusTooManyRequests {
+					retryAfterHeader := res.Header.Get("Retry-After")
+					if retryAfter, err := strconv.ParseInt(retryAfterHeader, 10, 64); err != nil {
+						return nil, fmt.Errorf("attempting to handle 429 but unable to parse retry-after header: %w", err)
+					} else {
+						// Wait the time indicated in the retry-after header
+						time.Sleep(time.Second * time.Duration(retryAfter))
+						continue
+					}
+				} else if res.StatusCode >= http.StatusInternalServerError {
+					// Wait the time calculated by the 5 second exponential backoff
+					backoff := math.Pow(5, float64(retry+1))
+					time.Sleep(time.Second * time.Duration(backoff))
+					continue
+				} else {
+					// Not a status code that warrants a retry
+					var errRes map[string]interface{}
+					if err := Decode(res.Body, &errRes); err != nil {
+						return nil, fmt.Errorf("malformed error response, status code: %d", res.StatusCode)
+					} else {
+						return nil, fmt.Errorf("%v", errRes)
+					}
+				}
+			} else {
+				// Response OK
+				return res, nil
+			}
+		}
+		return nil, fmt.Errorf("unable to complete the request after %d attempts: %w", maxRetries, err)
 	}
 }
