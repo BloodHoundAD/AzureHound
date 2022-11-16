@@ -29,7 +29,7 @@ import (
 
 func WriteToFile[T any](ctx context.Context, filePath string, stream <-chan T) error {
 
-	if file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0666); err != nil {
+	if file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666); err != nil {
 		return err
 	} else {
 		defer file.Close()
