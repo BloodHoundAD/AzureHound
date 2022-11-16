@@ -33,11 +33,33 @@ To build this project from source run the following:
 go build -ldflags="-s -w -X github.com/bloodhoundad/azurehound/constants.Version=`git describe tags --exact-match 2> /dev/null || git rev-parse HEAD`"
 ```
 
-## CLI
+## Usage
+
+### Quickstart 
+
+**Print all Azure Tenant data to stdout**
+``` sh
+❯ azurehound list -u "$USERNAME" -p "$PASSWORD" -t "$TENANT"
+```
+
+**Print all Azure Tenant data to file**
+``` sh
+❯ azurehound list -u "$USERNAME" -p "$PASSWORD" -t "$TENANT" -o "mytenant.json"
+```
+
+**Configure and start data collection service for BloodHound Enterprise**
+``` sh
+❯ azurehound configure
+(follow prompts)
+
+❯ azurehound start
+```
+
+### CLI
 
 ```
 ❯ azurehound --help
-AzureHound v1.1.2
+AzureHound vx.x.x
 Created by the BloodHound Enterprise team - https://bloodhoundenterprise.io
 
 The official tool for collecting Azure data for BloodHound and BloodHound Enterprise
@@ -50,7 +72,7 @@ Available Commands:
   configure   Configure AzureHound
   help        Help about any command
   list        Lists Azure Objects
-  start       Start Azure data collection
+  start       Start Azure data collection service for BloodHound Enterprise
 
 Flags:
   -c, --config string          AzureHound configuration file (default: /Users/dlees/.config/azurehound/config.json)
