@@ -96,6 +96,6 @@ func TestListGroupMembers(t *testing.T) {
 	} else if data, ok := wrapper.Data.(models.GroupMembers); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.GroupMembers{})
 	} else if len(data.Members) != 1 {
-		t.Errorf("got %v, want %v", len(data.Members), 2)
+		t.Errorf("got %v, want %v", len(data.Members), 1)
 	}
 }

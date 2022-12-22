@@ -23,6 +23,7 @@ import (
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
 	"github.com/bloodhoundad/azurehound/constants"
+	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/models/azure"
 	"github.com/golang/mock/gomock"
@@ -39,16 +40,17 @@ func TestListVirtualMachineUserAccessAdmins(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockVMRoleAssignmentsChannel := make(chan interface{})
+	mockVMRoleAssignmentsChannel := make(chan azureWrapper[models.VirtualMachineRoleAssignments])
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listVirtualMachineUserAccessAdmins(ctx, mockClient, mockVMRoleAssignmentsChannel)
+	channel := listVirtualMachineUserAccessAdmins(ctx, mockVMRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockVMRoleAssignmentsChannel)
 
-		mockVMRoleAssignmentsChannel <- AzureWrapper{
-			Data: models.VirtualMachineRoleAssignments{
+		mockVMRoleAssignmentsChannel <- NewAzureWrapper(
+			enums.KindAZVMRoleAssignment,
+			models.VirtualMachineRoleAssignments{
 				VirtualMachineId: "foo",
 				RoleAssignments: []models.VirtualMachineRoleAssignment{
 					{
@@ -61,15 +63,11 @@ func TestListVirtualMachineUserAccessAdmins(t *testing.T) {
 					},
 				},
 			},
-		}
+		)
 	}()
 
-	if result, ok := <-channel; !ok {
+	if _, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if _, ok := wrapper.Data.(models.VirtualMachineUserAccessAdmins); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.VirtualMachineUserAccessAdmins{})
 	}
 
 	if _, ok := <-channel; ok {

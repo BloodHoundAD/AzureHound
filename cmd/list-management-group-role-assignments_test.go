@@ -33,60 +33,60 @@ func init() {
 	setupLogger()
 }
 
-func TestListVirtualMachineRoleAssignments(t *testing.T) {
+func TestListResourceGroupRoleAssignments(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := context.Background()
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockVirtualMachinesChannel := make(chan interface{})
-	mockVirtualMachineRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
-	mockVirtualMachineRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
+	mockResourceGroupsChannel := make(chan interface{})
+	mockResourceGroupRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
+	mockResourceGroupRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineRoleAssignmentChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineRoleAssignmentChannel2).Times(1)
-	channel := listVirtualMachineRoleAssignments(ctx, mockClient, mockVirtualMachinesChannel)
+	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupRoleAssignmentChannel).Times(1)
+	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupRoleAssignmentChannel2).Times(1)
+	channel := listResourceGroupRoleAssignments(ctx, mockClient, mockResourceGroupsChannel)
 
 	go func() {
-		defer close(mockVirtualMachinesChannel)
-		mockVirtualMachinesChannel <- AzureWrapper{
-			Data: models.VirtualMachine{},
+		defer close(mockResourceGroupsChannel)
+		mockResourceGroupsChannel <- AzureWrapper{
+			Data: models.ResourceGroup{},
 		}
-		mockVirtualMachinesChannel <- AzureWrapper{
-			Data: models.VirtualMachine{},
-		}
-	}()
-	go func() {
-		defer close(mockVirtualMachineRoleAssignmentChannel)
-		mockVirtualMachineRoleAssignmentChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.VirtualMachineContributorRoleID,
-				},
-			},
-		}
-		mockVirtualMachineRoleAssignmentChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.AvereContributorRoleID,
-				},
-			},
+		mockResourceGroupsChannel <- AzureWrapper{
+			Data: models.ResourceGroup{},
 		}
 	}()
 	go func() {
-		defer close(mockVirtualMachineRoleAssignmentChannel2)
-		mockVirtualMachineRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		defer close(mockResourceGroupRoleAssignmentChannel)
+		mockResourceGroupRoleAssignmentChannel <- azure.RoleAssignmentResult{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.VirtualMachineAdministratorLoginRoleID,
+					RoleDefinitionId: constants.ContributorRoleID,
 				},
 			},
 		}
-		mockVirtualMachineRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockResourceGroupRoleAssignmentChannel <- azure.RoleAssignmentResult{
+			Ok: azure.RoleAssignment{
+				Properties: azure.RoleAssignmentPropertiesWithScope{
+					RoleDefinitionId: constants.OwnerRoleID,
+				},
+			},
+		}
+	}()
+	go func() {
+		defer close(mockResourceGroupRoleAssignmentChannel2)
+		mockResourceGroupRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+			Ok: azure.RoleAssignment{
+				Properties: azure.RoleAssignmentPropertiesWithScope{
+					RoleDefinitionId: constants.OwnerRoleID,
+				},
+			},
+		}
+		mockResourceGroupRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
 			Error: mockError,
 		}
 	}()

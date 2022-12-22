@@ -19,16 +19,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path"
-	"sync"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/internal"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
@@ -57,77 +54,30 @@ func listManagementGroupUserAccessAdminsCmdImpl(cmd *cobra.Command, args []strin
 	} else {
 		log.Info("collecting azure management group user access admins...")
 		start := time.Now()
-		mgmtGroups := listManagementGroups(ctx, azClient)
-		stream := listManagementGroupUserAccessAdmins(ctx, azClient, mgmtGroups)
+		managementGroups := listManagementGroups(ctx, azClient)
+		roleAssignments := listManagementGroupRoleAssignments(ctx, azClient, managementGroups)
+		stream := listManagementGroupUserAccessAdmins(ctx, roleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listManagementGroupUserAccessAdmins(ctx context.Context, client client.AzureClient, mgmtGroups <-chan interface{}) <-chan interface{} {
-	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
-		wg      sync.WaitGroup
-	)
-
-	go func() {
-		defer close(ids)
-
-		for result := range pipeline.OrDone(ctx.Done(), mgmtGroups) {
-			if mgmtGroup, ok := result.(AzureWrapper).Data.(models.ManagementGroup); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating management group user access admins", "result", result)
-				return
-			} else {
-				ids <- mgmtGroup.Id
+func listManagementGroupUserAccessAdmins(
+	ctx context.Context,
+	roleAssignments <-chan azureWrapper[models.ManagementGroupRoleAssignments],
+) <-chan any {
+	return pipeline.Map(ctx.Done(), roleAssignments, func(ra azureWrapper[models.ManagementGroupRoleAssignments]) any {
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, mgmtGroupRoleAssignmentFilter(constants.UserAccessAdminRoleID))
+		uaas := internal.Map(filteredAssignments, func(ra models.ManagementGroupRoleAssignment) models.ManagementGroupUserAccessAdmin {
+			return models.ManagementGroupUserAccessAdmin{
+				UserAccessAdmin:   ra.RoleAssignment,
+				ManagementGroupId: ra.ManagementGroupId,
 			}
-		}
-	}()
-
-	wg.Add(len(streams))
-	for i := range streams {
-		stream := streams[i]
-		go func() {
-			defer wg.Done()
-			for id := range stream {
-				var (
-					mgmtGroupUserAccessAdmins = models.ManagementGroupUserAccessAdmins{
-						ManagementGroupId: id,
-					}
-					count = 0
-				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
-					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing user access admins for this management group", "managementGroupId", id)
-					} else {
-						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
-
-						if roleDefinitionId == constants.UserAccessAdminRoleID {
-							mgmtGroupUserAccessAdmin := models.ManagementGroupUserAccessAdmin{
-								UserAccessAdmin:   item.Ok,
-								ManagementGroupId: item.ParentId,
-							}
-							log.V(2).Info("found management group user access admin", "mgmtGroupUserAccessAdmin", mgmtGroupUserAccessAdmin)
-							count++
-							mgmtGroupUserAccessAdmins.UserAccessAdmins = append(mgmtGroupUserAccessAdmins.UserAccessAdmins, mgmtGroupUserAccessAdmin)
-						}
-					}
-				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZManagementGroupUserAccessAdmin,
-					Data: mgmtGroupUserAccessAdmins,
-				}
-				log.V(1).Info("finished listing management group user access admins", "managementGroupId", id, "count", count)
-			}
-		}()
-	}
-
-	go func() {
-		wg.Wait()
-		close(out)
-		log.Info("finished listing all management group user access admins")
-	}()
-	return out
+		})
+		return NewAzureWrapper(enums.KindAZManagementGroupUserAccessAdmin, models.ManagementGroupUserAccessAdmins{
+			ManagementGroupId: ra.Data.ManagementGroupId,
+			UserAccessAdmins:  uaas,
+		})
+	})
 }

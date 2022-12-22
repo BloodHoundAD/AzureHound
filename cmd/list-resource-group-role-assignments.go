@@ -33,17 +33,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listVirtualMachineRoleAssignmentsCmd)
+	listRootCmd.AddCommand(listResourceGroupRoleAssignmentsCmd)
 }
 
-var listVirtualMachineRoleAssignmentsCmd = &cobra.Command{
-	Use:          "virtual-machine-role-assignments",
-	Long:         "Lists Virtual Machine Role Assignments",
-	Run:          listVirtualMachineRoleAssignmentsCmdImpl,
+var listResourceGroupRoleAssignmentsCmd = &cobra.Command{
+	Use:          "resource-group-role-assignments",
+	Long:         "Lists Resource Group Role Assignments",
+	Run:          listResourceGroupRoleAssignmentsCmdImpl,
 	SilenceUsage: true,
 }
 
-func listVirtualMachineRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
+func listResourceGroupRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -53,19 +53,20 @@ func listVirtualMachineRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string)
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure virtual machine role assignments...")
+		log.Info("collecting azure resource group role assignments...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listVirtualMachineRoleAssignments(ctx, azClient, listVirtualMachines(ctx, azClient, subscriptions))
+		resourceGroups := listResourceGroups(ctx, azClient, subscriptions)
+		stream := listResourceGroupRoleAssignments(ctx, azClient, resourceGroups)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureClient, virtualMachines <-chan interface{}) <-chan azureWrapper[models.VirtualMachineRoleAssignments] {
+func listResourceGroupRoleAssignments(ctx context.Context, client client.AzureClient, resourceGroups <-chan interface{}) <-chan azureWrapper[models.ResourceGroupRoleAssignments] {
 	var (
-		out     = make(chan azureWrapper[models.VirtualMachineRoleAssignments])
+		out     = make(chan azureWrapper[models.ResourceGroupRoleAssignments])
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -74,12 +75,12 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 	go func() {
 		defer close(ids)
 
-		for result := range pipeline.OrDone(ctx.Done(), virtualMachines) {
-			if virtualMachine, ok := result.(AzureWrapper).Data.(models.VirtualMachine); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine role assignments", "result", result)
+		for result := range pipeline.OrDone(ctx.Done(), resourceGroups) {
+			if resourceGroup, ok := result.(AzureWrapper).Data.(models.ResourceGroup); !ok {
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating resource group role assignments", "result", result)
 				return
 			} else {
-				ids <- virtualMachine.Id
+				ids <- resourceGroup.Id
 			}
 		}
 	}()
@@ -91,26 +92,26 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 			defer wg.Done()
 			for id := range stream {
 				var (
-					virtualMachineRoleAssignments = models.VirtualMachineRoleAssignments{
-						VirtualMachineId: id,
+					resourceGroupRoleAssignments = models.ResourceGroupRoleAssignments{
+						ResourceGroupId: id,
 					}
 					count = 0
 				)
 				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing role assignments for this virtual machine", "virtualMachineId", id)
+						log.Error(item.Error, "unable to continue processing role assignments for this resourceGroup", "resourceGroupId", id)
 					} else {
-						virtualMachineRoleAssignment := models.VirtualMachineRoleAssignment{
-							VirtualMachineId: item.ParentId,
-							RoleAssignment:   item.Ok,
+						resourceGroupRoleAssignment := models.ResourceGroupRoleAssignment{
+							ResourceGroupId: item.ParentId,
+							RoleAssignment:  item.Ok,
 						}
-						log.V(2).Info("found virtual machine role assignment", "virtualMachineRoleAssignment", virtualMachineRoleAssignment)
+						log.V(2).Info("found resourceGroup role assignment", "resourceGroupRoleAssignment", resourceGroupRoleAssignment)
 						count++
-						virtualMachineRoleAssignments.RoleAssignments = append(virtualMachineRoleAssignments.RoleAssignments, virtualMachineRoleAssignment)
+						resourceGroupRoleAssignments.RoleAssignments = append(resourceGroupRoleAssignments.RoleAssignments, resourceGroupRoleAssignment)
 					}
 				}
-				out <- NewAzureWrapper(enums.KindAZVMRoleAssignment, virtualMachineRoleAssignments)
-				log.V(1).Info("finished listing virtual machine role assignments", "virtualMachineId", id, "count", count)
+				out <- NewAzureWrapper(enums.KindAZResourceGroupRoleAssignment, resourceGroupRoleAssignments)
+				log.V(1).Info("finished listing resourceGroup role assignments", "resourceGroupId", id, "count", count)
 			}
 		}()
 	}
@@ -118,7 +119,7 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all virtual machine role assignments")
+		log.Info("finished listing all resource group role assignments")
 	}()
 
 	return out

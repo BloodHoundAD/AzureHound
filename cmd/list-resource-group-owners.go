@@ -19,16 +19,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path"
-	"sync"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/internal"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
@@ -58,77 +55,32 @@ func listResourceGroupOwnersCmdImpl(cmd *cobra.Command, args []string) {
 		log.Info("collecting azure resource group owners...")
 		start := time.Now()
 		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listResourceGroupOwners(ctx, azClient, listResourceGroups(ctx, azClient, subscriptions))
+		resourceGroups := listResourceGroups(ctx, azClient, subscriptions)
+		roleAssignments := listResourceGroupRoleAssignments(ctx, azClient, resourceGroups)
+		stream := listResourceGroupOwners(ctx, roleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listResourceGroupOwners(ctx context.Context, client client.AzureClient, resourceGroups <-chan interface{}) <-chan interface{} {
-	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
-		wg      sync.WaitGroup
-	)
+func listResourceGroupOwners(
+	ctx context.Context,
+	roleAssignments <-chan azureWrapper[models.ResourceGroupRoleAssignments],
+) <-chan any {
+	return pipeline.Map(ctx.Done(), roleAssignments, func(ra azureWrapper[models.ResourceGroupRoleAssignments]) any {
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, rgRoleAssignmentFilter(constants.OwnerRoleID))
 
-	go func() {
-		defer close(ids)
-
-		for result := range pipeline.OrDone(ctx.Done(), resourceGroups) {
-			if resourceGroup, ok := result.(AzureWrapper).Data.(models.ResourceGroup); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating resource group owners", "result", result)
-				return
-			} else {
-				ids <- resourceGroup.Id
+		owners := internal.Map(filteredAssignments, func(ra models.ResourceGroupRoleAssignment) models.ResourceGroupOwner {
+			return models.ResourceGroupOwner{
+				Owner:           ra.RoleAssignment,
+				ResourceGroupId: ra.ResourceGroupId,
 			}
-		}
-	}()
+		})
 
-	wg.Add(len(streams))
-	for i := range streams {
-		stream := streams[i]
-		go func() {
-			defer wg.Done()
-			for id := range stream {
-				var (
-					resourceGroupOwners = models.ResourceGroupOwners{
-						ResourceGroupId: id,
-					}
-					count = 0
-				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
-					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing owners for this resource group", "resourceGroupId", id)
-					} else {
-						roleDefinitionId := path.Base(item.Ok.Properties.RoleDefinitionId)
-
-						if roleDefinitionId == constants.OwnerRoleID {
-							resourceGroupOwner := models.ResourceGroupOwner{
-								Owner:           item.Ok,
-								ResourceGroupId: item.ParentId,
-							}
-							log.V(2).Info("found resource group owner", "resourceGroupOwner", resourceGroupOwner)
-							count++
-							resourceGroupOwners.Owners = append(resourceGroupOwners.Owners, resourceGroupOwner)
-						}
-					}
-				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZResourceGroupOwner,
-					Data: resourceGroupOwners,
-				}
-				log.V(1).Info("finished listing resource group owners", "resourceGroupId", id, "count", count)
-			}
-		}()
-	}
-
-	go func() {
-		wg.Wait()
-		close(out)
-		log.Info("finished listing all resource group owners")
-	}()
-
-	return out
+		return NewAzureWrapper(enums.KindAZResourceGroupOwner, models.ResourceGroupOwners{
+			ResourceGroupId: ra.Data.ResourceGroupId,
+			Owners:          owners,
+		})
+	})
 }

@@ -49,7 +49,7 @@ func init() {
 
 var startCmd = &cobra.Command{
 	Use:               "start",
-	Short:             "Start Azure data collection",
+	Short:             "Start Azure data collection service for BloodHound Enterprise",
 	Run:               startCmdImpl,
 	PersistentPreRunE: persistentPreRunE,
 	SilenceUsage:      true,

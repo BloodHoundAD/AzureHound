@@ -19,15 +19,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/internal"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/pipeline"
 	"github.com/spf13/cobra"
@@ -59,52 +57,28 @@ func listVirtualMachineAdminLoginsCmdImpl(cmd *cobra.Command, args []string) {
 		subscriptions := listSubscriptions(ctx, azClient)
 		vms := listVirtualMachines(ctx, azClient, subscriptions)
 		vmRoleAssignments := listVirtualMachineRoleAssignments(ctx, azClient, vms)
-		stream := listVirtualMachineAdminLogins(ctx, azClient, vmRoleAssignments)
+		stream := listVirtualMachineAdminLogins(ctx, vmRoleAssignments)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listVirtualMachineAdminLogins(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
-	out := make(chan interface{})
-
-	go func() {
-		defer close(out)
-
-		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {
-			if roleAssignments, ok := result.(AzureWrapper).Data.(models.VirtualMachineRoleAssignments); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine contributors", "result", result)
-				return
-			} else {
-				var (
-					virtualMachineAdminLogins = models.VirtualMachineAdminLogins{
-						VirtualMachineId: roleAssignments.VirtualMachineId,
-					}
-					count = 0
-				)
-				for _, item := range roleAssignments.RoleAssignments {
-					roleDefinitionId := path.Base(item.RoleAssignment.Properties.RoleDefinitionId)
-
-					if roleDefinitionId == constants.VirtualMachineAdministratorLoginRoleID {
-						virtualMachineAdminLogin := models.VirtualMachineAdminLogin{
-							AdminLogin:       item.RoleAssignment,
-							VirtualMachineId: item.VirtualMachineId,
-						}
-						log.V(2).Info("found virtual machine admin login", "virtualMachineAdminLogin", virtualMachineAdminLogin)
-						count++
-						virtualMachineAdminLogins.AdminLogins = append(virtualMachineAdminLogins.AdminLogins, virtualMachineAdminLogin)
-					}
-				}
-				out <- AzureWrapper{
-					Kind: enums.KindAZVMAdminLogin,
-					Data: virtualMachineAdminLogins,
-				}
-				log.V(1).Info("finished listing virtual machine admin logins", "virtualMachineId", roleAssignments.VirtualMachineId, "count", count)
+func listVirtualMachineAdminLogins(
+	ctx context.Context,
+	roleAssignments <-chan azureWrapper[models.VirtualMachineRoleAssignments],
+) <-chan any {
+	return pipeline.Map(ctx.Done(), roleAssignments, func(ra azureWrapper[models.VirtualMachineRoleAssignments]) any {
+		filteredAssignments := internal.Filter(ra.Data.RoleAssignments, vmRoleAssignmentFilter(constants.VirtualMachineAdministratorLoginRoleID))
+		adminLogins := internal.Map(filteredAssignments, func(ra models.VirtualMachineRoleAssignment) models.VirtualMachineAdminLogin {
+			return models.VirtualMachineAdminLogin{
+				VirtualMachineId: ra.VirtualMachineId,
+				AdminLogin:       ra.RoleAssignment,
 			}
-		}
-		log.Info("finished listing all virtual machine admin logins")
-	}()
-
-	return out
+		})
+		return NewAzureWrapper(enums.KindAZVMAdminLogin, models.VirtualMachineAdminLogins{
+			VirtualMachineId: ra.Data.VirtualMachineId,
+			AdminLogins:      adminLogins,
+		})
+	})
 }

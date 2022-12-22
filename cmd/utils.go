@@ -407,3 +407,21 @@ func kvRoleAssignmentFilter(roleId string) func(models.KeyVaultRoleAssignment) b
 		return path.Base(ra.RoleAssignment.Properties.RoleDefinitionId) == roleId
 	}
 }
+
+func vmRoleAssignmentFilter(roleId string) func(models.VirtualMachineRoleAssignment) bool {
+	return func(ra models.VirtualMachineRoleAssignment) bool {
+		return path.Base(ra.RoleAssignment.Properties.RoleDefinitionId) == roleId
+	}
+}
+
+func rgRoleAssignmentFilter(roleId string) func(models.ResourceGroupRoleAssignment) bool {
+	return func(ra models.ResourceGroupRoleAssignment) bool {
+		return path.Base(ra.RoleAssignment.Properties.RoleDefinitionId) == roleId
+	}
+}
+
+func mgmtGroupRoleAssignmentFilter(roleId string) func(models.ManagementGroupRoleAssignment) bool {
+	return func(ra models.ManagementGroupRoleAssignment) bool {
+		return path.Base(ra.RoleAssignment.Properties.RoleDefinitionId) == roleId
+	}
+}

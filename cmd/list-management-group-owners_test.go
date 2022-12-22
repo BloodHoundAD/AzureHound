@@ -19,11 +19,11 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
 	"github.com/bloodhoundad/azurehound/constants"
+	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/models/azure"
 	"github.com/golang/mock/gomock"
@@ -40,74 +40,37 @@ func TestListManagementGroupOwners(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockManagementGroupsChannel := make(chan interface{})
-	mockManagementGroupOwnerChannel := make(chan azure.RoleAssignmentResult)
-	mockManagementGroupOwnerChannel2 := make(chan azure.RoleAssignmentResult)
-
+	mockRoleAssignmentsChannel := make(chan azureWrapper[models.ManagementGroupRoleAssignments])
 	mockTenant := azure.Tenant{}
-	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockManagementGroupOwnerChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockManagementGroupOwnerChannel2).Times(1)
-	channel := listManagementGroupOwners(ctx, mockClient, mockManagementGroupsChannel)
+	channel := listManagementGroupOwners(ctx, mockRoleAssignmentsChannel)
 
 	go func() {
-		defer close(mockManagementGroupsChannel)
-		mockManagementGroupsChannel <- AzureWrapper{
-			Data: models.ManagementGroup{},
-		}
-		mockManagementGroupsChannel <- AzureWrapper{
-			Data: models.ManagementGroup{},
-		}
-	}()
-	go func() {
-		defer close(mockManagementGroupOwnerChannel)
-		mockManagementGroupOwnerChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.OwnerRoleID,
+		defer close(mockRoleAssignmentsChannel)
+
+		mockRoleAssignmentsChannel <- NewAzureWrapper(
+			enums.KindAZManagementGroupRoleAssignment,
+			models.ManagementGroupRoleAssignments{
+				ManagementGroupId: "foo",
+				RoleAssignments: []models.ManagementGroupRoleAssignment{
+					{
+						RoleAssignment: azure.RoleAssignment{
+							Name: constants.OwnerRoleID,
+							Properties: azure.RoleAssignmentPropertiesWithScope{
+								RoleDefinitionId: constants.OwnerRoleID,
+							},
+						},
+					},
 				},
 			},
-		}
-		mockManagementGroupOwnerChannel <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.OwnerRoleID,
-				},
-			},
-		}
-	}()
-	go func() {
-		defer close(mockManagementGroupOwnerChannel2)
-		mockManagementGroupOwnerChannel2 <- azure.RoleAssignmentResult{
-			Ok: azure.RoleAssignment{
-				Properties: azure.RoleAssignmentPropertiesWithScope{
-					RoleDefinitionId: constants.OwnerRoleID,
-				},
-			},
-		}
-		mockManagementGroupOwnerChannel2 <- azure.RoleAssignmentResult{
-			Error: mockError,
-		}
+		)
 	}()
 
-	if result, ok := <-channel; !ok {
+	if _, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.ManagementGroupOwners); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ManagementGroupOwners{})
-	} else if len(data.Owners) != 2 {
-		t.Errorf("got %v, want %v", len(data.Owners), 2)
 	}
 
-	if result, ok := <-channel; !ok {
-		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.ManagementGroupOwners); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ManagementGroupOwners{})
-	} else if len(data.Owners) != 1 {
-		t.Errorf("got %v, want %v", len(data.Owners), 2)
+	if _, ok := <-channel; ok {
+		t.Error("should not have recieved from channel")
 	}
 }
