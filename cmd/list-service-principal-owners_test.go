@@ -96,6 +96,6 @@ func TestListServicePrincipalOwners(t *testing.T) {
 	} else if data, ok := wrapper.Data.(models.ServicePrincipalOwners); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.ServicePrincipalOwners{})
 	} else if len(data.Owners) != 1 {
-		t.Errorf("got %v, want %v", len(data.Owners), 2)
+		t.Errorf("got %v, want %v", len(data.Owners), 1)
 	}
 }

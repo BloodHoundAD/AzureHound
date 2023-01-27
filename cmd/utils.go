@@ -321,7 +321,7 @@ func (s signingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return s.base.RoundTrip(clone)
 }
 
-func contains(collection []string, value string) bool {
+func contains[T comparable](collection []T, value T) bool {
 	for _, item := range collection {
 		if item == value {
 			return true
