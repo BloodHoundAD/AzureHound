@@ -50,7 +50,7 @@ func TestListKeyVaultAccessPolicies(t *testing.T) {
 				KeyVault: azure.KeyVault{
 					Properties: azure.VaultProperties{
 						AccessPolicies: []azure.AccessPolicyEntry{
-							azure.AccessPolicyEntry{
+							{
 								Permissions: azure.KeyVaultPermissions{
 									Certificates: []string{"Get"},
 								},

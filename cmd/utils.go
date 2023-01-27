@@ -395,7 +395,7 @@ func outputStream[T any](ctx context.Context, stream <-chan T) {
 	formatted := pipeline.FormatJson(ctx.Done(), stream)
 	if path := config.OutputFile.Value().(string); path != "" {
 		if err := sinks.WriteToFile(ctx, path, formatted); err != nil {
-			exit(err)
+			exit(fmt.Errorf("failed to write stream to file: %w", err))
 		}
 	} else {
 		sinks.WriteToConsole(ctx, formatted)
