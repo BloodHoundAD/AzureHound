@@ -30,7 +30,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
 	"github.com/bloodhoundad/azurehound/client/rest"
 	"github.com/bloodhoundad/azurehound/config"
 	"github.com/bloodhoundad/azurehound/constants"
@@ -125,7 +124,9 @@ func start(ctx context.Context) {
 								// Notify BHE instance of task start
 								currentTask = &executableTasks[0]
 								if err := startTask(ctx, *bheInstance, bheClient, currentTask.Id); err != nil {
-									log.Error(err, "failed to start task")
+									log.Error(err, "failed to start task, will retry on next heartbeat")
+									currentTask = nil
+									return
 								}
 
 								start := time.Now()
@@ -276,17 +277,4 @@ func updateClient(ctx context.Context, bheUrl url.URL, bheClient *http.Client) e
 			}
 		}
 	}
-}
-
-func connectAndCreateClient() client.AzureClient {
-	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(fmt.Errorf("failed to test connections: %w", err))
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(fmt.Errorf("failed to create new Azure client: %w", err))
-	} else {
-		return azClient
-	}
-
-	panic("unexpectedly failed to create azClient without error")
 }

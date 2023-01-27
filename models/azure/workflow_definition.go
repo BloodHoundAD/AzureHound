@@ -30,7 +30,7 @@ type Definition struct {
 }
 
 type Action struct {
-	Type string `json:type`
+	Type string `json:"type"`
 	// Kind is missing in the MSDN, but returned and present in examples and during testing
 	Kind                 string                 `json:"kind,omitempty"`
 	Inputs               map[string]interface{} `json:"inputs,omitempty"`

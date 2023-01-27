@@ -425,3 +425,16 @@ func mgmtGroupRoleAssignmentFilter(roleId string) func(models.ManagementGroupRol
 		return path.Base(ra.RoleAssignment.Properties.RoleDefinitionId) == roleId
 	}
 }
+
+func connectAndCreateClient() client.AzureClient {
+	log.V(1).Info("testing connections")
+	if err := testConnections(); err != nil {
+		exit(fmt.Errorf("failed to test connections: %w", err))
+	} else if azClient, err := newAzureClient(); err != nil {
+		exit(fmt.Errorf("failed to create new Azure client: %w", err))
+	} else {
+		return azClient
+	}
+
+	panic("unexpectedly failed to create azClient without error")
+}

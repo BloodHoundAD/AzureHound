@@ -22,5 +22,5 @@ import "github.com/bloodhoundad/azurehound/enums"
 type ImmutableStorageWithVersioning struct {
 	Enabled        bool                 `json:"enabled,omitempty"`
 	MigrationState enums.MigrationState `json:"migrationState,omitempty"`
-	timeStamp      string               `json:"timeStamp,omitempty"`
+	TimeStamp      string               `json:"timeStamp,omitempty"`
 }
