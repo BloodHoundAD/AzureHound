@@ -118,6 +118,12 @@ func Demux[D, T any](done <-chan D, in <-chan T, size int) []<-chan T {
 	return internal.Map(outputs, func(out chan T) <-chan T { return out })
 }
 
+func ToAny[D, T any](done <-chan D, in <-chan T) <-chan any {
+	return Map(done, in, func(t T) any {
+		return any(t)
+	})
+}
+
 func Map[D, T, U any](done <-chan D, in <-chan T, fn func(T) U) <-chan U {
 	out := make(chan U)
 	go func() {
@@ -143,7 +149,7 @@ func Filter[D, T any](done <-chan D, in <-chan T, fn func(T) bool) <-chan T {
 }
 
 // Tee copies the stream of data from a single channel to zero or more channels
-func Tee[D, T any](done <-chan D, in <-chan T, outputs ...chan<- T) {
+func Tee[D, T any](done <-chan D, in <-chan T, outputs ...chan T) {
 	go func() {
 		// Need to close outputs when goroutine exits to ensure we avoid deadlock
 		defer func() {
@@ -161,6 +167,16 @@ func Tee[D, T any](done <-chan D, in <-chan T, outputs ...chan<- T) {
 			}
 		}
 	}()
+}
+
+func TeeFixed[D, T any](done <-chan D, in <-chan T, size int) []<-chan T {
+	out := internal.Map(make([]any, size), func(_ any) chan T {
+		return make(chan T)
+	})
+	Tee(done, in, out...)
+	return internal.Map(out, func(c chan T) <-chan T {
+		return c
+	})
 }
 
 func Batch[D, T any](done <-chan D, in <-chan T, maxItems int, maxTimeout time.Duration) <-chan []T {
