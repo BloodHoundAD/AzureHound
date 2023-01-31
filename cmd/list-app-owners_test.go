@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/client/mocks"
+	"github.com/bloodhoundad/azurehound/enums"
 	"github.com/bloodhoundad/azurehound/models"
 	"github.com/bloodhoundad/azurehound/models/azure"
 	"github.com/golang/mock/gomock"
@@ -40,7 +41,7 @@ func TestListAppOwners(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockAppsChannel := make(chan interface{})
+	mockAppsChannel := make(chan azureWrapper[models.App])
 	mockAppOwnerChannel := make(chan azure.AppOwnerResult)
 	mockAppOwnerChannel2 := make(chan azure.AppOwnerResult)
 
@@ -53,12 +54,8 @@ func TestListAppOwners(t *testing.T) {
 
 	go func() {
 		defer close(mockAppsChannel)
-		mockAppsChannel <- AzureWrapper{
-			Data: models.App{},
-		}
-		mockAppsChannel <- AzureWrapper{
-			Data: models.App{},
-		}
+		mockAppsChannel <- NewAzureWrapper(enums.KindAZApp, models.App{})
+		mockAppsChannel <- NewAzureWrapper(enums.KindAZApp, models.App{})
 	}()
 	go func() {
 		defer close(mockAppOwnerChannel)
@@ -81,21 +78,13 @@ func TestListAppOwners(t *testing.T) {
 
 	if result, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.AppOwners); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.AppOwners{})
-	} else if len(data.Owners) != 2 {
-		t.Errorf("got %v, want %v", len(data.Owners), 2)
+	} else if len(result.Data.Owners) != 2 {
+		t.Errorf("got %v, want %v", len(result.Data.Owners), 2)
 	}
 
 	if result, ok := <-channel; !ok {
 		t.Fatalf("failed to receive from channel")
-	} else if wrapper, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	} else if data, ok := wrapper.Data.(models.AppOwners); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", wrapper.Data, models.AppOwners{})
-	} else if len(data.Owners) != 1 {
-		t.Errorf("got %v, want %v", len(data.Owners), 2)
+	} else if len(result.Data.Owners) != 1 {
+		t.Errorf("got %v, want %v", len(result.Data.Owners), 2)
 	}
 }

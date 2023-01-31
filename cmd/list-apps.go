@@ -54,8 +54,8 @@ func listAppsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listApps(ctx context.Context, client client.AzureClient) <-chan interface{} {
-	out := make(chan interface{})
+func listApps(ctx context.Context, client client.AzureClient) <-chan azureWrapper[models.App] {
+	out := make(chan azureWrapper[models.App])
 
 	go func() {
 		defer close(out)
@@ -67,14 +67,14 @@ func listApps(ctx context.Context, client client.AzureClient) <-chan interface{}
 			} else {
 				log.V(2).Info("found application", "app", item)
 				count++
-				out <- AzureWrapper{
-					Kind: enums.KindAZApp,
-					Data: models.App{
+				out <- NewAzureWrapper(
+					enums.KindAZApp,
+					models.App{
 						Application: item.Ok,
 						TenantId:    client.TenantInfo().TenantId,
 						TenantName:  client.TenantInfo().DisplayName,
 					},
-				}
+				)
 			}
 		}
 		log.Info("finished listing all apps", "count", count)
