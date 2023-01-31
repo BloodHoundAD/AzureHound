@@ -18,6 +18,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/bloodhoundad/azurehound/constants"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/windows/svc/eventlog"
@@ -38,7 +40,7 @@ var uninstallCmd = &cobra.Command{
 
 func uninstallCmdImpl(cmd *cobra.Command, args []string) {
 	if err := uninstallService(constants.Name); err != nil {
-		exit(err)
+		exit(fmt.Errorf("failed to uninstall service: %w", err))
 	}
 }
 

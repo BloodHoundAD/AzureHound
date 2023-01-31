@@ -48,26 +48,21 @@ func listStorageContainersCmdImpl(cmd *cobra.Command, args []string) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure storage containers...")
-		start := time.Now()
-		subscriptions := listSubscriptions(ctx, azClient)
-		storageAccounts := listStorageAccounts(ctx, azClient, subscriptions)
-		stream := listStorageContainers(ctx, azClient, storageAccounts)
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure storage containers...")
+	start := time.Now()
+	subscriptions := listSubscriptions(ctx, azClient)
+	storageAccounts := listStorageAccounts(ctx, azClient, subscriptions)
+	stream := listStorageContainers(ctx, azClient, storageAccounts)
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
 func listStorageContainers(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan interface{})
-		ids     = make(chan interface{})
+		out = make(chan interface{})
+		ids = make(chan interface{})
 		// The original size of the demuxxer cascaded into error messages for a lot of collection steps.
 		// Decreasing the demuxxer size only here is sufficient to prevent the cascade
 		// The error message with higher values for size is

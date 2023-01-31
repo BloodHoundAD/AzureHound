@@ -58,7 +58,7 @@ var configureCmd = &cobra.Command{
 
 func configureCmdImpl(cmd *cobra.Command, args []string) {
 	if err := configure(); err != nil {
-		exit(err)
+		exit(fmt.Errorf("failed to configure cobra CLI: %w", err))
 	}
 }
 

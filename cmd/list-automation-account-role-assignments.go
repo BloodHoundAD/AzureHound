@@ -49,19 +49,14 @@ func listAutomationAccountRoleAssignmentImpl(cmd *cobra.Command, args []string) 
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure automation account role assignments...")
-		start := time.Now()
-		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listAutomationAccountRoleAssignments(ctx, azClient, listAutomationAccounts(ctx, azClient, subscriptions))
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure automation account role assignments...")
+	start := time.Now()
+	subscriptions := listSubscriptions(ctx, azClient)
+	stream := listAutomationAccountRoleAssignments(ctx, azClient, listAutomationAccounts(ctx, azClient, subscriptions))
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
 func listAutomationAccountRoleAssignments(ctx context.Context, client client.AzureClient, automationAccounts <-chan interface{}) <-chan interface{} {

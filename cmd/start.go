@@ -73,20 +73,15 @@ func start(ctx context.Context) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
+	if azClient := connectAndCreateClient(); azClient == nil {
+		exit(fmt.Errorf("azClient is unexpectedly nil"))
 	} else if bheInstance, err := url.Parse(config.BHEUrl.Value().(string)); err != nil {
-		exit(err)
+		exit(fmt.Errorf("unable to parse BHE url: %w", err))
 	} else if bheClient, err := newSigningHttpClient(BHEAuthSignature, config.BHETokenId.Value().(string), config.BHEToken.Value().(string), config.Proxy.Value().(string)); err != nil {
-		exit(err)
+		exit(fmt.Errorf("failed to create new signing HTTP client: %w", err))
+	} else if err := updateClient(ctx, *bheInstance, bheClient); err != nil {
+		exit(fmt.Errorf("failed to update client: %w", err))
 	} else {
-
-		if err := updateClient(ctx, *bheInstance, bheClient); err != nil {
-			exit(err)
-		}
-
 		log.Info("connected successfully! waiting for tasks...")
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
@@ -128,7 +123,12 @@ func start(ctx context.Context) {
 
 								// Notify BHE instance of task start
 								currentTask = &executableTasks[0]
-								startTask(ctx, *bheInstance, bheClient, currentTask.Id)
+								if err := startTask(ctx, *bheInstance, bheClient, currentTask.Id); err != nil {
+									log.Error(err, "failed to start task, will retry on next heartbeat")
+									currentTask = nil
+									return
+								}
+
 								start := time.Now()
 
 								// Batch data out for ingestion
@@ -139,8 +139,11 @@ func start(ctx context.Context) {
 								} else {
 									// Notify BHE instance of task end
 									duration := time.Since(start)
-									endTask(ctx, *bheInstance, bheClient)
-									log.Info("finished collection task", "id", currentTask.Id, "duration", duration.String())
+									if err := endTask(ctx, *bheInstance, bheClient); err != nil {
+										log.Error(err, "failed to end task")
+									} else {
+										log.Info("finished collection task", "id", currentTask.Id, "duration", duration.String())
+									}
 
 									currentTask = nil
 								}
