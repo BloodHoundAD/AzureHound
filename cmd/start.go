@@ -135,18 +135,18 @@ func start(ctx context.Context) {
 								stream := listAll(ctx, azClient)
 								batches := pipeline.Batch(ctx.Done(), stream, 999, 10*time.Second)
 								if err := ingest(ctx, *bheInstance, bheClient, batches); err != nil {
-									log.Error(err, "ingestion failed; collection will be re-attempted")
-								} else {
-									// Notify BHE instance of task end
-									duration := time.Since(start)
-									if err := endTask(ctx, *bheInstance, bheClient); err != nil {
-										log.Error(err, "failed to end task")
-									} else {
-										log.Info("finished collection task", "id", currentTask.Id, "duration", duration.String())
-									}
-
-									currentTask = nil
+									log.Error(err, "ingestion failed")
 								}
+
+								// Notify BHE instance of task end
+								duration := time.Since(start)
+								if err := endTask(ctx, *bheInstance, bheClient); err != nil {
+									log.Error(err, "failed to end task")
+								} else {
+									log.Info("finished collection task", "id", currentTask.Id, "duration", duration.String())
+								}
+
+								currentTask = nil
 							}
 						}
 					}()
