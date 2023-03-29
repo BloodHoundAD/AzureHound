@@ -19,18 +19,19 @@ package azure
 
 import "strings"
 
-type Workflow struct {
+// Mapped according to https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/get#site
+type WebApp struct {
 	Entity
 
-	Identity   ManagedIdentity    `json:"identity,omitempty"`
-	Location   string             `json:"location,omitempty"`
-	Name       string             `json:"name,omitempty"`
-	Properties WorkflowProperties `json:"properties,omitempty"`
-	Tags       map[string]string  `json:"tags,omitempty"`
-	Type       string             `json:"type,omitempty"`
+	Identity ManagedIdentity   `json:"identity,omitempty"`
+	Kind     string            `json:"kind,omitempty"`
+	Location string            `json:"location,omitempty"`
+	Name     string            `json:"name,omitempty"`
+	Tags     map[string]string `json:"tags,omitempty"`
+	Type     string            `json:"type,omitempty"`
 }
 
-func (s Workflow) ResourceGroupName() string {
+func (s WebApp) ResourceGroupName() string {
 	parts := strings.Split(s.Id, "/")
 	if len(parts) > 4 {
 		return parts[4]
@@ -39,7 +40,7 @@ func (s Workflow) ResourceGroupName() string {
 	}
 }
 
-func (s Workflow) ResourceGroupId() string {
+func (s WebApp) ResourceGroupId() string {
 	parts := strings.Split(s.Id, "/")
 	if len(parts) > 5 {
 		return strings.Join(parts[:5], "/")
@@ -48,13 +49,13 @@ func (s Workflow) ResourceGroupId() string {
 	}
 }
 
-type WorkflowList struct {
-	NextLink string     `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []Workflow `json:"value"`              // A list of workflows.
+type WebAppList struct {
+	NextLink string   `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
+	Value    []WebApp `json:"value"`              // A list of web apps.
 }
 
-type WorkflowResult struct {
+type WebAppResult struct {
 	SubscriptionId string
 	Error          error
-	Ok             Workflow
+	Ok             WebApp
 }

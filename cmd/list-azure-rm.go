@@ -68,6 +68,27 @@ func listAzureRMCmdImpl(cmd *cobra.Command, args []string) {
 
 func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{} {
 	var (
+		functionApps  = make(chan interface{})
+		functionApps2 = make(chan interface{})
+
+		webApps  = make(chan interface{})
+		webApps2 = make(chan interface{})
+
+		automationAccounts  = make(chan interface{})
+		automationAccounts2 = make(chan interface{})
+
+		containerRegistries  = make(chan interface{})
+		containerRegistries2 = make(chan interface{})
+
+		logicApps  = make(chan interface{})
+		logicApps2 = make(chan interface{})
+
+		managedClusters  = make(chan interface{})
+		managedClusters2 = make(chan interface{})
+
+		vmScaleSets  = make(chan interface{})
+		vmScaleSets2 = make(chan interface{})
+
 		keyVaults                = make(chan interface{})
 		keyVaults2               = make(chan interface{})
 		keyVaults3               = make(chan interface{})
@@ -92,6 +113,13 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 		subscriptions3               = make(chan interface{})
 		subscriptions4               = make(chan interface{})
 		subscriptions5               = make(chan interface{})
+		subscriptions6               = make(chan interface{})
+		subscriptions7               = make(chan interface{})
+		subscriptions8               = make(chan interface{})
+		subscriptions9               = make(chan interface{})
+		subscriptions10              = make(chan interface{})
+		subscriptions11              = make(chan interface{})
+		subscriptions12              = make(chan interface{})
 		subscriptionRoleAssignments1 = make(chan interface{})
 		subscriptionRoleAssignments2 = make(chan interface{})
 
@@ -106,10 +134,30 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 
 	// Enumerate entities
 	pipeline.Tee(ctx.Done(), listManagementGroups(ctx, client), mgmtGroups, mgmtGroups2, mgmtGroups3)
-	pipeline.Tee(ctx.Done(), listSubscriptions(ctx, client), subscriptions, subscriptions2, subscriptions3, subscriptions4, subscriptions5)
+	pipeline.Tee(ctx.Done(), listSubscriptions(ctx, client),
+		subscriptions,
+		subscriptions2,
+		subscriptions3,
+		subscriptions4,
+		subscriptions5,
+		subscriptions6,
+		subscriptions7,
+		subscriptions8,
+		subscriptions9,
+		subscriptions10,
+		subscriptions11,
+		subscriptions12,
+	)
 	pipeline.Tee(ctx.Done(), listResourceGroups(ctx, client, subscriptions2), resourceGroups, resourceGroups2)
 	pipeline.Tee(ctx.Done(), listKeyVaults(ctx, client, subscriptions3), keyVaults, keyVaults2, keyVaults3)
 	pipeline.Tee(ctx.Done(), listVirtualMachines(ctx, client, subscriptions4), virtualMachines, virtualMachines2)
+	pipeline.Tee(ctx.Done(), listFunctionApps(ctx, client, subscriptions6), functionApps, functionApps2)
+	pipeline.Tee(ctx.Done(), listWebApps(ctx, client, subscriptions7), webApps, webApps2)
+	pipeline.Tee(ctx.Done(), listAutomationAccounts(ctx, client, subscriptions8), automationAccounts, automationAccounts2)
+	pipeline.Tee(ctx.Done(), listContainerRegistries(ctx, client, subscriptions9), containerRegistries, containerRegistries2)
+	pipeline.Tee(ctx.Done(), listLogicApps(ctx, client, subscriptions10), logicApps, logicApps2)
+	pipeline.Tee(ctx.Done(), listManagedClusters(ctx, client, subscriptions11), managedClusters, managedClusters2)
+	pipeline.Tee(ctx.Done(), listVMScaleSets(ctx, client, subscriptions12), vmScaleSets, vmScaleSets2)
 
 	// Enumerate Relationships
 	// ManagementGroups: Descendants, Owners and UserAccessAdmins
@@ -144,13 +192,44 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 	virtualMachineAdminLogins := listVirtualMachineAdminLogins(ctx, virtualMachineRoleAssignments4)
 	virtualMachineUserAccessAdmins := listVirtualMachineUserAccessAdmins(ctx, virtualMachineRoleAssignments5)
 
+	// Enumerate Function App Role Assignments
+	functionAppRoleAssignments := listFunctionAppRoleAssignments(ctx, client, functionApps2)
+
+	// Enumerate Web App Role Assignments
+	webAppRoleAssignments := listWebAppRoleAssignments(ctx, client, webApps2)
+
+	// Enumerate Automation Account Role Assignments
+	automationAccountRoleAssignments := listAutomationAccountRoleAssignments(ctx, client, automationAccounts2)
+
+	// Enumerate Container Registry Role Assignments
+	containerRegistryRoleAssignments := listContainerRegistryRoleAssignments(ctx, client, containerRegistries2)
+
+	// Enumerate Logic Apps Role Assignments
+	logicAppRoleAssignments := listLogicAppRoleAssignments(ctx, client, logicApps2)
+
+	// Enumerate Managed Cluster Role Assignments
+	managedClusterRoleAssignments := listManagedClusterRoleAssignments(ctx, client, managedClusters2)
+
+	// Enumerate VM Scale Set Role Assignments
+	vmScaleSetRoleAssignments := listVMScaleSetRoleAssignments(ctx, client, vmScaleSets2)
+
 	return pipeline.Mux(ctx.Done(),
+		automationAccounts,
+		automationAccountRoleAssignments,
+		containerRegistries,
+		containerRegistryRoleAssignments,
+		functionApps,
+		functionAppRoleAssignments,
 		keyVaultAccessPolicies,
 		keyVaultContributors,
 		keyVaultKVContributors,
 		keyVaultOwners,
 		keyVaultUserAccessAdmins,
 		keyVaults,
+		logicApps,
+		logicAppRoleAssignments,
+		managedClusters,
+		managedClusterRoleAssignments,
 		mgmtGroupDescendants,
 		mgmtGroupOwners,
 		mgmtGroupUserAccessAdmins,
@@ -167,5 +246,9 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 		virtualMachineOwners,
 		virtualMachineUserAccessAdmins,
 		virtualMachines,
+		vmScaleSets,
+		vmScaleSetRoleAssignments,
+		webApps,
+		webAppRoleAssignments,
 	)
 }

@@ -15,11 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package azure
+package enums
 
-import "github.com/bloodhoundad/azurehound/enums"
+type LogicAppState string
 
-type WorkflowSku struct {
-	Name enums.SkuName     `json:"name,omitempty"`
-	Plan ResourceReference `json:"plan,omitempty"`
-}
+const (
+	CompletedLogicAppState    LogicAppState = "Completed"
+	DeletedLogicAppState      LogicAppState = "Deleted"
+	DisabledLogicAppState     LogicAppState = "Disabled"
+	EnabledLogicAppState      LogicAppState = "Enabled"
+	NotSpecifiedLogicAppState LogicAppState = "NotSpecified"
+	SuspendedLogicAppState    LogicAppState = "Suspended"
+)

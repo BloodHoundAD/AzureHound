@@ -21,7 +21,7 @@ import (
 	"github.com/bloodhoundad/azurehound/enums"
 )
 
-type WorkflowParameter struct {
+type LogicAppParameter struct {
 	Description string `json:"description,omitempty"`
 	//Metadata - marked as object in MSDN, however no other description available - in testing was not able to return a value here
 	Metadata interface{}         `json:"metadata,omitempty"`
@@ -29,7 +29,7 @@ type WorkflowParameter struct {
 	Value    interface{}         `json:"value,omitempty"`
 }
 
-func (s WorkflowParameter) GetValue() interface{} {
+func (s LogicAppParameter) GetValue() interface{} {
 	switch s.Type {
 	case enums.ArrayType:
 		return s.Value.([]interface{})

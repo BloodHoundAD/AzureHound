@@ -33,17 +33,17 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listFunctionAppsCmd)
+	listRootCmd.AddCommand(listContainerRegistriesCmd)
 }
 
-var listFunctionAppsCmd = &cobra.Command{
-	Use:          "function-apps",
-	Long:         "Lists Azure Function Apps",
-	Run:          listFunctionAppsCmdImpl,
+var listContainerRegistriesCmd = &cobra.Command{
+	Use:          "container-registries",
+	Long:         "Lists Azure Container Registries",
+	Run:          listContainerRegistriesCmdImpl,
 	SilenceUsage: true,
 }
 
-func listFunctionAppsCmdImpl(cmd *cobra.Command, args []string) {
+func listContainerRegistriesCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -53,16 +53,16 @@ func listFunctionAppsCmdImpl(cmd *cobra.Command, args []string) {
 	} else if azClient, err := newAzureClient(); err != nil {
 		exit(err)
 	} else {
-		log.Info("collecting azure function apps...")
+		log.Info("collecting azure container registries...")
 		start := time.Now()
-		stream := listFunctionApps(ctx, azClient, listSubscriptions(ctx, azClient))
+		stream := listContainerRegistries(ctx, azClient, listSubscriptions(ctx, azClient))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listFunctionApps(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listContainerRegistries(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -74,7 +74,7 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating function apps", "result", result)
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating container registries", "result", result)
 				return
 			} else {
 				ids <- subscription.SubscriptionId
@@ -89,28 +89,26 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureFunctionApps(ctx, id) {
+				for item := range client.ListAzureContainerRegistries(ctx, id) {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing function apps for this subscription", "subscriptionId", id)
+						log.Error(item.Error, "unable to continue processing container registries for this subscription", "subscriptionId", id)
 					} else {
 						resourceGroupId := item.Ok.ResourceGroupId()
-						functionApp := models.FunctionApp{
-							FunctionApp:     item.Ok,
-							SubscriptionId:  item.SubscriptionId,
-							ResourceGroupId: resourceGroupId,
-							TenantId:        client.TenantInfo().TenantId,
+						containerRegistry := models.ContainerRegistry{
+							ContainerRegistry: item.Ok,
+							SubscriptionId:    item.SubscriptionId,
+							ResourceGroupId:   resourceGroupId,
+							TenantId:          client.TenantInfo().TenantId,
 						}
-						if functionApp.Kind == "functionapp" {
-							log.V(2).Info("found function app", "functionApp", functionApp)
-							count++
-							out <- AzureWrapper{
-								Kind: enums.KindAZFunctionApp,
-								Data: functionApp,
-							}
+						log.V(2).Info("found container registry", "containerRegistry", containerRegistry)
+						count++
+						out <- AzureWrapper{
+							Kind: enums.KindAZContainerRegistry,
+							Data: containerRegistry,
 						}
 					}
 				}
-				log.V(1).Info("finished listing function apps", "subscriptionId", id, "count", count)
+				log.V(1).Info("finished listing container registries", "subscriptionId", id, "count", count)
 			}
 		}()
 	}
@@ -118,7 +116,7 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all function apps")
+		log.Info("finished listing all container registries")
 	}()
 
 	return out
