@@ -45,18 +45,13 @@ func listTenantsCmdImpl(cmd *cobra.Command, args []string) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure active directory tenants...")
-		start := time.Now()
-		stream := listTenants(ctx, azClient)
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure active directory tenants...")
+	start := time.Now()
+	stream := listTenants(ctx, azClient)
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
 func listTenants(ctx context.Context, client client.AzureClient) <-chan interface{} {

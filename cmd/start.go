@@ -73,20 +73,15 @@ func start(ctx context.Context) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
+	if azClient := connectAndCreateClient(); azClient == nil {
+		exit(fmt.Errorf("azClient is unexpectedly nil"))
 	} else if bheInstance, err := url.Parse(config.BHEUrl.Value().(string)); err != nil {
-		exit(err)
+		exit(fmt.Errorf("unable to parse BHE url: %w", err))
 	} else if bheClient, err := newSigningHttpClient(BHEAuthSignature, config.BHETokenId.Value().(string), config.BHEToken.Value().(string), config.Proxy.Value().(string)); err != nil {
-		exit(err)
+		exit(fmt.Errorf("failed to create new signing HTTP client: %w", err))
+	} else if err := updateClient(ctx, *bheInstance, bheClient); err != nil {
+		exit(fmt.Errorf("failed to update client: %w", err))
 	} else {
-
-		if err := updateClient(ctx, *bheInstance, bheClient); err != nil {
-			exit(err)
-		}
-
 		log.Info("connected successfully! waiting for tasks...")
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
@@ -97,51 +92,64 @@ func start(ctx context.Context) {
 			select {
 			case <-ticker.C:
 				if currentTask != nil {
-					log.V(1).Info("currently performing collection; continuing...")
+					log.V(1).Info("collection in progress...")
+					if err := checkin(ctx, *bheInstance, bheClient); err != nil {
+						log.Error(err, "bloodhound enterprise service checkin failed")
+					}
 				} else {
-					log.V(2).Info("checking for available collection tasks")
-					if availableTasks, err := getAvailableTasks(ctx, *bheInstance, bheClient); err != nil {
-						log.Error(err, "unable to fetch available tasks for azurehound")
-					} else {
-
-						// Get only the tasks that have reached their execution time
-						executableTasks := []models.ClientTask{}
-						now := time.Now()
-						for _, task := range availableTasks {
-							if task.ExectionTime.Before(now) || task.ExectionTime.Equal(now) {
-								executableTasks = append(executableTasks, task)
-							}
-						}
-
-						// Sort tasks in ascending order by execution time
-						sort.Slice(executableTasks, func(i, j int) bool {
-							return executableTasks[i].ExectionTime.Before(executableTasks[j].ExectionTime)
-						})
-
-						if len(executableTasks) == 0 {
-							log.V(2).Info("there are no tasks for azurehound to complete at this time")
+					go func() {
+						log.V(2).Info("checking for available collection tasks")
+						if availableTasks, err := getAvailableTasks(ctx, *bheInstance, bheClient); err != nil {
+							log.Error(err, "unable to fetch available tasks for azurehound")
 						} else {
 
-							// Notify BHE instance of task start
-							currentTask = &executableTasks[0]
-							startTask(ctx, *bheInstance, bheClient, currentTask.Id)
-							start := time.Now()
+							// Get only the tasks that have reached their execution time
+							executableTasks := []models.ClientTask{}
+							now := time.Now()
+							for _, task := range availableTasks {
+								if task.ExectionTime.Before(now) || task.ExectionTime.Equal(now) {
+									executableTasks = append(executableTasks, task)
+								}
+							}
 
-							// Batch data out for ingestion
-							stream := listAll(ctx, azClient)
-							batches := pipeline.Batch(ctx.Done(), stream, 999, 10*time.Second)
-							if err := ingest(ctx, *bheInstance, bheClient, batches); err != nil {
-								log.Error(err, "ingestion failed; collection will be re-attempted")
+							// Sort tasks in ascending order by execution time
+							sort.Slice(executableTasks, func(i, j int) bool {
+								return executableTasks[i].ExectionTime.Before(executableTasks[j].ExectionTime)
+							})
+
+							if len(executableTasks) == 0 {
+								log.V(2).Info("there are no tasks for azurehound to complete at this time")
 							} else {
+
+								// Notify BHE instance of task start
+								currentTask = &executableTasks[0]
+								if err := startTask(ctx, *bheInstance, bheClient, currentTask.Id); err != nil {
+									log.Error(err, "failed to start task, will retry on next heartbeat")
+									currentTask = nil
+									return
+								}
+
+								start := time.Now()
+
+								// Batch data out for ingestion
+								stream := listAll(ctx, azClient)
+								batches := pipeline.Batch(ctx.Done(), stream, 999, 10*time.Second)
+								if err := ingest(ctx, *bheInstance, bheClient, batches); err != nil {
+									log.Error(err, "ingestion failed")
+								}
+
 								// Notify BHE instance of task end
 								duration := time.Since(start)
-								endTask(ctx, *bheInstance, bheClient)
-								log.Info("finished collection task", "id", currentTask.Id, "duration", duration.String())
+								if err := endTask(ctx, *bheInstance, bheClient); err != nil {
+									log.Error(err, "failed to end task")
+								} else {
+									log.Info("finished collection task", "id", currentTask.Id, "duration", duration.String())
+								}
 
 								currentTask = nil
 							}
 						}
-					}
+					}()
 				}
 			case <-ctx.Done():
 				return
@@ -190,6 +198,20 @@ func getAvailableTasks(ctx context.Context, bheUrl url.URL, bheClient *http.Clie
 		return nil, err
 	} else {
 		return response, nil
+	}
+}
+
+func checkin(ctx context.Context, bheUrl url.URL, bheClient *http.Client) error {
+	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v2/jobs/current"})
+
+	if req, err := rest.NewRequest(ctx, "GET", endpoint, nil, nil, nil); err != nil {
+		return err
+	} else if res, err := bheClient.Do(req); err != nil {
+		return err
+	} else if !contains([]int{http.StatusOK, http.StatusNotFound}, res.StatusCode) {
+		return fmt.Errorf("unexpected response code %s", res.Status)
+	} else {
+		return nil
 	}
 }
 

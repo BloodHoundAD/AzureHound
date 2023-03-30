@@ -19,7 +19,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -48,56 +47,37 @@ func listAppOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure app owners...")
-		start := time.Now()
-		stream := listAppOwners(ctx, azClient, listApps(ctx, azClient))
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure app owners...")
+	start := time.Now()
+	stream := listAppOwners(ctx, azClient, listApps(ctx, azClient))
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan interface{}) <-chan interface{} {
+func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan azureWrapper[models.App]) <-chan azureWrapper[models.AppOwners] {
 	var (
-		out     = make(chan interface{})
-		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
+		out     = make(chan azureWrapper[models.AppOwners])
+		streams = pipeline.Demux(ctx.Done(), apps, 25)
 		wg      sync.WaitGroup
 	)
-
-	go func() {
-		defer close(ids)
-
-		for result := range pipeline.OrDone(ctx.Done(), apps) {
-			if app, ok := result.(AzureWrapper).Data.(models.App); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating app owners", "result", result)
-				return
-			} else {
-				ids <- app.Id
-			}
-		}
-	}()
 
 	wg.Add(len(streams))
 	for i := range streams {
 		stream := streams[i]
 		go func() {
 			defer wg.Done()
-			for id := range stream {
+			for app := range stream {
 				var (
 					data = models.AppOwners{
-						AppId: id,
+						AppId: app.Data.AppId,
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADAppOwners(ctx, id, "", "", "", nil) {
+				for item := range client.ListAzureADAppOwners(ctx, app.Data.Id, "", "", "", nil) {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing owners for this app", "appId", id)
+						log.Error(item.Error, "unable to continue processing owners for this app", "appId", app.Data.AppId)
 					} else {
 						appOwner := models.AppOwner{
 							Owner: item.Ok,
@@ -109,11 +89,11 @@ func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan i
 					}
 				}
 
-				out <- AzureWrapper{
-					Kind: enums.KindAZAppOwner,
-					Data: data,
-				}
-				log.V(1).Info("finished listing app owners", "appId", id, "count", count)
+				out <- NewAzureWrapper(
+					enums.KindAZAppOwner,
+					data,
+				)
+				log.V(1).Info("finished listing app owners", "appId", app.Data.AppId, "count", count)
 			}
 		}()
 	}

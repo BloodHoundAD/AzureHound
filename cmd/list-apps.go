@@ -45,22 +45,17 @@ func listAppsCmdImpl(cmd *cobra.Command, args []string) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure active directory applications...")
-		start := time.Now()
-		stream := listApps(ctx, azClient)
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure active directory applications...")
+	start := time.Now()
+	stream := listApps(ctx, azClient)
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
-func listApps(ctx context.Context, client client.AzureClient) <-chan interface{} {
-	out := make(chan interface{})
+func listApps(ctx context.Context, client client.AzureClient) <-chan azureWrapper[models.App] {
+	out := make(chan azureWrapper[models.App])
 
 	go func() {
 		defer close(out)
@@ -72,14 +67,14 @@ func listApps(ctx context.Context, client client.AzureClient) <-chan interface{}
 			} else {
 				log.V(2).Info("found application", "app", item)
 				count++
-				out <- AzureWrapper{
-					Kind: enums.KindAZApp,
-					Data: models.App{
+				out <- NewAzureWrapper(
+					enums.KindAZApp,
+					models.App{
 						Application: item.Ok,
 						TenantId:    client.TenantInfo().TenantId,
 						TenantName:  client.TenantInfo().DisplayName,
 					},
-				}
+				)
 			}
 		}
 		log.Info("finished listing all apps", "count", count)

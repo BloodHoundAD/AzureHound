@@ -50,25 +50,17 @@ func listAzureADCmdImpl(cmd *cobra.Command, args []string) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure ad objects...")
-		start := time.Now()
-		stream := listAllAD(ctx, azClient)
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure ad objects...")
+	start := time.Now()
+	stream := listAllAD(ctx, azClient)
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
 func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{} {
 	var (
-		apps  = make(chan interface{})
-		apps2 = make(chan interface{})
-
 		devices  = make(chan interface{})
 		devices2 = make(chan interface{})
 
@@ -87,8 +79,9 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 	)
 
 	// Enumerate Apps, AppOwners and AppMembers
-	pipeline.Tee(ctx.Done(), listApps(ctx, client), apps, apps2)
-	appOwners := listAppOwners(ctx, client, apps2)
+	appChans := pipeline.TeeFixed(ctx.Done(), listApps(ctx, client), 2)
+	apps := pipeline.ToAny(ctx.Done(), appChans[0])
+	appOwners := pipeline.ToAny(ctx.Done(), listAppOwners(ctx, client, appChans[1]))
 
 	// Enumerate Devices and DeviceOwners
 	pipeline.Tee(ctx.Done(), listDevices(ctx, client), devices, devices2)

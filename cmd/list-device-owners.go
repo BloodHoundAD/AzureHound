@@ -48,18 +48,13 @@ func listDeviceOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure device owners...")
-		start := time.Now()
-		stream := listDeviceOwners(ctx, azClient, listDevices(ctx, azClient))
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure device owners...")
+	start := time.Now()
+	stream := listDeviceOwners(ctx, azClient, listDevices(ctx, azClient))
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
 func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-chan interface{}) <-chan interface{} {

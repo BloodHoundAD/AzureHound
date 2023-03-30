@@ -57,11 +57,7 @@ func TestListApps(t *testing.T) {
 	}()
 
 	channel := listApps(ctx, mockClient)
-	result := <-channel
-	if _, ok := result.(AzureWrapper); !ok {
-		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})
-	}
-
+	<-channel
 	if _, ok := <-channel; ok {
 		t.Error("expected channel to close from an error result but it did not")
 	}

@@ -48,18 +48,13 @@ func listManagementGroupDescendantsCmdImpl(cmd *cobra.Command, args []string) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure management group descendants...")
-		start := time.Now()
-		stream := listManagementGroupDescendants(ctx, azClient, listManagementGroups(ctx, azClient))
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure management group descendants...")
+	start := time.Now()
+	stream := listManagementGroupDescendants(ctx, azClient, listManagementGroups(ctx, azClient))
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
 func listManagementGroupDescendants(ctx context.Context, client client.AzureClient, managementGroups <-chan interface{}) <-chan interface{} {

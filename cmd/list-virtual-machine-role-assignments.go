@@ -48,19 +48,14 @@ func listVirtualMachineRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string)
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
-	} else {
-		log.Info("collecting azure virtual machine role assignments...")
-		start := time.Now()
-		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listVirtualMachineRoleAssignments(ctx, azClient, listVirtualMachines(ctx, azClient, subscriptions))
-		outputStream(ctx, stream)
-		duration := time.Since(start)
-		log.Info("collection completed", "duration", duration.String())
-	}
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure virtual machine role assignments...")
+	start := time.Now()
+	subscriptions := listSubscriptions(ctx, azClient)
+	stream := listVirtualMachineRoleAssignments(ctx, azClient, listVirtualMachines(ctx, azClient, subscriptions))
+	outputStream(ctx, stream)
+	duration := time.Since(start)
+	log.Info("collection completed", "duration", duration.String())
 }
 
 func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureClient, virtualMachines <-chan interface{}) <-chan azureWrapper[models.VirtualMachineRoleAssignments] {

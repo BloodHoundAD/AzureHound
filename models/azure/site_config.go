@@ -20,18 +20,18 @@ package azure
 import "github.com/bloodhoundad/azurehound/enums"
 
 type SiteConfig struct {
-	AcrUseManagedIdentityCreds             bool                             `json:"acrUseManagedIdentityCreds,omitemtpy"`
-	AcrUserManagedIdentityID               string                           `json:"acrUserManagedIdentityID,omitemtpy"`
-	AlwaysOn                               bool                             `json:"alwaysOn,omitemtpy"`
-	ApiDefinition                          ApiDefinitionInfo                `json:"apiDefinition,omitemtpy"`
-	ApiManagementConfig                    ApiManagementConfig              `json:"apiManagementConfig,omitemtpy"`
-	AppCommandLine                         string                           `json:"appCommandLine,omitemtpy"`
-	AppSettings                            []NameValuePair                  `json:"appSettings,omitemtpy"`
-	AutoHealEnabled                        bool                             `json:"autoHealEnabled,omitemtpy"`
-	AutoHealRules                          string                           `json:"autoHealRules,omitemtpy"`
-	AutoSwapSlotName                       string                           `json:"autoSwapSlotName,omitemtpy"`
-	AzureStorageAccounts                   map[string]AzureStorageInfoValue `json:"azureStorageAccounts,omitemtpy"`
-	ConnectionStrings                      []ConnStringInfo                 `json:"connectionStrings,omitemtpy"`
+	AcrUseManagedIdentityCreds             bool                             `json:"acrUseManagedIdentityCreds,omitempty"`
+	AcrUserManagedIdentityID               string                           `json:"acrUserManagedIdentityID,omitempty"`
+	AlwaysOn                               bool                             `json:"alwaysOn,omitempty"`
+	ApiDefinition                          ApiDefinitionInfo                `json:"apiDefinition,omitempty"`
+	ApiManagementConfig                    ApiManagementConfig              `json:"apiManagementConfig,omitempty"`
+	AppCommandLine                         string                           `json:"appCommandLine,omitempty"`
+	AppSettings                            []NameValuePair                  `json:"appSettings,omitempty"`
+	AutoHealEnabled                        bool                             `json:"autoHealEnabled,omitempty"`
+	AutoHealRules                          string                           `json:"autoHealRules,omitempty"`
+	AutoSwapSlotName                       string                           `json:"autoSwapSlotName,omitempty"`
+	AzureStorageAccounts                   map[string]AzureStorageInfoValue `json:"azureStorageAccounts,omitempty"`
+	ConnectionStrings                      []ConnStringInfo                 `json:"connectionStrings,omitempty"`
 	Cors                                   CorsSettings                     `json:"cors,omitempty"`
 	DefaultDocuments                       []string                         `json:"defaultDocuments,omitempty"`
 	DetailedErrorLoggingEnabled            bool                             `json:"detailedErrorLoggingEnabled,omitempty"`
@@ -89,26 +89,26 @@ type SiteConfig struct {
 	XManagedServiceIdentityId              int                              `json:"xManagedServiceIdentityId,omitempty"`
 
 	//Following ones have been found in testing, but not present in the documentation
-	AntivirusScanEnabled                   bool        `json:"antivirusScanEnabled,omitemtpy"`
-	AzureMonitorLogCategories              interface{} `json:"azureMonitorLogCategories,omitemtpy"`
-	CustomAppPoolIdentityAdminState        interface{} `json:"customAppPoolIdentityAdminState,omitemtpy"`
-	CustomAppPoolIdentityTenantState       interface{} `json:"customAppPoolIdentityTenantState,omitemtpy"`
-	ElasticWebAppScaleLimit                interface{} `json:"elasticWebAppScaleLimit,omitemtpy"`
-	FileChangeAuditEnabled                 bool        `json:"fileChangeAuditEnabled,omitemtpy"`
-	Http20ProxyFlag                        interface{} `json:"http20ProxyFlag,omitemtpy"`
-	IpSecurityRestrictionsDefaultAction    interface{} `json:"ipSecurityRestrictionsDefaultAction,omitemtpy"`
-	Metadata                               interface{} `json:"metadata,omitemtpy"`
-	MinTlsCipherSuite                      interface{} `json:"minTlsCipherSuite,omitemtpy"`
-	PublishingPassword                     interface{} `json:"publishingPassword,omitemtpy"`
-	RoutingRules                           interface{} `json:"routingRules,omitemtpy"`
-	RuntimeADUser                          interface{} `json:"runtimeADUser,omitemtpy"`
-	RuntimeADUserPassword                  interface{} `json:"runtimeADUserPassword,omitemtpy"`
-	ScmIpSecurityRestrictionsDefaultAction interface{} `json:"scmIpSecurityRestrictionsDefaultAction,omitemtpy"`
-	SitePort                               interface{} `json:"sitePort,omitemtpy"`
-	StorageType                            interface{} `json:"storageType,omitemtpy"`
-	SupportedTlsCipherSuites               interface{} `json:"supportedTlsCipherSuites,omitemtpy"`
-	WinAuthAdminState                      interface{} `json:"winAuthAdminState,omitemtpy"`
-	WinAuthTenantState                     interface{} `json:"winAuthTenantState,omitemtpy"`
+	AntivirusScanEnabled                   bool        `json:"antivirusScanEnabled,omitempty"`
+	AzureMonitorLogCategories              interface{} `json:"azureMonitorLogCategories,omitempty"`
+	CustomAppPoolIdentityAdminState        interface{} `json:"customAppPoolIdentityAdminState,omitempty"`
+	CustomAppPoolIdentityTenantState       interface{} `json:"customAppPoolIdentityTenantState,omitempty"`
+	ElasticWebAppScaleLimit                interface{} `json:"elasticWebAppScaleLimit,omitempty"`
+	FileChangeAuditEnabled                 bool        `json:"fileChangeAuditEnabled,omitempty"`
+	Http20ProxyFlag                        interface{} `json:"http20ProxyFlag,omitempty"`
+	IpSecurityRestrictionsDefaultAction    interface{} `json:"ipSecurityRestrictionsDefaultAction,omitempty"`
+	Metadata                               interface{} `json:"metadata,omitempty"`
+	MinTlsCipherSuite                      interface{} `json:"minTlsCipherSuite,omitempty"`
+	PublishingPassword                     interface{} `json:"publishingPassword,omitempty"`
+	RoutingRules                           interface{} `json:"routingRules,omitempty"`
+	RuntimeADUser                          interface{} `json:"runtimeADUser,omitempty"`
+	RuntimeADUserPassword                  interface{} `json:"runtimeADUserPassword,omitempty"`
+	ScmIpSecurityRestrictionsDefaultAction interface{} `json:"scmIpSecurityRestrictionsDefaultAction,omitempty"`
+	SitePort                               interface{} `json:"sitePort,omitempty"`
+	StorageType                            interface{} `json:"storageType,omitempty"`
+	SupportedTlsCipherSuites               interface{} `json:"supportedTlsCipherSuites,omitempty"`
+	WinAuthAdminState                      interface{} `json:"winAuthAdminState,omitempty"`
+	WinAuthTenantState                     interface{} `json:"winAuthTenantState,omitempty"`
 }
 
 type ApiDefinitionInfo struct {

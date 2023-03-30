@@ -50,25 +50,20 @@ func listKeyVaultAccessPoliciesCmdImpl(cmd *cobra.Command, args []string) {
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
-	if err := testConnections(); err != nil {
-		exit(err)
-	} else if azClient, err := newAzureClient(); err != nil {
-		exit(err)
+	azClient := connectAndCreateClient()
+	log.Info("collecting azure key vault access policies...")
+	start := time.Now()
+	subscriptions := listSubscriptions(ctx, azClient)
+	if filters, ok := config.KeyVaultAccessTypes.Value().([]enums.KeyVaultAccessType); !ok {
+		exit(fmt.Errorf("filter failed type assertion"))
 	} else {
-		log.Info("collecting azure key vault access policies...")
-		start := time.Now()
-		subscriptions := listSubscriptions(ctx, azClient)
-		if filters, ok := config.KeyVaultAccessTypes.Value().([]enums.KeyVaultAccessType); !ok {
-			exit(fmt.Errorf("filter failed type assertion"))
-		} else {
-			if len(filters) > 0 {
-				log.Info("applying access type filters", "filters", filters)
-			}
-			stream := listKeyVaultAccessPolicies(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions), filters)
-			outputStream(ctx, stream)
-			duration := time.Since(start)
-			log.Info("collection completed", "duration", duration.String())
+		if len(filters) > 0 {
+			log.Info("applying access type filters", "filters", filters)
 		}
+		stream := listKeyVaultAccessPolicies(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions), filters)
+		outputStream(ctx, stream)
+		duration := time.Since(start)
+		log.Info("collection completed", "duration", duration.String())
 	}
 }
 

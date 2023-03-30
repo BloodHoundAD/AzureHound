@@ -60,9 +60,9 @@ func installCmdImpl(cmd *cobra.Command, args []string) {
 	)
 
 	if err := configureService(); err != nil {
-		exit(err)
+		exit(fmt.Errorf("failed to configure service: %w", err))
 	} else if err := installService(constants.DisplayName, config, recoveryActions); err != nil {
-		exit(err)
+		exit(fmt.Errorf("failed to install service: %w", err))
 	}
 }
 
