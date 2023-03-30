@@ -128,6 +128,13 @@ var (
 		Persistent: true,
 		Default:    "",
 	}
+	SystemAssignedId = Config{
+		Name:       "system-id",
+		Shorthand:  "",
+		Usage:      "Use a System Assigned Managed Identity",
+		Persistent: true,
+		Default:    false,
+	}
 
 	// Azure Configurations
 	AzAppId = Config{
@@ -283,6 +290,7 @@ var (
 		LogFile,
 		Proxy,
 		RefreshToken,
+		SystemAssignedId,
 	}
 
 	AzureConfig = []Config{

@@ -20,6 +20,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -40,19 +41,49 @@ func (s Token) String() string {
 
 func (s *Token) UnmarshalJSON(data []byte) error {
 	var res struct {
-		AccessToken  string `json:"access_token"`   // The token to use in calls to Microsoft Graph API
-		ExpiresIn    int    `json:"expires_in"`     // How long the access token is valid in seconds
-		ExtExpiresIn int    `json:"ext_expires_in"` // How long the access token is valid in seconds
-		TokenType    string `json:"token_type"`     // Indicates the token type value. The only type currently supported by Azure AD is `bearer`
+		AccessToken  string      `json:"access_token"`   // The token to use in calls to Microsoft Graph API
+		ExpiresIn    interface{} `json:"expires_in"`     // How long the access token is valid in seconds
+		ExtExpiresIn interface{} `json:"ext_expires_in"` // How long the access token is valid in seconds
+		TokenType    string      `json:"token_type"`     // Indicates the token type value. The only type currently supported by Azure AD is `bearer`
 	}
 
 	if err := json.Unmarshal(data, &res); err != nil {
 		return err
 	} else {
+		// convert ExpiresIn to int
+		expiresIn, ok := res.ExpiresIn.(int)
+		if !ok {
+			// ExpiresIn is not an int
+			// try to convert it from string to int
+			str, ok := res.ExpiresIn.(string)
+			if !ok {
+				return nil
+			}
+			expiresIn, err = strconv.Atoi(str)
+			if err != nil {
+				return nil
+			}
+		}
+
+		// convert ExtExpiresIn to int
+		extExpiresIn, ok := res.ExtExpiresIn.(int)
+		if !ok {
+			// ExpiresIn is not an int
+			// try to convert it from string to int
+			str, ok := res.ExtExpiresIn.(string)
+			if !ok {
+				return nil
+			}
+			extExpiresIn, err = strconv.Atoi(str)
+			if err != nil {
+				return nil
+			}
+		}
+
+		s.expiresIn = expiresIn
+		s.extExpiresIn = extExpiresIn
 		s.accessToken = res.AccessToken
-		s.expiresIn = res.ExpiresIn
-		s.extExpiresIn = res.ExtExpiresIn
-		s.expires = time.Now().Add(time.Duration(res.ExpiresIn) * time.Second)
+		s.expires = time.Now().Add(time.Duration(expiresIn) * time.Second)
 		return nil
 	}
 }
