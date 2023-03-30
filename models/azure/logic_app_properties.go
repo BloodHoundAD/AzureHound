@@ -19,17 +19,17 @@ package azure
 
 import "github.com/bloodhoundad/azurehound/enums"
 
-type WorkflowProperties struct {
+type LogicAppProperties struct {
 	AccessEndpoint     string            `json:"accessEndpoint,omitempty"`
 	ChangedTime        string            `json:"changedTime,omitempty"`
 	CreatedTime        string            `json:"createdTime,omitempty"`
 	Definition         Definition        `json:"definition,omitempty"`
 	IntegrationAccount ResourceReference `json:"integrationAccount,omitempty"`
 	// Note: in testing this does not get populated, instead the parameters are listed within the definition
-	Parameters        map[string]WorkflowParameter    `json:"parameters,omitempty"`
-	ProvisioningState enums.WorkflowProvisioningState `json:"provisioningState,omitempty"`
-	Sku               WorkflowSku                     `json:"sku,omitempty"`
-	State             enums.WorkflowState             `json:"state,omitempty"`
+	Parameters        map[string]LogicAppParameter    `json:"parameters,omitempty"`
+	ProvisioningState enums.LogicAppProvisioningState `json:"provisioningState,omitempty"`
+	Sku               LogicAppSku                     `json:"sku,omitempty"`
+	State             enums.LogicAppState             `json:"state,omitempty"`
 	Version           string                          `json:"version,omitempty"`
 
 	// This does not appear in the documentation, however, it gets populated in the response
@@ -37,11 +37,11 @@ type WorkflowProperties struct {
 }
 
 type EndpointConfiguration struct {
-	Workflow  WorkflowEndpointConfiguration `json:"workflow,omitempty"`
-	Connector WorkflowEndpointConfiguration `json:"connector,omitempty"`
+	LogicApp  LogicAppEndpointConfiguration `json:"logicapp,omitempty"`
+	Connector LogicAppEndpointConfiguration `json:"connector,omitempty"`
 }
 
-type WorkflowEndpointConfiguration struct {
+type LogicAppEndpointConfiguration struct {
 	OutgoingIpAddresses       []AddressEndpointConfiguration `json:"outgoingIpAddresses,omitempty"`
 	AccessEndpointIpAddresses []AddressEndpointConfiguration `json:"accessEndpointIpAddresses,omitempty"`
 }

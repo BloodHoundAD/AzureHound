@@ -727,6 +727,20 @@ func (mr *MockAzureClientMockRecorder) ListAzureAutomationAccounts(arg0, arg1 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureAutomationAccounts", reflect.TypeOf((*MockAzureClient)(nil).ListAzureAutomationAccounts), arg0, arg1)
 }
 
+// ListAzureContainerRegistries mocks base method.
+func (m *MockAzureClient) ListAzureContainerRegistries(arg0 context.Context, arg1 string) <-chan azure.ContainerRegistryResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureContainerRegistries", arg0, arg1)
+	ret0, _ := ret[0].(<-chan azure.ContainerRegistryResult)
+	return ret0
+}
+
+// ListAzureContainerRegistries indicates an expected call of ListAzureContainerRegistries.
+func (mr *MockAzureClientMockRecorder) ListAzureContainerRegistries(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureContainerRegistries", reflect.TypeOf((*MockAzureClient)(nil).ListAzureContainerRegistries), arg0, arg1)
+}
+
 // ListAzureDeviceRegisteredOwners mocks base method.
 func (m *MockAzureClient) ListAzureDeviceRegisteredOwners(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.DeviceRegisteredOwnerResult {
 	m.ctrl.T.Helper()
@@ -781,6 +795,34 @@ func (m *MockAzureClient) ListAzureKeyVaults(arg0 context.Context, arg1 string, 
 func (mr *MockAzureClientMockRecorder) ListAzureKeyVaults(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureKeyVaults", reflect.TypeOf((*MockAzureClient)(nil).ListAzureKeyVaults), arg0, arg1, arg2)
+}
+
+// ListAzureLogicApps mocks base method.
+func (m *MockAzureClient) ListAzureLogicApps(arg0 context.Context, arg1, arg2 string, arg3 int32) <-chan azure.LogicAppResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureLogicApps", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(<-chan azure.LogicAppResult)
+	return ret0
+}
+
+// ListAzureLogicApps indicates an expected call of ListAzureLogicApps.
+func (mr *MockAzureClientMockRecorder) ListAzureLogicApps(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureLogicApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureLogicApps), arg0, arg1, arg2, arg3)
+}
+
+// ListAzureManagedClusters mocks base method.
+func (m *MockAzureClient) ListAzureManagedClusters(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.ManagedClusterResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureManagedClusters", arg0, arg1, arg2)
+	ret0, _ := ret[0].(<-chan azure.ManagedClusterResult)
+	return ret0
+}
+
+// ListAzureManagedClusters indicates an expected call of ListAzureManagedClusters.
+func (mr *MockAzureClientMockRecorder) ListAzureManagedClusters(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureManagedClusters", reflect.TypeOf((*MockAzureClient)(nil).ListAzureManagedClusters), arg0, arg1, arg2)
 }
 
 // ListAzureManagementGroupDescendants mocks base method.
@@ -867,6 +909,20 @@ func (mr *MockAzureClientMockRecorder) ListAzureSubscriptions(arg0 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureSubscriptions", reflect.TypeOf((*MockAzureClient)(nil).ListAzureSubscriptions), arg0)
 }
 
+// ListAzureVMScaleSets mocks base method.
+func (m *MockAzureClient) ListAzureVMScaleSets(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.VMScaleSetResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureVMScaleSets", arg0, arg1, arg2)
+	ret0, _ := ret[0].(<-chan azure.VMScaleSetResult)
+	return ret0
+}
+
+// ListAzureVMScaleSets indicates an expected call of ListAzureVMScaleSets.
+func (mr *MockAzureClientMockRecorder) ListAzureVMScaleSets(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureVMScaleSets", reflect.TypeOf((*MockAzureClient)(nil).ListAzureVMScaleSets), arg0, arg1, arg2)
+}
+
 // ListAzureVirtualMachines mocks base method.
 func (m *MockAzureClient) ListAzureVirtualMachines(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.VirtualMachineResult {
 	m.ctrl.T.Helper()
@@ -881,18 +937,18 @@ func (mr *MockAzureClientMockRecorder) ListAzureVirtualMachines(arg0, arg1, arg2
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureVirtualMachines", reflect.TypeOf((*MockAzureClient)(nil).ListAzureVirtualMachines), arg0, arg1, arg2)
 }
 
-// ListAzureWorkflows mocks base method.
-func (m *MockAzureClient) ListAzureWorkflows(arg0 context.Context, arg1, arg2 string, arg3 int32) <-chan azure.WorkflowResult {
+// ListAzureWebApps mocks base method.
+func (m *MockAzureClient) ListAzureWebApps(arg0 context.Context, arg1 string) <-chan azure.WebAppResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureWorkflows", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(<-chan azure.WorkflowResult)
+	ret := m.ctrl.Call(m, "ListAzureWebApps", arg0, arg1)
+	ret0, _ := ret[0].(<-chan azure.WebAppResult)
 	return ret0
 }
 
-// ListAzureWorkflows indicates an expected call of ListAzureWorkflows.
-func (mr *MockAzureClientMockRecorder) ListAzureWorkflows(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+// ListAzureWebApps indicates an expected call of ListAzureWebApps.
+func (mr *MockAzureClientMockRecorder) ListAzureWebApps(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureWorkflows", reflect.TypeOf((*MockAzureClient)(nil).ListAzureWorkflows), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureWebApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureWebApps), arg0, arg1)
 }
 
 // ListResourceRoleAssignments mocks base method.

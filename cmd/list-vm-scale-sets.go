@@ -33,30 +33,36 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listWorkflowsCmd)
+	listRootCmd.AddCommand(listVMScaleSetsCmd)
 }
 
-var listWorkflowsCmd = &cobra.Command{
-	Use:          "workflows",
-	Long:         "Lists Azure Workflows (Logic Apps)",
-	Run:          listWorkflowsCmdImpl,
+var listVMScaleSetsCmd = &cobra.Command{
+	Use:          "vm-scale-sets",
+	Long:         "Lists Azure Virtual Machine Scale Sets",
+	Run:          listVMScaleSetsCmdImpl,
 	SilenceUsage: true,
 }
 
-func listWorkflowsCmdImpl(cmd *cobra.Command, args []string) {
+func listVMScaleSetsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
-	azClient := connectAndCreateClient()
-	log.Info("collecting azure workflows...")
-	start := time.Now()
-	stream := listWorkflows(ctx, azClient, listSubscriptions(ctx, azClient))
-	outputStream(ctx, stream)
-	duration := time.Since(start)
-	log.Info("collection completed", "duration", duration.String())
+	log.V(1).Info("testing connections")
+	if err := testConnections(); err != nil {
+		exit(err)
+	} else if azClient, err := newAzureClient(); err != nil {
+		exit(err)
+	} else {
+		log.Info("collecting azure virtual machine scale sets...")
+		start := time.Now()
+		stream := listVMScaleSets(ctx, azClient, listSubscriptions(ctx, azClient))
+		outputStream(ctx, stream)
+		duration := time.Since(start)
+		log.Info("collection completed", "duration", duration.String())
+	}
 }
 
-func listWorkflows(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -68,7 +74,7 @@ func listWorkflows(ctx context.Context, client client.AzureClient, subscriptions
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating workflows", "result", result)
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine scale sets", "result", result)
 				return
 			} else {
 				ids <- subscription.SubscriptionId
@@ -83,31 +89,26 @@ func listWorkflows(ctx context.Context, client client.AzureClient, subscriptions
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				// Azure only allows requesting 100 workflows at a time. The previous
-				// value of math.MaxInt32 was causing issues and not collecting
-				// workflows at all. This is not a great fix, since it requires proper
-				// pagination in case there are more than 100 workflows, but it's better
-				// as an interim solution than it was before.
-				for item := range client.ListAzureWorkflows(ctx, id, "", 100) {
+				for item := range client.ListAzureVMScaleSets(ctx, id, false) {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing workflows for this subscription", "subscriptionId", id)
+						log.Error(item.Error, "unable to continue processing virtual machine scale sets for this subscription", "subscriptionId", id)
 					} else {
 						resourceGroupId := item.Ok.ResourceGroupId()
-						workflow := models.Workflow{
-							Workflow:        item.Ok,
+						vmScaleSet := models.VMScaleSet{
+							VMScaleSet:      item.Ok,
 							SubscriptionId:  item.SubscriptionId,
 							ResourceGroupId: resourceGroupId,
 							TenantId:        client.TenantInfo().TenantId,
 						}
-						log.V(2).Info("found workflow", "workflow", workflow)
+						log.V(2).Info("found virtual machine scale set", "vmScaleSet", vmScaleSet)
 						count++
 						out <- AzureWrapper{
-							Kind: enums.KindAZWorkflow,
-							Data: workflow,
+							Kind: enums.KindAZVMScaleSet,
+							Data: vmScaleSet,
 						}
 					}
 				}
-				log.V(1).Info("finished listing workflows", "subscriptionId", id, "count", count)
+				log.V(1).Info("finished listing virtual machine scale sets", "subscriptionId", id, "count", count)
 			}
 		}()
 	}
@@ -115,7 +116,7 @@ func listWorkflows(ctx context.Context, client client.AzureClient, subscriptions
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all workflows")
+		log.Info("finished listing all virtual machine scale sets")
 	}()
 
 	return out
