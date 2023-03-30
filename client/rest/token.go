@@ -39,6 +39,10 @@ func (s Token) String() string {
 	return fmt.Sprintf("Bearer %s", s.accessToken)
 }
 
+// The code below uses this weird unmarshalling way for ExpiresIn and ExtExpiresIn
+// because the metadata APIs used for obtaining a System Assigned Managed Identity return integer values which are quoted (i.e. {"expires_in" : "86400"})
+// while the normal 'login.microsoft.com' APIs return expires_in as a proper integer (i.e. {"expires_in" : 86400}). The previous code was failing
+// to parse the response of the metadata APIs since it was a string and not an int. This solves it for both.
 func (s *Token) UnmarshalJSON(data []byte) error {
 	var res struct {
 		AccessToken  string      `json:"access_token"`   // The token to use in calls to Microsoft Graph API
