@@ -25,10 +25,9 @@ import (
 )
 
 type Token struct {
-	accessToken  string
-	expiresIn    int
-	extExpiresIn int
-	expires      time.Time
+	accessToken string
+	expiresIn   int
+	expires     time.Time
 }
 
 func (s Token) IsExpired() bool {
@@ -43,12 +42,14 @@ func (s Token) String() string {
 // because the metadata APIs used for obtaining a System Assigned Managed Identity return integer values which are quoted (i.e. {"expires_in" : "86400"})
 // while the normal 'login.microsoft.com' APIs return expires_in as a proper integer (i.e. {"expires_in" : 86400}). The previous code was failing
 // to parse the response of the metadata APIs since it was a string and not an int. This solves it for both.
+// Another change is to remove the "ExtExpiresIn" since this field is not present for (system assigned) managed identities. As this field is not used
+// throughout the code anyway, we can remove it for now. If this field is not present on Windows, everything keeps working without any error. On linux/docker
+// this breaks the authentication flow.
 func (s *Token) UnmarshalJSON(data []byte) error {
 	var res struct {
-		AccessToken  string      `json:"access_token"`   // The token to use in calls to Microsoft Graph API
-		ExpiresIn    interface{} `json:"expires_in"`     // How long the access token is valid in seconds
-		ExtExpiresIn interface{} `json:"ext_expires_in"` // How long the access token is valid in seconds
-		TokenType    string      `json:"token_type"`     // Indicates the token type value. The only type currently supported by Azure AD is `bearer`
+		AccessToken string      `json:"access_token"` // The token to use in calls to Microsoft Graph API
+		ExpiresIn   interface{} `json:"expires_in"`   // How long the access token is valid in seconds
+		TokenType   string      `json:"token_type"`   // Indicates the token type value. The only type currently supported by Azure AD is `bearer`
 	}
 
 	if err := json.Unmarshal(data, &res); err != nil {
@@ -69,23 +70,7 @@ func (s *Token) UnmarshalJSON(data []byte) error {
 			}
 		}
 
-		// convert ExtExpiresIn to int
-		extExpiresIn, ok := res.ExtExpiresIn.(int)
-		if !ok {
-			// ExpiresIn is not an int
-			// try to convert it from string to int
-			str, ok := res.ExtExpiresIn.(string)
-			if !ok {
-				return nil
-			}
-			extExpiresIn, err = strconv.Atoi(str)
-			if err != nil {
-				return nil
-			}
-		}
-
 		s.expiresIn = expiresIn
-		s.extExpiresIn = extExpiresIn
 		s.accessToken = res.AccessToken
 		s.expires = time.Now().Add(time.Duration(expiresIn) * time.Second)
 		return nil
