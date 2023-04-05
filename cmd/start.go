@@ -30,11 +30,11 @@ import (
 	"sort"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client/rest"
-	"github.com/bloodhoundad/azurehound/config"
-	"github.com/bloodhoundad/azurehound/constants"
-	"github.com/bloodhoundad/azurehound/models"
-	"github.com/bloodhoundad/azurehound/pipeline"
+	"github.com/bloodhoundad/azurehound/v2/client/rest"
+	"github.com/bloodhoundad/azurehound/v2/config"
+	"github.com/bloodhoundad/azurehound/v2/constants"
+	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
 

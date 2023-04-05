@@ -20,7 +20,7 @@ package azure
 import (
 	"encoding/json"
 
-	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/v2/enums"
 )
 
 // Represents a device registered in the organization. Devices are created in the cloud using the Device Registration

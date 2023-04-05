@@ -17,7 +17,7 @@
 
 package azure
 
-import "github.com/bloodhoundad/azurehound/enums"
+import "github.com/bloodhoundad/azurehound/v2/enums"
 
 type AzureStorageInfoValue struct {
 	AccessKey   string                  `json:"accessKey,omitempty"`

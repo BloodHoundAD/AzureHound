@@ -23,10 +23,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/bloodhoundad/azurehound/client/query"
-	"github.com/bloodhoundad/azurehound/client/rest"
-	"github.com/bloodhoundad/azurehound/constants"
-	"github.com/bloodhoundad/azurehound/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
+	"github.com/bloodhoundad/azurehound/v2/client/rest"
+	"github.com/bloodhoundad/azurehound/v2/constants"
+	"github.com/bloodhoundad/azurehound/v2/models/azure"
 )
 
 func (s *azureClient) GetAzureADRoleAssignment(ctx context.Context, objectId string, selectCols []string) (*azure.UnifiedRoleAssignment, error) {

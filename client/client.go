@@ -25,9 +25,9 @@ import (
 
 	"encoding/json"
 
-	"github.com/bloodhoundad/azurehound/client/config"
-	"github.com/bloodhoundad/azurehound/client/rest"
-	"github.com/bloodhoundad/azurehound/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/client/config"
+	"github.com/bloodhoundad/azurehound/v2/client/rest"
+	"github.com/bloodhoundad/azurehound/v2/models/azure"
 )
 
 func NewClient(config config.Config) (AzureClient, error) {
