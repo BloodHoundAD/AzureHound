@@ -1,4 +1,4 @@
-module github.com/bloodhoundad/azurehound
+module github.com/bloodhoundad/azurehound/v2
 
 go 1.18
 
