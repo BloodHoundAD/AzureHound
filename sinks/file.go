@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bloodhoundad/azurehound/models"
-	"github.com/bloodhoundad/azurehound/pipeline"
+	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func WriteToFile[T any](ctx context.Context, filePath string, stream <-chan T) error {

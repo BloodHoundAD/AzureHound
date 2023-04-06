@@ -24,12 +24,12 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/models"
-	"github.com/bloodhoundad/azurehound/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/models/azure"
 
-	"github.com/bloodhoundad/azurehound/client"
-	"github.com/bloodhoundad/azurehound/config"
-	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/config"
+	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/spf13/cobra"
 )
 

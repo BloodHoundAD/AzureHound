@@ -18,7 +18,7 @@
 package azure
 
 import (
-	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/v2/enums"
 )
 
 // Represents an Azure Active Directory user account.

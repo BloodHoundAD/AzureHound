@@ -18,8 +18,8 @@
 package azure
 
 import (
+	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/gofrs/uuid"
-	"github.com/bloodhoundad/azurehound/enums"
 )
 
 // Represents a plan assigned to user and organization entities.

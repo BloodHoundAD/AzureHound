@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"net/url"
 
-	client "github.com/bloodhoundad/azurehound/client/config"
-	config "github.com/bloodhoundad/azurehound/config/internal"
-	"github.com/bloodhoundad/azurehound/constants"
+	client "github.com/bloodhoundad/azurehound/v2/client/config"
+	config "github.com/bloodhoundad/azurehound/v2/config/internal"
+	"github.com/bloodhoundad/azurehound/v2/constants"
 )
 
 var Init = config.Init

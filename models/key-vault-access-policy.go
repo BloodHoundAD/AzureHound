@@ -17,7 +17,7 @@
 
 package models
 
-import "github.com/bloodhoundad/azurehound/models/azure"
+import "github.com/bloodhoundad/azurehound/v2/models/azure"
 
 type KeyVaultAccessPolicy struct {
 	azure.AccessPolicyEntry

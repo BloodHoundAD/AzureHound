@@ -18,7 +18,7 @@
 package models
 
 import (
-	"github.com/bloodhoundad/azurehound/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/models/azure"
 )
 
 type Device struct {
