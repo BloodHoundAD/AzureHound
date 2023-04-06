@@ -27,12 +27,12 @@ import (
 	"github.com/bloodhoundad/azurehound/models/azure"
 )
 
-func (s *azureClient) GetAzureWorkflow(ctx context.Context, subscriptionId, groupName, workflowName, expand string) (*azure.Workflow, error) {
+func (s *azureClient) GetAzureVMScaleSet(ctx context.Context, subscriptionId, groupName, vmssName, expand string) (*azure.VMScaleSet, error) {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Logic/workflows/%s", subscriptionId, groupName, workflowName)
-		params   = query.Params{ApiVersion: "2016-06-01", Expand: expand}.AsMap()
+		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachineScaleSets/%s", subscriptionId, groupName, vmssName)
+		params   = query.Params{ApiVersion: "2022-11-01", Expand: expand}.AsMap()
 		headers  map[string]string
-		response azure.Workflow
+		response azure.VMScaleSet
 	)
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
 		return nil, err
@@ -43,12 +43,12 @@ func (s *azureClient) GetAzureWorkflow(ctx context.Context, subscriptionId, grou
 	}
 }
 
-func (s *azureClient) GetAzureWorkflows(ctx context.Context, subscriptionId string, filter string, top int32) (azure.WorkflowList, error) {
+func (s *azureClient) GetAzureVMScaleSets(ctx context.Context, subscriptionId string, statusOnly bool) (azure.VMScaleSetList, error) {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Logic/workflows", subscriptionId)
-		params   = query.Params{ApiVersion: "2016-06-01", Filter: filter, Top: top}.AsMap()
+		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Compute/virtualMachineScaleSets", subscriptionId)
+		params   = query.Params{ApiVersion: "2022-11-01", StatusOnly: statusOnly}.AsMap()
 		headers  map[string]string
-		response azure.WorkflowList
+		response azure.VMScaleSetList
 	)
 
 	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
@@ -60,30 +60,30 @@ func (s *azureClient) GetAzureWorkflows(ctx context.Context, subscriptionId stri
 	}
 }
 
-func (s *azureClient) ListAzureWorkflows(ctx context.Context, subscriptionId string, filter string, top int32) <-chan azure.WorkflowResult {
-	out := make(chan azure.WorkflowResult)
+func (s *azureClient) ListAzureVMScaleSets(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.VMScaleSetResult {
+	out := make(chan azure.VMScaleSetResult)
 
 	go func() {
 		defer close(out)
 
 		var (
-			errResult = azure.WorkflowResult{
+			errResult = azure.VMScaleSetResult{
 				SubscriptionId: subscriptionId,
 			}
 			nextLink string
 		)
 
-		if result, err := s.GetAzureWorkflows(ctx, subscriptionId, filter, top); err != nil {
+		if result, err := s.GetAzureVMScaleSets(ctx, subscriptionId, statusOnly); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {
 			for _, u := range result.Value {
-				out <- azure.WorkflowResult{SubscriptionId: subscriptionId, Ok: u}
+				out <- azure.VMScaleSetResult{SubscriptionId: subscriptionId, Ok: u}
 			}
 
 			nextLink = result.NextLink
 			for nextLink != "" {
-				var list azure.WorkflowList
+				var list azure.VMScaleSetList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
 					out <- errResult
@@ -102,7 +102,7 @@ func (s *azureClient) ListAzureWorkflows(ctx context.Context, subscriptionId str
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.WorkflowResult{
+						out <- azure.VMScaleSetResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
 						}

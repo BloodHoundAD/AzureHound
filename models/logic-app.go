@@ -15,15 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package enums
+package models
 
-type WorkflowState string
+import "github.com/bloodhoundad/azurehound/models/azure"
 
-const (
-	CompletedWorkflowState    WorkflowState = "Completed"
-	DeletedWorkflowState      WorkflowState = "Deleted"
-	DisabledWorkflowState     WorkflowState = "Disabled"
-	EnabledWorkflowState      WorkflowState = "Enabled"
-	NotSpecifiedWorkflowState WorkflowState = "NotSpecified"
-	SuspendedWorkflowState    WorkflowState = "Suspended"
-)
+type LogicApp struct {
+	azure.LogicApp
+	SubscriptionId    string `json:"subscriptionId"`
+	ResourceGroupId   string `json:"resourceGroupId"`
+	ResourceGroupName string `json:"resourceGroupName"`
+	TenantId          string `json:"tenantId"`
+}
