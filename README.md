@@ -12,12 +12,12 @@ The BloodHound data collector for Microsoft Azure
 
 ### Release Binaries
 
-Download the appropriate binary for your platform from one of our [Releases](https://github.com/bloodhoundad/azurehound/v2/releases).
+Download the appropriate binary for your platform from one of our [Releases](https://github.com/bloodhoundad/azurehound/releases).
 
 #### Rolling Release
 
 The rolling release contains pre-built binaries that are automatically kept up-to-date with the `main` branch and can be downloaded from
-[here](https://github.com/bloodhoundad/azurehound/v2/releases/tag/rolling).
+[here](https://github.com/bloodhoundad/azurehound/releases/tag/rolling).
 
 > **Warning:** The rolling release may be unstable.
 
