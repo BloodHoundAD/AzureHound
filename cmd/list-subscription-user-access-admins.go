@@ -25,11 +25,11 @@ import (
 	"path"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client"
-	"github.com/bloodhoundad/azurehound/constants"
-	"github.com/bloodhoundad/azurehound/enums"
-	"github.com/bloodhoundad/azurehound/models"
-	"github.com/bloodhoundad/azurehound/pipeline"
+	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/constants"
+	"github.com/bloodhoundad/azurehound/v2/enums"
+	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
 

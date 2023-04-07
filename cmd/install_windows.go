@@ -24,8 +24,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/config"
-	"github.com/bloodhoundad/azurehound/constants"
+	"github.com/bloodhoundad/azurehound/v2/config"
+	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/spf13/cobra"
 
 	"golang.org/x/sys/windows/svc/eventlog"

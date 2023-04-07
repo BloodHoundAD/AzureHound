@@ -22,10 +22,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bloodhoundad/azurehound/client/mocks"
-	"github.com/bloodhoundad/azurehound/constants"
-	"github.com/bloodhoundad/azurehound/models"
-	"github.com/bloodhoundad/azurehound/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/client/mocks"
+	"github.com/bloodhoundad/azurehound/v2/constants"
+	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/models/azure"
 	"github.com/golang/mock/gomock"
 )
 

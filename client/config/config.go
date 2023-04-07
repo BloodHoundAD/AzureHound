@@ -18,7 +18,7 @@
 package config
 
 import (
-	"github.com/bloodhoundad/azurehound/constants"
+	"github.com/bloodhoundad/azurehound/v2/constants"
 )
 
 type Config struct {

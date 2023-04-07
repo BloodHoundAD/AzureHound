@@ -21,7 +21,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/bloodhoundad/azurehound/config"
+	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/go-logr/logr"
 )
 

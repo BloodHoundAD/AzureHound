@@ -32,8 +32,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/client/config"
-	"github.com/bloodhoundad/azurehound/constants"
+	"github.com/bloodhoundad/azurehound/v2/client/config"
+	"github.com/bloodhoundad/azurehound/v2/constants"
 )
 
 type RestClient interface {

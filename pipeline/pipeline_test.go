@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bloodhoundad/azurehound/pipeline"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func TestBatch(t *testing.T) {

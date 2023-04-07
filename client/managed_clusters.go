@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/bloodhoundad/azurehound/client/query"
-	"github.com/bloodhoundad/azurehound/client/rest"
-	"github.com/bloodhoundad/azurehound/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
+	"github.com/bloodhoundad/azurehound/v2/client/rest"
+	"github.com/bloodhoundad/azurehound/v2/models/azure"
 )
 
 func (s *azureClient) GetAzureManagedCluster(ctx context.Context, subscriptionId, groupName, mcName, expand string) (*azure.ManagedCluster, error) {

@@ -12,12 +12,12 @@ The BloodHound data collector for Microsoft Azure
 
 ### Release Binaries
 
-Download the appropriate binary for your platform from one of our [Releases](https://github.com/BloodHoundAD/AzureHound/releases).
+Download the appropriate binary for your platform from one of our [Releases](https://github.com/bloodhoundad/azurehound/releases).
 
 #### Rolling Release
 
 The rolling release contains pre-built binaries that are automatically kept up-to-date with the `main` branch and can be downloaded from
-[here](https://github.com/BloodHoundAD/AzureHound/releases/tag/rolling).
+[here](https://github.com/bloodhoundad/azurehound/releases/tag/rolling).
 
 > **Warning:** The rolling release may be unstable.
 
@@ -30,7 +30,7 @@ The rolling release contains pre-built binaries that are automatically kept up-t
 To build this project from source run the following:
 
 ``` sh
-go build -ldflags="-s -w -X github.com/bloodhoundad/azurehound/constants.Version=`git describe tags --exact-match 2> /dev/null || git rev-parse HEAD`"
+go build -ldflags="-s -w -X github.com/bloodhoundad/azurehound/v2/constants.Version=`git describe tags --exact-match 2> /dev/null || git rev-parse HEAD`"
 ```
 
 ## Usage

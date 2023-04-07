@@ -17,7 +17,7 @@
 
 package azure
 
-import "github.com/bloodhoundad/azurehound/enums"
+import "github.com/bloodhoundad/azurehound/v2/enums"
 
 // The instance view of a virtual machine.
 type VirtualMachineInstanceView struct {

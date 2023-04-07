@@ -20,7 +20,7 @@ package azure
 import (
 	"encoding/json"
 
-	"github.com/bloodhoundad/azurehound/enums"
+	"github.com/bloodhoundad/azurehound/v2/enums"
 )
 
 // Represents an Azure Active Directory (Azure AD) group, which can be a Microsoft 365 group, or a security group.

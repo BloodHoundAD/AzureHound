@@ -17,7 +17,7 @@
 
 package azure
 
-import "github.com/bloodhoundad/azurehound/enums"
+import "github.com/bloodhoundad/azurehound/v2/enums"
 
 type ImmutabilityPolicyProperties struct {
 	AllowProtectedAppendWrites            bool                          `json:"allowProtectedAppendWrites,omitempty"`
