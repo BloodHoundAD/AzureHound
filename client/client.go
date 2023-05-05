@@ -28,9 +28,10 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/config"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/go-logr/logr"
 )
 
-func NewClient(config config.Config) (AzureClient, error) {
+func NewClient(config config.Config, log logr.Logger) (AzureClient, error) {
 	if msgraph, err := rest.NewRestClient(config.GraphUrl(), config); err != nil {
 		return nil, err
 	} else if resourceManager, err := rest.NewRestClient(config.ResourceManagerUrl(), config); err != nil {
@@ -41,7 +42,7 @@ func NewClient(config config.Config) (AzureClient, error) {
 			if aud, err := rest.ParseAud(config.JWT); err != nil {
 				return nil, err
 			} else if aud == config.GraphUrl() {
-				return initClientViaGraph(msgraph, resourceManager)
+				return initClientViaGraph(msgraph, resourceManager, config.Tenant, log)
 			} else if aud == config.ResourceManagerUrl() {
 				if body, err := rest.ParseBody(config.JWT); err != nil {
 					return nil, err
@@ -52,7 +53,7 @@ func NewClient(config config.Config) (AzureClient, error) {
 				return nil, fmt.Errorf("error: invalid token audience")
 			}
 		} else {
-			return initClientViaGraph(msgraph, resourceManager)
+			return initClientViaGraph(msgraph, resourceManager, config.Tenant, log)
 		}
 	}
 }
@@ -75,13 +76,24 @@ func initClientViaRM(msgraph, resourceManager rest.RestClient, tid interface{}) 
 	}
 }
 
-func initClientViaGraph(msgraph, resourceManager rest.RestClient) (AzureClient, error) {
+func initClientViaGraph(msgraph, resourceManager rest.RestClient, tid string, log logr.Logger) (AzureClient, error) {
 	client := &azureClient{
 		msgraph:         msgraph,
 		resourceManager: resourceManager,
 	}
 	if org, err := client.GetAzureADOrganization(context.Background(), nil); err != nil {
-		return nil, err
+		log.V(0).Error(err, "unable to get Azure AD organization. It is likely that your user don't have MS Graph API permissions. If you list non AAD objects (e.g., az-rm) this should be okay.")
+		if result, err := client.GetAzureADTenants(context.Background(), true); err != nil {
+			return nil, err
+		} else {
+			for _, tenant := range result.Value {
+				if tenant.TenantId == tid {
+					client.tenant = tenant
+					break
+				}
+			}
+			return client, nil
+		}
 	} else {
 		client.tenant = org.ToTenant()
 		return client, nil

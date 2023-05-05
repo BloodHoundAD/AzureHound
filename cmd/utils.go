@@ -254,7 +254,7 @@ func newAzureClient() (client.AzureClient, error) {
 		Tenant:         config.AzTenant.Value().(string),
 		Username:       config.AzUsername.Value().(string),
 	}
-	return client.NewClient(config)
+	return client.NewClient(config, log)
 }
 
 func newSigningHttpClient(signature, tokenId, token, proxyUrl string) (*http.Client, error) {
