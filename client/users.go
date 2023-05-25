@@ -77,6 +77,11 @@ func (s *azureClient) ListAzureADUsers(ctx context.Context, filter string, searc
 			nextLink  string
 		)
 		selectCols := []string{
+			"id",
+			"displayName",
+			"jobTitle",
+			"lastPasswordChangeDateTime",
+			"mail",
 			"onPremisesSecurityIdentifier",
 			"onPremisesSyncEnabled",
 		}
