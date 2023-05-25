@@ -82,6 +82,7 @@ func (s *azureClient) ListAzureADUsers(ctx context.Context, filter string, searc
 			"jobTitle",
 			"lastPasswordChangeDateTime",
 			"mail",
+			"accountEnabled",
 			"onPremisesSecurityIdentifier",
 			"onPremisesSyncEnabled",
 		}
