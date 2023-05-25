@@ -76,7 +76,10 @@ func (s *azureClient) ListAzureADUsers(ctx context.Context, filter string, searc
 			errResult = azure.UserResult{}
 			nextLink  string
 		)
-
+		selectCols := []string{
+			"onPremisesSecurityIdentifier",
+			"onPremisesSyncEnabled",
+		}
 		if users, err := s.GetAzureADUsers(ctx, filter, search, orderBy, selectCols, 999, false); err != nil {
 			errResult.Error = err
 			out <- errResult
