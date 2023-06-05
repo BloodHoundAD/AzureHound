@@ -188,7 +188,7 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 		}
 
 		headers := make(map[string]string)
-		headers["prefer"] = "60"
+		headers["Prefer"] = "wait=60"
 
 		if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, headers); err != nil {
 			log.Error(err, "unable to create ingest HTTP request")
