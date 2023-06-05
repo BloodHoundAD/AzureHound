@@ -142,7 +142,7 @@ func start(ctx context.Context) {
 
 								// Batch data out for ingestion
 								stream := listAll(ctx, azClient)
-								batches := pipeline.Batch(ctx.Done(), stream, 999, 10*time.Second)
+								batches := pipeline.Batch(ctx.Done(), stream, 256, 10*time.Second)
 								hasIngestErr := ingest(ctx, *bheInstance, bheClient, batches)
 
 								// Notify BHE instance of task end
@@ -187,7 +187,10 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 			Data: data,
 		}
 
-		if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, nil); err != nil {
+		headers := make(map[string]string)
+		headers["Prefer"] = "wait=60"
+
+		if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, headers); err != nil {
 			log.Error(err, "unable to create ingest HTTP request")
 			hasErrors = true
 		} else {
