@@ -18,6 +18,8 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/bloodhoundad/azurehound/v2/constants"
 )
 
@@ -81,7 +83,7 @@ func GraphUrl(region string, defaultUrl string) string {
 }
 
 func (s Config) GraphUrl() string {
-	return GraphUrl(s.Region, s.Graph)
+	return strings.TrimSuffix(GraphUrl(s.Region, s.Graph), "/")
 }
 
 func ResourceManagerUrl(region string, defaultUrl string) string {
@@ -102,5 +104,5 @@ func ResourceManagerUrl(region string, defaultUrl string) string {
 }
 
 func (s Config) ResourceManagerUrl() string {
-	return ResourceManagerUrl(s.Region, s.Graph)
+	return strings.TrimSuffix(ResourceManagerUrl(s.Region, s.Graph), "/")
 }

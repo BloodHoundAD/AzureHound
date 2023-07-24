@@ -20,8 +20,10 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -40,6 +42,10 @@ import (
 
 const (
 	BHEAuthSignature string = "bhesignature"
+)
+
+var (
+	ErrExceededRetryLimit = errors.New("exceeded max retry limit for ingest due to 504s")
 )
 
 func init() {
@@ -86,7 +92,10 @@ func start(ctx context.Context) {
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
 
-		var currentTask *models.ClientTask
+		var (
+			currentTask *models.ClientTask
+			message     string
+		)
 
 		for {
 			select {
@@ -133,14 +142,18 @@ func start(ctx context.Context) {
 
 								// Batch data out for ingestion
 								stream := listAll(ctx, azClient)
-								batches := pipeline.Batch(ctx.Done(), stream, 999, 10*time.Second)
-								if err := ingest(ctx, *bheInstance, bheClient, batches); err != nil {
-									log.Error(err, "ingestion failed")
-								}
+								batches := pipeline.Batch(ctx.Done(), stream, 256, 10*time.Second)
+								hasIngestErr := ingest(ctx, *bheInstance, bheClient, batches)
 
 								// Notify BHE instance of task end
 								duration := time.Since(start)
-								if err := endTask(ctx, *bheInstance, bheClient); err != nil {
+
+								if hasIngestErr {
+									message = "Collection completed with errors during ingest."
+								} else {
+									message = "Collection completed successfully."
+								}
+								if err := endTask(ctx, *bheInstance, bheClient, models.JobStatusComplete, message); err != nil {
 									log.Error(err, "failed to end task")
 								} else {
 									log.Info("finished collection task", "id", currentTask.Id, "duration", duration.String())
@@ -158,8 +171,13 @@ func start(ctx context.Context) {
 	}
 }
 
-func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-chan []interface{}) error {
-	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v1/ingest"})
+func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-chan []interface{}) bool {
+	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v2/ingest"})
+
+	var (
+		hasErrors  = false
+		maxRetries = 3
+	)
 
 	for data := range pipeline.OrDone(ctx.Done(), in) {
 		body := models.IngestRequest{
@@ -169,19 +187,42 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 			Data: data,
 		}
 
-		if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, nil); err != nil {
-			return fmt.Errorf("unable to create ingest HTTP request: %w", err)
-		} else if response, err := bheClient.Do(req); err != nil {
-			return fmt.Errorf("unable to send data to BHE ingest endpoint %v: %w", bheUrl, err)
-		} else if response.StatusCode != http.StatusAccepted {
-			if bodyBytes, err := io.ReadAll(response.Body); err != nil {
-				return fmt.Errorf("BHE returned HTTP status %d(%s). Failure reading response body: %w", response.StatusCode, response.Status, err)
-			} else {
-				return fmt.Errorf("BHE returned error %d(%s): %s", response.StatusCode, response.Status, string(bodyBytes))
+		headers := make(map[string]string)
+		headers["Prefer"] = "wait=60"
+
+		if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, headers); err != nil {
+			log.Error(err, "unable to create ingest HTTP request")
+			hasErrors = true
+		} else {
+			for retry := 0; retry < maxRetries; retry++ {
+				//No retries on regular err cases, only on HTTP 504 timeouts
+				if response, err := bheClient.Do(req); err != nil {
+					log.Error(err, fmt.Sprintf("unable to send data to BHE ingest endpoint %v", bheUrl))
+					hasErrors = true
+					break
+				} else if response.StatusCode == http.StatusGatewayTimeout {
+					backoff := math.Pow(5, float64(retry+1))
+					time.Sleep(time.Second * time.Duration(backoff))
+					if retry == maxRetries-1 {
+						log.Error(ErrExceededRetryLimit, "")
+						hasErrors = true
+					}
+					continue
+				} else if response.StatusCode != http.StatusAccepted {
+					if bodyBytes, err := io.ReadAll(response.Body); err != nil {
+						log.Error(err, fmt.Sprintf("BHE returned HTTP status %d(%s). Failure reading response body", response.StatusCode, response.Status))
+						hasErrors = true
+						break
+					} else {
+						log.Error(err, fmt.Sprintf("BHE returned error %d(%s): %s", response.StatusCode, response.Status, string(bodyBytes)))
+						hasErrors = true
+						break
+					}
+				}
 			}
 		}
 	}
-	return nil
+	return hasErrors
 }
 
 func getAvailableTasks(ctx context.Context, bheUrl url.URL, bheClient *http.Client) ([]models.ClientTask, error) {
@@ -233,10 +274,15 @@ func startTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client, task
 	}
 }
 
-func endTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client) error {
-	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v1/clients/endtask"})
+func endTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client, status models.JobStatus, message string) error {
+	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v2/jobs/end"})
 
-	if req, err := rest.NewRequest(ctx, "POST", endpoint, nil, nil, nil); err != nil {
+	body := models.CompleteJobRequest{
+		Status:  status.String(),
+		Message: message,
+	}
+
+	if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, nil); err != nil {
 		return err
 	} else if _, err := bheClient.Do(req); err != nil {
 		return err

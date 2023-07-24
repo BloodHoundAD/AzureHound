@@ -95,7 +95,7 @@ func ParseAud(accessToken string) (string, error) {
 	} else if aud, ok := body["aud"].(string); !ok {
 		return "", fmt.Errorf("invalid 'aud' type: %T", body["aud"])
 	} else {
-		return aud, nil
+		return strings.TrimSuffix(aud, "/"), nil
 	}
 }
 
