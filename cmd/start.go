@@ -45,7 +45,7 @@ const (
 )
 
 var (
-	ErrExceededRetryLimit = errors.New("exceeded max retry limit for ingest due to 504s")
+	ErrExceededRetryLimit = errors.New("exceeded max retry limit for ingest batch, proceeding with next batch...")
 )
 
 func init() {
@@ -94,14 +94,13 @@ func start(ctx context.Context) {
 
 		var (
 			currentTask *models.ClientTask
-			message     string
 		)
 
 		for {
 			select {
 			case <-ticker.C:
 				if currentTask != nil {
-					log.V(1).Info("collection in progress...")
+					log.V(1).Info("collection in progress...", "jobId", currentTask.Id)
 					if err := checkin(ctx, *bheInstance, bheClient); err != nil {
 						log.Error(err, "bloodhound enterprise service checkin failed")
 					}
@@ -148,15 +147,15 @@ func start(ctx context.Context) {
 								// Notify BHE instance of task end
 								duration := time.Since(start)
 
+								message := "Collection completed successfully"
 								if hasIngestErr {
-									message = "Collection completed with errors during ingest."
-								} else {
-									message = "Collection completed successfully."
+									message = "Collection completed with errors during ingest"
+
 								}
 								if err := endTask(ctx, *bheInstance, bheClient, models.JobStatusComplete, message); err != nil {
 									log.Error(err, "failed to end task")
 								} else {
-									log.Info("finished collection task", "id", currentTask.Id, "duration", duration.String())
+									log.Info(message, "id", currentTask.Id, "duration", duration.String())
 								}
 
 								currentTask = nil
@@ -175,8 +174,9 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v2/ingest"})
 
 	var (
-		hasErrors  = false
-		maxRetries = 3
+		hasErrors           = false
+		maxRetries          = 3
+		unrecoverableErrMsg = fmt.Sprintf("ending current ingest job due to unrecoverable error while requesting %v", endpoint)
 	)
 
 	for data := range pipeline.OrDone(ctx.Done(), in) {
@@ -191,16 +191,15 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 		headers["Prefer"] = "wait=60"
 
 		if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, headers); err != nil {
-			log.Error(err, "unable to create ingest HTTP request")
-			hasErrors = true
+			log.Error(err, unrecoverableErrMsg)
+			return true
 		} else {
 			for retry := 0; retry < maxRetries; retry++ {
-				//No retries on regular err cases, only on HTTP 504 timeouts
+				//No retries on regular err cases, only on HTTP 504 Gateway Timeout and HTTP 503 Service Unavailable
 				if response, err := bheClient.Do(req); err != nil {
-					log.Error(err, fmt.Sprintf("unable to send data to BHE ingest endpoint %v", bheUrl))
-					hasErrors = true
-					break
-				} else if response.StatusCode == http.StatusGatewayTimeout {
+					log.Error(err, unrecoverableErrMsg)
+					return true
+				} else if response.StatusCode == http.StatusGatewayTimeout || response.StatusCode == http.StatusServiceUnavailable {
 					backoff := math.Pow(5, float64(retry+1))
 					time.Sleep(time.Second * time.Duration(backoff))
 					if retry == maxRetries-1 {
@@ -210,19 +209,33 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 					continue
 				} else if response.StatusCode != http.StatusAccepted {
 					if bodyBytes, err := io.ReadAll(response.Body); err != nil {
-						log.Error(err, fmt.Sprintf("BHE returned HTTP status %d(%s). Failure reading response body", response.StatusCode, response.Status))
-						hasErrors = true
-						break
+						log.Error(fmt.Errorf("received unexpected response code from %v: %s; failure reading response body", endpoint, response.Status), unrecoverableErrMsg)
 					} else {
-						log.Error(err, fmt.Sprintf("BHE returned error %d(%s): %s", response.StatusCode, response.Status, string(bodyBytes)))
-						hasErrors = true
-						break
+						log.Error(fmt.Errorf("received unexpected response code from %v: %s %s", req.URL, response.Status, bodyBytes), unrecoverableErrMsg)
 					}
+					return true
 				}
 			}
 		}
 	}
 	return hasErrors
+}
+
+// TODO: create/use a proper bloodhound client
+func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
+	if res, err := bheClient.Do(req); err != nil {
+		return nil, fmt.Errorf("failed to request %v: %w", req.URL, err)
+	} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
+		var body json.RawMessage
+		defer res.Body.Close()
+		if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
+			return nil, fmt.Errorf("received unexpected response code from %v: %s; failure reading response body", req.URL, res.Status)
+		} else {
+			return nil, fmt.Errorf("received unexpected response code from %v: %s %s", req.URL, res.Status, body)
+		}
+	} else {
+		return res, nil
+	}
 }
 
 func getAvailableTasks(ctx context.Context, bheUrl url.URL, bheClient *http.Client) ([]models.ClientTask, error) {
@@ -233,7 +246,7 @@ func getAvailableTasks(ctx context.Context, bheUrl url.URL, bheClient *http.Clie
 
 	if req, err := rest.NewRequest(ctx, "GET", endpoint, nil, nil, nil); err != nil {
 		return nil, err
-	} else if res, err := bheClient.Do(req); err != nil {
+	} else if res, err := do(bheClient, req); err != nil {
 		return nil, err
 	} else if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 		return nil, err
@@ -247,10 +260,8 @@ func checkin(ctx context.Context, bheUrl url.URL, bheClient *http.Client) error 
 
 	if req, err := rest.NewRequest(ctx, "GET", endpoint, nil, nil, nil); err != nil {
 		return err
-	} else if res, err := bheClient.Do(req); err != nil {
+	} else if _, err := do(bheClient, req); err != nil {
 		return err
-	} else if !contains([]int{http.StatusOK, http.StatusNotFound}, res.StatusCode) {
-		return fmt.Errorf("unexpected response code %s", res.Status)
 	} else {
 		return nil
 	}
@@ -267,7 +278,7 @@ func startTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client, task
 
 	if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, nil); err != nil {
 		return err
-	} else if _, err := bheClient.Do(req); err != nil {
+	} else if _, err := do(bheClient, req); err != nil {
 		return err
 	} else {
 		return nil
@@ -284,7 +295,7 @@ func endTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client, status
 
 	if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, nil); err != nil {
 		return err
-	} else if _, err := bheClient.Do(req); err != nil {
+	} else if _, err := do(bheClient, req); err != nil {
 		return err
 	} else {
 		return nil
@@ -309,18 +320,10 @@ func updateClient(ctx context.Context, bheUrl url.URL, bheClient *http.Client) e
 
 		if req, err := rest.NewRequest(ctx, "PUT", endpoint, body, nil, nil); err != nil {
 			return err
-		} else if res, err := bheClient.Do(req); err != nil {
+		} else if _, err := do(bheClient, req); err != nil {
 			return err
 		} else {
-			var body json.RawMessage
-			defer res.Body.Close()
-			if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-				return err
-			} else if res.StatusCode < 200 || res.StatusCode >= 400 {
-				return fmt.Errorf(string(body))
-			} else {
-				return nil
-			}
+			return nil
 		}
 	}
 }
