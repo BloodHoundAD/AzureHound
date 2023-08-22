@@ -109,6 +109,8 @@ type AzureClient interface {
 	GetAzureADRole(ctx context.Context, roleId string, selectCols []string) (*azure.Role, error)
 	GetAzureADRoleAssignment(ctx context.Context, objectId string, selectCols []string) (*azure.UnifiedRoleAssignment, error)
 	GetAzureADRoleAssignments(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.UnifiedRoleAssignmentList, error)
+	GetAzureADRoleEligibilityScheduleRequest(ctx context.Context, objectId string, selectCols []string) (*azure.UnifiedRoleEligibilityScheduleRequest, error)
+	GetAzureADRoleEligibilityScheduleRequests(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.UnifiedRoleEligibilityScheduleRequestList, error)
 	GetAzureADRoles(ctx context.Context, filter, expand string) (azure.RoleList, error)
 	GetAzureADServicePrincipal(ctx context.Context, objectId string, selectCols []string) (*azure.ServicePrincipal, error)
 	GetAzureADServicePrincipalOwners(ctx context.Context, objectId string, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.DirectoryObjectList, error)
@@ -139,6 +141,7 @@ type AzureClient interface {
 	ListAzureADGroupOwners(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.GroupOwnerResult
 	ListAzureADGroups(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.GroupResult
 	ListAzureADRoleAssignments(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.UnifiedRoleAssignmentResult
+	ListAzureADRoleEligibilityScheduleRequests(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.UnifiedRoleEligibilityScheduleRequestResult
 	ListAzureADRoles(ctx context.Context, filter, expand string) <-chan azure.RoleResult
 	ListAzureADServicePrincipalOwners(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.ServicePrincipalOwnerResult
 	ListAzureADServicePrincipals(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.ServicePrincipalResult

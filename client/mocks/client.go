@@ -186,6 +186,36 @@ func (mr *MockAzureClientMockRecorder) GetAzureADRoleAssignments(arg0, arg1, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRoleAssignments), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 }
 
+// GetAzureADRoleEligibilityScheduleRequest mocks base method.
+func (m *MockAzureClient) GetAzureADRoleEligibilityScheduleRequest(arg0 context.Context, arg1 string, arg2 []string) (*azure.UnifiedRoleEligibilityScheduleRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAzureADRoleEligibilityScheduleRequest", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*azure.UnifiedRoleEligibilityScheduleRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAzureADRoleEligibilityScheduleRequest indicates an expected call of GetAzureADRoleEligibilityScheduleRequest.
+func (mr *MockAzureClientMockRecorder) GetAzureADRoleEligibilityScheduleRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRoleEligibilityScheduleRequest", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRoleEligibilityScheduleRequest), arg0, arg1, arg2)
+}
+
+// GetAzureADRoleEligibilityScheduleRequests mocks base method.
+func (m *MockAzureClient) GetAzureADRoleEligibilityScheduleRequests(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string, arg6 int32, arg7 bool) (azure.UnifiedRoleEligibilityScheduleRequestList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAzureADRoleEligibilityScheduleRequests", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret0, _ := ret[0].(azure.UnifiedRoleEligibilityScheduleRequestList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAzureADRoleEligibilityScheduleRequests indicates an expected call of GetAzureADRoleEligibilityScheduleRequests.
+func (mr *MockAzureClientMockRecorder) GetAzureADRoleEligibilityScheduleRequests(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRoleEligibilityScheduleRequests", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRoleEligibilityScheduleRequests), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+}
+
 // GetAzureADRoles mocks base method.
 func (m *MockAzureClient) GetAzureADRoles(arg0 context.Context, arg1, arg2 string) (azure.RoleList, error) {
 	m.ctrl.T.Helper()
@@ -641,6 +671,20 @@ func (m *MockAzureClient) ListAzureADRoleAssignments(arg0 context.Context, arg1,
 func (mr *MockAzureClientMockRecorder) ListAzureADRoleAssignments(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADRoleAssignments), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// ListAzureADRoleEligibilityScheduleRequests mocks base method.
+func (m *MockAzureClient) ListAzureADRoleEligibilityScheduleRequests(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.UnifiedRoleEligibilityScheduleRequestResult {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAzureADRoleEligibilityScheduleRequests", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret0, _ := ret[0].(<-chan azure.UnifiedRoleEligibilityScheduleRequestResult)
+	return ret0
+}
+
+// ListAzureADRoleEligibilityScheduleRequests indicates an expected call of ListAzureADRoleEligibilityScheduleRequests.
+func (mr *MockAzureClientMockRecorder) ListAzureADRoleEligibilityScheduleRequests(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADRoleEligibilityScheduleRequests", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADRoleEligibilityScheduleRequests), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // ListAzureADRoles mocks base method.

@@ -70,6 +70,7 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 
 		roles  = make(chan interface{})
 		roles2 = make(chan interface{})
+		roles3 = make(chan interface{})
 
 		servicePrincipals  = make(chan interface{})
 		servicePrincipals2 = make(chan interface{})
@@ -103,8 +104,11 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 	users := listUsers(ctx, client)
 
 	// Enumerate Roles and RoleAssignments
-	pipeline.Tee(ctx.Done(), listRoles(ctx, client), roles, roles2)
+	pipeline.Tee(ctx.Done(), listRoles(ctx, client), roles, roles2, roles3)
 	roleAssignments := listRoleAssignments(ctx, client, roles2)
+
+	// Enumerate Roles Eligibility Schedule Requests
+	roleEligibilityScheduleRequests := listRoleEligibilityScheduleRequests(ctx, client, roles3)
 
 	// Enumerate AppRoleAssignments
 	appRoleAssignments := listAppRoleAssignments(ctx, client, servicePrincipals3)
@@ -118,6 +122,7 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 		groupMembers,
 		groupOwners,
 		groups,
+		roleEligibilityScheduleRequests,
 		roleAssignments,
 		roles,
 		servicePrincipalOwners,
