@@ -26,8 +26,8 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -219,7 +219,7 @@ func newAzureClient() (client.AzureClient, error) {
 	)
 
 	if file, ok := certFile.(string); ok && file != "" {
-		if content, err := ioutil.ReadFile(certFile.(string)); err != nil {
+		if content, err := os.ReadFile(certFile.(string)); err != nil {
 			return nil, fmt.Errorf("unable to read provided certificate: %w", err)
 		} else {
 			clientCert = string(content)
@@ -228,7 +228,7 @@ func newAzureClient() (client.AzureClient, error) {
 	}
 
 	if file, ok := keyFile.(string); ok && file != "" {
-		if content, err := ioutil.ReadFile(keyFile.(string)); err != nil {
+		if content, err := os.ReadFile(keyFile.(string)); err != nil {
 			return nil, fmt.Errorf("unable to read provided key file: %w", err)
 		} else {
 			clientKey = string(content)
@@ -304,8 +304,8 @@ func (s signingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if contentLength, err := body.ReadFrom(req.Body); err != nil {
 			return nil, err
 		} else if contentLength != 0 {
-			req.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
-			clone.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
+			req.Body = io.NopCloser(bytes.NewReader(body.Bytes()))
+			clone.Body = io.NopCloser(bytes.NewReader(body.Bytes()))
 		}
 	}
 	if _, err := digester.Write(body.Bytes()); err != nil {
