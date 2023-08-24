@@ -85,55 +85,57 @@ func start(ctx context.Context) {
 		exit(fmt.Errorf("unable to parse BHE url: %w", err))
 	} else if bheClient, err := newSigningHttpClient(BHEAuthSignature, config.BHETokenId.Value().(string), config.BHEToken.Value().(string), config.Proxy.Value().(string)); err != nil {
 		exit(fmt.Errorf("failed to create new signing HTTP client: %w", err))
-	} else if err := updateClient(ctx, *bheInstance, bheClient); err != nil {
+	} else if updatedClient, err := updateClient(ctx, *bheInstance, bheClient); err != nil {
 		exit(fmt.Errorf("failed to update client: %w", err))
+	} else if err := endOrphanedJob(ctx, *bheInstance, bheClient, updatedClient); err != nil {
+		exit(fmt.Errorf("failed to end orphaned job: %w", err))
 	} else {
-		log.Info("connected successfully! waiting for tasks...")
+		log.Info("connected successfully! waiting for jobs...")
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
 
 		var (
-			currentTask *models.ClientTask
+			currentJob *models.ClientJob
 		)
 
 		for {
 			select {
 			case <-ticker.C:
-				if currentTask != nil {
-					log.V(1).Info("collection in progress...", "jobId", currentTask.Id)
+				if currentJob != nil {
+					log.V(1).Info("collection in progress...", "jobId", currentJob.ID)
 					if err := checkin(ctx, *bheInstance, bheClient); err != nil {
 						log.Error(err, "bloodhound enterprise service checkin failed")
 					}
 				} else {
 					go func() {
-						log.V(2).Info("checking for available collection tasks")
-						if availableTasks, err := getAvailableTasks(ctx, *bheInstance, bheClient); err != nil {
-							log.Error(err, "unable to fetch available tasks for azurehound")
+						log.V(2).Info("checking for available collection jobs")
+						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient, updatedClient.ID); err != nil {
+							log.Error(err, "unable to fetch available jobs for azurehound")
 						} else {
 
-							// Get only the tasks that have reached their execution time
-							executableTasks := []models.ClientTask{}
+							// Get only the jobs that have reached their execution time
+							executableJobs := []models.ClientJob{}
 							now := time.Now()
-							for _, task := range availableTasks {
-								if task.ExectionTime.Before(now) || task.ExectionTime.Equal(now) {
-									executableTasks = append(executableTasks, task)
+							for _, job := range jobs {
+								if job.Status == models.JobStatusReady && job.ExecutionTime.Before(now) || job.ExecutionTime.Equal(now) {
+									executableJobs = append(executableJobs, job)
 								}
 							}
 
-							// Sort tasks in ascending order by execution time
-							sort.Slice(executableTasks, func(i, j int) bool {
-								return executableTasks[i].ExectionTime.Before(executableTasks[j].ExectionTime)
+							// Sort jobs in ascending order by execution time
+							sort.Slice(executableJobs, func(i, j int) bool {
+								return executableJobs[i].ExecutionTime.Before(executableJobs[j].ExecutionTime)
 							})
 
-							if len(executableTasks) == 0 {
-								log.V(2).Info("there are no tasks for azurehound to complete at this time")
+							if len(executableJobs) == 0 {
+								log.V(2).Info("there are no jobs for azurehound to complete at this time")
 							} else {
 
-								// Notify BHE instance of task start
-								currentTask = &executableTasks[0]
-								if err := startTask(ctx, *bheInstance, bheClient, currentTask.Id); err != nil {
-									log.Error(err, "failed to start task, will retry on next heartbeat")
-									currentTask = nil
+								// Notify BHE instance of job start
+								currentJob = &executableJobs[0]
+								if err := startJob(ctx, *bheInstance, bheClient, currentJob.ID); err != nil {
+									log.Error(err, "failed to start job, will retry on next heartbeat")
+									currentJob = nil
 									return
 								}
 
@@ -144,7 +146,7 @@ func start(ctx context.Context) {
 								batches := pipeline.Batch(ctx.Done(), stream, 256, 10*time.Second)
 								hasIngestErr := ingest(ctx, *bheInstance, bheClient, batches)
 
-								// Notify BHE instance of task end
+								// Notify BHE instance of job end
 								duration := time.Since(start)
 
 								message := "Collection completed successfully"
@@ -152,13 +154,13 @@ func start(ctx context.Context) {
 									message = "Collection completed with errors during ingest"
 
 								}
-								if err := endTask(ctx, *bheInstance, bheClient, models.JobStatusComplete, message); err != nil {
-									log.Error(err, "failed to end task")
+								if err := endJob(ctx, *bheInstance, bheClient, models.JobStatusComplete, message); err != nil {
+									log.Error(err, "failed to end job")
 								} else {
-									log.Info(message, "id", currentTask.Id, "duration", duration.String())
+									log.Info(message, "id", currentJob.ID, "duration", duration.String())
 								}
 
-								currentTask = nil
+								currentJob = nil
 							}
 						}
 					}()
@@ -238,10 +240,14 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 	}
 }
 
-func getAvailableTasks(ctx context.Context, bheUrl url.URL, bheClient *http.Client) ([]models.ClientTask, error) {
+type basicResponse[T any] struct {
+	Data T `json:"data"`
+}
+
+func getAvailableJobs(ctx context.Context, bheUrl url.URL, bheClient *http.Client, clientId string) ([]models.ClientJob, error) {
 	var (
-		endpoint = bheUrl.ResolveReference(&url.URL{Path: "/api/v1/clients/availabletasks"})
-		response []models.ClientTask
+		endpoint = bheUrl.ResolveReference(&url.URL{Path: "/api/v2/jobs/available"})
+		response basicResponse[[]models.ClientJob]
 	)
 
 	if req, err := rest.NewRequest(ctx, "GET", endpoint, nil, nil, nil); err != nil {
@@ -251,7 +257,7 @@ func getAvailableTasks(ctx context.Context, bheUrl url.URL, bheClient *http.Clie
 	} else if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 		return nil, err
 	} else {
-		return response, nil
+		return response.Data, nil
 	}
 }
 
@@ -267,12 +273,12 @@ func checkin(ctx context.Context, bheUrl url.URL, bheClient *http.Client) error 
 	}
 }
 
-func startTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client, taskId int) error {
-	log.Info("beginning collection task", "id", taskId)
+func startJob(ctx context.Context, bheUrl url.URL, bheClient *http.Client, jobId int) error {
+	log.Info("beginning collection job", "id", jobId)
 	var (
-		endpoint = bheUrl.ResolveReference(&url.URL{Path: "/api/v1/clients/starttask"})
+		endpoint = bheUrl.ResolveReference(&url.URL{Path: "/api/v2/jobs/start"})
 		body     = map[string]int{
-			"id": taskId,
+			"id": jobId,
 		}
 	)
 
@@ -285,7 +291,7 @@ func startTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client, task
 	}
 }
 
-func endTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client, status models.JobStatus, message string) error {
+func endJob(ctx context.Context, bheUrl url.URL, bheClient *http.Client, status models.JobStatus, message string) error {
 	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v2/jobs/end"})
 
 	body := models.CompleteJobRequest{
@@ -302,10 +308,13 @@ func endTask(ctx context.Context, bheUrl url.URL, bheClient *http.Client, status
 	}
 }
 
-func updateClient(ctx context.Context, bheUrl url.URL, bheClient *http.Client) error {
-	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v1/clients/update"})
+func updateClient(ctx context.Context, bheUrl url.URL, bheClient *http.Client) (*models.UpdateClientResponse, error) {
+	var (
+		endpoint = bheUrl.ResolveReference(&url.URL{Path: "/api/v2/clients/update"})
+		response = basicResponse[models.UpdateClientResponse]{}
+	)
 	if addr, err := dial(bheUrl.String()); err != nil {
-		return err
+		return nil, err
 	} else {
 		// hostname is nice to have but we don't really need it
 		hostname, _ := os.Hostname()
@@ -319,11 +328,22 @@ func updateClient(ctx context.Context, bheUrl url.URL, bheClient *http.Client) e
 		log.V(2).Info("updating client info", "info", body)
 
 		if req, err := rest.NewRequest(ctx, "PUT", endpoint, body, nil, nil); err != nil {
-			return err
-		} else if _, err := do(bheClient, req); err != nil {
-			return err
+			return nil, err
+		} else if res, err := do(bheClient, req); err != nil {
+			return nil, err
+		} else if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+			return nil, err
 		} else {
-			return nil
+			return &response.Data, nil
 		}
+	}
+}
+
+func endOrphanedJob(ctx context.Context, bheUrl url.URL, bheClient *http.Client, updatedClient *models.UpdateClientResponse) error {
+	if updatedClient.CurrentJob.Status == models.JobStatusRunning {
+		log.Info("the service started with an orphaned job in progress, sending job completion notice...", "jobId", updatedClient.CurrentJobID)
+		return endJob(ctx, bheUrl, bheClient, models.JobStatusFailed, "This job has been orphaned. Re-run collection for complete data.")
+	} else {
+		return nil
 	}
 }

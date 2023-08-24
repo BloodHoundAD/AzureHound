@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type CompleteJobRequest struct {
 	Status     string    `json:"status"`
 	StatusEnum JobStatus `json:"-"`
@@ -45,4 +47,16 @@ func (s JobStatus) String() string {
 	default:
 		return "INVALIDSTATUS"
 	}
+}
+
+type ClientJob struct {
+	ID               int       `json:"id"`
+	ClientID         string    `json:"client_id"`
+	ClientName       string    `json:"client_name"`
+	ClientScheduleID int       `json:"event_id"`
+	ExecutionTime    time.Time `json:"execution_time"`
+	StartTime        time.Time `json:"start_time"`
+	EndTime          time.Time `json:"end_time"`
+	Status           JobStatus `json:"status"`
+	StatusMessage    string    `json:"status_message"`
 }
