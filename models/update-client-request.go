@@ -24,3 +24,12 @@ type UpdateClientRequest struct {
 	Version  string `json:"version"`
 	UserSid  string `json:"usersid"`
 }
+
+type UpdateClientResponse struct {
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	IPAddress    string    `json:"ip_address"`
+	Hostname     string    `json:"hostname"`
+	CurrentJobID int       `json:"current_job_id"`
+	CurrentJob   ClientJob `json:"current_job"`
+}
