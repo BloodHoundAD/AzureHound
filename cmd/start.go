@@ -200,10 +200,12 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 		}
 		gw.Close()
 
-		if req, err := rest.NewBaseRequest(ctx, "POST", endpoint.String(), &body); err != nil {
+		if req, err := http.NewRequestWithContext(ctx, "POST", endpoint.String(), &body); err != nil {
 			log.Error(err, unrecoverableErrMsg)
 			return true
 		} else {
+			req.Header.Set("User-Agent", constants.UserAgent())
+			req.Header.Set("Accept", "application/json")
 			req.Header.Set("Prefer", "wait=60")
 			req.Header.Set("Content-Encoding", "gzip")
 			for retry := 0; retry < maxRetries; retry++ {

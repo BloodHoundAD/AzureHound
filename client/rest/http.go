@@ -98,7 +98,7 @@ func NewRequest(
 		}
 	}
 
-	if req, err := NewBaseRequest(ctx, verb, endpoint.String(), buf); err != nil {
+	if req, err := http.NewRequestWithContext(ctx, verb, endpoint.String(), buf); err != nil {
 		return nil, err
 	} else {
 		// set headers
@@ -116,23 +116,13 @@ func NewRequest(
 			}
 		}
 
+		// set default accept type
+		if req.Header.Get("Accept") == "" {
+			req.Header.Set("Accept", "application/json")
+		}
+
+		// set azurehound as user-agent
+		req.Header.Set("User-Agent", constants.UserAgent())
 		return req, nil
 	}
-}
-
-func NewBaseRequest(ctx context.Context, verb string, endpoint string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequestWithContext(ctx, verb, endpoint, body)
-	if err != nil {
-		return nil, err
-	}
-
-	// set default accept type
-	if req.Header.Get("Accept") == "" {
-		req.Header.Set("Accept", "application/json")
-	}
-
-	// set azurehound as user-agent
-	req.Header.Set("User-Agent", constants.UserAgent())
-
-	return req, nil
 }
