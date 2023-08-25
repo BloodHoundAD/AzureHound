@@ -2,8 +2,7 @@
 
 The BloodHound data collector for Microsoft Azure
 
-
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/BloodHoundAD/AzureHound/Build)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/BloodHoundAD/AzureHound/build.yml)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/BloodHoundAD/AzureHound)
 ![GitHub all releases](https://img.shields.io/github/downloads/BloodHoundAD/AzureHound/total)
 [![Documentation](https://img.shields.io/static/v1?label=&message=documentation&color=blue)](https://pkg.go.dev/github.com/bloodhoundad/azurehound)
@@ -29,26 +28,29 @@ The rolling release contains pre-built binaries that are automatically kept up-t
 
 To build this project from source run the following:
 
-``` sh
+```sh
 go build -ldflags="-s -w -X github.com/bloodhoundad/azurehound/v2/constants.Version=`git describe tags --exact-match 2> /dev/null || git rev-parse HEAD`"
 ```
 
 ## Usage
 
-### Quickstart 
+### Quickstart
 
 **Print all Azure Tenant data to stdout**
-``` sh
+
+```sh
 ❯ azurehound list -u "$USERNAME" -p "$PASSWORD" -t "$TENANT"
 ```
 
 **Print all Azure Tenant data to file**
-``` sh
+
+```sh
 ❯ azurehound list -u "$USERNAME" -p "$PASSWORD" -t "$TENANT" -o "mytenant.json"
 ```
 
 **Configure and start data collection service for BloodHound Enterprise**
-``` sh
+
+```sh
 ❯ azurehound configure
 (follow prompts)
 
