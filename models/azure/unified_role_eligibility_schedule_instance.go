@@ -17,7 +17,7 @@
 
 package azure
 
-type UnifiedRoleEligibilityScheduleRequest struct {
+type UnifiedRoleEligibilityScheduleInstance struct {
 	Entity
 
 	// The status of the role eligibility request.
@@ -57,13 +57,13 @@ type UnifiedRoleEligibilityScheduleRequest struct {
 	AppScopeId string `json:"appScopeId,omitempty"`
 }
 
-type UnifiedRoleEligibilityScheduleRequestList struct {
-	Count    int                                     `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string                                  `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []UnifiedRoleEligibilityScheduleRequest `json:"value"`                     // A list of role assignments.
+type UnifiedRoleEligibilityScheduleInstanceList struct {
+	Count    int                                      `json:"@odata.count,omitempty"`    // The total count of all results
+	NextLink string                                   `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
+	Value    []UnifiedRoleEligibilityScheduleInstance `json:"value"`                     // A list of role assignments.
 }
 
-type UnifiedRoleEligibilityScheduleRequestResult struct {
+type UnifiedRoleEligibilityScheduleInstanceResult struct {
 	Error error
-	Ok    UnifiedRoleEligibilityScheduleRequest
+	Ok    UnifiedRoleEligibilityScheduleInstance
 }

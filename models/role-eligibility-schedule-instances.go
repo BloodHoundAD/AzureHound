@@ -21,8 +21,8 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 )
 
-type RoleEligibilityScheduleRequests struct {
-	RoleEligibilityScheduleRequests []azure.UnifiedRoleEligibilityScheduleRequest `json:"roleEligibilityScheduleRequests"`
-	RoleDefinitionId                string                                        `json:"roleDefinitionId"`
-	TenantId                        string                                        `json:"tenantId"`
+type RoleEligibilityScheduleInstances struct {
+	RoleEligibilityScheduleInstances []azure.UnifiedRoleEligibilityScheduleInstance `json:"RoleEligibilityScheduleInstances"`
+	RoleDefinitionId                 string                                         `json:"roleDefinitionId"`
+	TenantId                         string                                         `json:"tenantId"`
 }

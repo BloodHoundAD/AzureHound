@@ -46,7 +46,7 @@ const (
 	KindAZResourceGroupUserAccessAdmin    Kind = "AZResourceGroupUserAccessAdmin"
 	KindAZRole                            Kind = "AZRole"
 	KindAZRoleAssignment                  Kind = "AZRoleAssignment"
-	KindAZRoleEligibilityScheduleRequest  Kind = "AZRoleEligibilityScheduleRequest"
+	KindAZRoleEligibilityScheduleInstance Kind = "AZRoleEligibilityScheduleInstance"
 	KindAZServicePrincipal                Kind = "AZServicePrincipal"
 	KindAZServicePrincipalOwner           Kind = "AZServicePrincipalOwner"
 	KindAZSubscription                    Kind = "AZSubscription"

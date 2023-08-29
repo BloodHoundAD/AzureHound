@@ -108,7 +108,7 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 	roleAssignments := listRoleAssignments(ctx, client, roles2)
 
 	// Enumerate Roles Eligibility Schedule Requests
-	roleEligibilityScheduleRequests := listRoleEligibilityScheduleRequests(ctx, client, roles3)
+	roleEligibilityScheduleInstances := listRoleEligibilityScheduleInstances(ctx, client, roles3)
 
 	// Enumerate AppRoleAssignments
 	appRoleAssignments := listAppRoleAssignments(ctx, client, servicePrincipals3)
@@ -122,7 +122,7 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 		groupMembers,
 		groupOwners,
 		groups,
-		roleEligibilityScheduleRequests,
+		roleEligibilityScheduleInstances,
 		roleAssignments,
 		roles,
 		servicePrincipalOwners,

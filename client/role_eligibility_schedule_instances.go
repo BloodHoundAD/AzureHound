@@ -29,11 +29,11 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 )
 
-func (s *azureClient) GetAzureADRoleEligibilityScheduleRequest(ctx context.Context, objectId string, selectCols []string) (*azure.UnifiedRoleEligibilityScheduleRequest, error) {
+func (s *azureClient) GetAzureADRoleEligibilityScheduleInstance(ctx context.Context, objectId string, selectCols []string) (*azure.UnifiedRoleEligibilityScheduleInstance, error) {
 	var (
-		path     = fmt.Sprintf("/%s/roleManagement/directory/roleEligibilityScheduleRequests/%s", constants.GraphApiVersion, objectId)
+		path     = fmt.Sprintf("/%s/roleManagement/directory/RoleEligibilityScheduleInstances/%s", constants.GraphApiVersion, objectId)
 		params   = query.Params{Select: selectCols}.AsMap()
-		response azure.UnifiedRoleEligibilityScheduleRequest
+		response azure.UnifiedRoleEligibilityScheduleInstance
 	)
 	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
 		return nil, err
@@ -44,12 +44,12 @@ func (s *azureClient) GetAzureADRoleEligibilityScheduleRequest(ctx context.Conte
 	}
 }
 
-func (s *azureClient) GetAzureADRoleEligibilityScheduleRequests(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.UnifiedRoleEligibilityScheduleRequestList, error) {
+func (s *azureClient) GetAzureADRoleEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.UnifiedRoleEligibilityScheduleInstanceList, error) {
 	var (
-		path     = fmt.Sprintf("/%s/roleManagement/directory/roleEligibilityScheduleRequests", constants.GraphApiVersion)
+		path     = fmt.Sprintf("/%s/roleManagement/directory/RoleEligibilityScheduleInstances", constants.GraphApiVersion)
 		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count, Expand: expand}
 		headers  map[string]string
-		response azure.UnifiedRoleEligibilityScheduleRequestList
+		response azure.UnifiedRoleEligibilityScheduleInstanceList
 	)
 	count = count || search != "" || (filter != "" && orderBy != "") || strings.Contains(filter, "endsWith")
 	if count {
@@ -65,28 +65,28 @@ func (s *azureClient) GetAzureADRoleEligibilityScheduleRequests(ctx context.Cont
 	}
 }
 
-func (s *azureClient) ListAzureADRoleEligibilityScheduleRequests(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.UnifiedRoleEligibilityScheduleRequestResult {
-	out := make(chan azure.UnifiedRoleEligibilityScheduleRequestResult)
+func (s *azureClient) ListAzureADRoleEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.UnifiedRoleEligibilityScheduleInstanceResult {
+	out := make(chan azure.UnifiedRoleEligibilityScheduleInstanceResult)
 
 	go func() {
 		defer close(out)
 
 		var (
-			errResult = azure.UnifiedRoleEligibilityScheduleRequestResult{}
+			errResult = azure.UnifiedRoleEligibilityScheduleInstanceResult{}
 			nextLink  string
 		)
 
-		if list, err := s.GetAzureADRoleEligibilityScheduleRequests(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
+		if list, err := s.GetAzureADRoleEligibilityScheduleInstances(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
 			errResult.Error = err
 			out <- errResult
 		} else {
 			for _, u := range list.Value {
-				out <- azure.UnifiedRoleEligibilityScheduleRequestResult{Ok: u}
+				out <- azure.UnifiedRoleEligibilityScheduleInstanceResult{Ok: u}
 			}
 
 			nextLink = list.NextLink
 			for nextLink != "" {
-				var list azure.UnifiedRoleEligibilityScheduleRequestList
+				var list azure.UnifiedRoleEligibilityScheduleInstanceList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
 					out <- errResult
@@ -105,7 +105,7 @@ func (s *azureClient) ListAzureADRoleEligibilityScheduleRequests(ctx context.Con
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.UnifiedRoleEligibilityScheduleRequestResult{Ok: u}
+						out <- azure.UnifiedRoleEligibilityScheduleInstanceResult{Ok: u}
 					}
 					nextLink = list.NextLink
 				}

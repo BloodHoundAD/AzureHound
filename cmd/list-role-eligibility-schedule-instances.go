@@ -33,32 +33,32 @@ import (
 )
 
 func init() {
-	listRootCmd.AddCommand(listRoleEligibilityScheduleRequestsCmd)
+	listRootCmd.AddCommand(listRoleEligibilityScheduleInstancesCmd)
 }
 
-var listRoleEligibilityScheduleRequestsCmd = &cobra.Command{
-	Use:          "role-eligibility-schedule-requests",
-	Long:         "Lists Azure Active Directory Role Eligibility Requests",
-	Run:          listRoleEligibilityScheduleRequestsCmdImpl,
+var listRoleEligibilityScheduleInstancesCmd = &cobra.Command{
+	Use:          "role-eligibility-schedule-instances",
+	Long:         "Lists Azure Active Directory Role Eligibility Instances",
+	Run:          listRoleEligibilityScheduleInstancesCmdImpl,
 	SilenceUsage: true,
 }
 
-func listRoleEligibilityScheduleRequestsCmdImpl(cmd *cobra.Command, args []string) {
+func listRoleEligibilityScheduleInstancesCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
 	azClient := connectAndCreateClient()
-	log.Info("collecting azure active directory role eligibility requests...")
+	log.Info("collecting azure active directory role eligibility instances...")
 	start := time.Now()
 	roles := listRoles(ctx, azClient)
-	stream := listRoleEligibilityScheduleRequests(ctx, azClient, roles)
+	stream := listRoleEligibilityScheduleInstances(ctx, azClient, roles)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listRoleEligibilityScheduleRequests(ctx context.Context, client client.AzureClient, roles <-chan interface{}) <-chan interface{} {
+func listRoleEligibilityScheduleInstances(ctx context.Context, client client.AzureClient, roles <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -71,7 +71,7 @@ func listRoleEligibilityScheduleRequests(ctx context.Context, client client.Azur
 
 		for result := range pipeline.OrDone(ctx.Done(), roles) {
 			if role, ok := result.(AzureWrapper).Data.(models.Role); !ok {
-				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating role eligibility schedule requests", "result", result)
+				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating role eligibility schedule instances", "result", result)
 				return
 			} else {
 				ids <- role.Id
@@ -86,27 +86,27 @@ func listRoleEligibilityScheduleRequests(ctx context.Context, client client.Azur
 			defer wg.Done()
 			for id := range stream {
 				var (
-					roleEligibilityScheduleRequests = models.RoleEligibilityScheduleRequests{
+					roleEligibilityScheduleInstances = models.RoleEligibilityScheduleInstances{
 						RoleDefinitionId: id,
 						TenantId:         client.TenantInfo().TenantId,
 					}
 					count  = 0
 					filter = fmt.Sprintf("roleDefinitionId eq '%s'", id)
 				)
-				for item := range client.ListAzureADRoleEligibilityScheduleRequests(ctx, filter, "", "", "", nil) {
+				for item := range client.ListAzureADRoleEligibilityScheduleInstances(ctx, filter, "", "", "", nil) {
 					if item.Error != nil {
-						log.Error(item.Error, "unable to continue processing role eligibility schedule requests for this role", "roleDefinitionId", id)
+						log.Error(item.Error, "unable to continue processing role eligibility schedule instances for this role", "roleDefinitionId", id)
 					} else {
-						log.V(2).Info("found role eligibility schedule request", "roleEligibilityScheduleRequest", item)
+						log.V(2).Info("found role eligibility schedule instance", "roleEligibilityScheduleInstance", item)
 						count++
-						roleEligibilityScheduleRequests.RoleEligibilityScheduleRequests = append(roleEligibilityScheduleRequests.RoleEligibilityScheduleRequests, item.Ok)
+						roleEligibilityScheduleInstances.RoleEligibilityScheduleInstances = append(roleEligibilityScheduleInstances.RoleEligibilityScheduleInstances, item.Ok)
 					}
 				}
 				out <- AzureWrapper{
-					Kind: enums.KindAZRoleEligibilityScheduleRequest,
-					Data: roleEligibilityScheduleRequests,
+					Kind: enums.KindAZRoleEligibilityScheduleInstance,
+					Data: roleEligibilityScheduleInstances,
 				}
-				log.V(1).Info("finished listing role eligibility schedule requests", "roleDefinitionId", id, "count", count)
+				log.V(1).Info("finished listing role eligibility schedule instances", "roleDefinitionId", id, "count", count)
 			}
 		}()
 	}
@@ -114,7 +114,7 @@ func listRoleEligibilityScheduleRequests(ctx context.Context, client client.Azur
 	go func() {
 		wg.Wait()
 		close(out)
-		log.Info("finished listing all role eligibility schedule requests")
+		log.Info("finished listing all role eligibility schedule instances")
 	}()
 
 	return out
