@@ -103,6 +103,8 @@ type AzureClient interface {
 	GetAzureADApps(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.ApplicationList, error)
 	GetAzureADDirectoryObject(ctx context.Context, objectId string) (json.RawMessage, error)
 	GetAzureADGroup(ctx context.Context, objectId string, selectCols []string) (*azure.Group, error)
+	GetAzureADGroupEligibilityScheduleInstance(ctx context.Context, objectId string, selectCols []string) (*azure.PrivilegedAccessGroupEligibilityScheduleInstance, error)
+	GetAzureADGroupEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.PrivilegedAccessGroupEligibilityScheduleInstanceList, error)
 	GetAzureADGroupOwners(ctx context.Context, objectId string, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.DirectoryObjectList, error)
 	GetAzureADGroups(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.GroupList, error)
 	GetAzureADOrganization(ctx context.Context, selectCols []string) (*azure.Organization, error)
@@ -140,6 +142,7 @@ type AzureClient interface {
 	ListAzureADGroupMembers(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.MemberObjectResult
 	ListAzureADGroupOwners(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.GroupOwnerResult
 	ListAzureADGroups(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.GroupResult
+	ListAzureADGroupEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.PrivilegedAccessGroupEligibilityScheduleInstanceResult
 	ListAzureADRoleAssignments(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.UnifiedRoleAssignmentResult
 	ListAzureADRoleEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.UnifiedRoleEligibilityScheduleInstanceResult
 	ListAzureADRoles(ctx context.Context, filter, expand string) <-chan azure.RoleResult
