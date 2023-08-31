@@ -60,7 +60,19 @@ func listUsers(ctx context.Context, client client.AzureClient) <-chan interface{
 	go func() {
 		defer close(out)
 		count := 0
-		for item := range client.ListAzureADUsers(ctx, "", "", "", nil) {
+		for item := range client.ListAzureADUsers(ctx, "", "", "", []string{
+			"accountEnabled",
+			"createdDateTime",
+			"displayName",
+			"jobTitle",
+			"lastPasswordChangeDateTime",
+			"mail",
+			"onPremisesSecurityIdentifier",
+			"onPremisesSyncEnabled",
+			"userPrincipalName",
+			"userType",
+			"id",
+		}) {
 			if item.Error != nil {
 				log.Error(item.Error, "unable to continue processing users")
 				return
