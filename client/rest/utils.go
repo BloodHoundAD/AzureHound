@@ -25,7 +25,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -36,7 +35,7 @@ import (
 
 func Decode(body io.ReadCloser, v interface{}) error {
 	defer body.Close()
-	defer ioutil.ReadAll(body)
+	defer io.ReadAll(body) // must read all; streaming to the json decoder does not read to EOF making the connection unavailable for reuse
 	return json.NewDecoder(body).Decode(v)
 }
 
