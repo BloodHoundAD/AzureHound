@@ -25,6 +25,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"strings"
 	"time"
 
