@@ -35,6 +35,7 @@ import (
 
 func Decode(body io.ReadCloser, v interface{}) error {
 	defer body.Close()
+	defer ioutil.ReadAll(body)
 	return json.NewDecoder(body).Decode(v)
 }
 
