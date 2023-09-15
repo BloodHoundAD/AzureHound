@@ -18,6 +18,8 @@
 package cmd
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"errors"
@@ -182,20 +184,32 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 	)
 
 	for data := range pipeline.OrDone(ctx.Done(), in) {
-		body := models.IngestRequest{
+		var (
+			body bytes.Buffer
+			gw   = gzip.NewWriter(&body)
+		)
+
+		ingestData := models.IngestRequest{
 			Meta: models.Meta{
 				Type: "azure",
 			},
 			Data: data,
 		}
 
-		headers := make(map[string]string)
-		headers["Prefer"] = "wait=60"
+		err := json.NewEncoder(gw).Encode(ingestData)
+		if err != nil {
+			log.Error(err, unrecoverableErrMsg)
+		}
+		gw.Close()
 
-		if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, headers); err != nil {
+		if req, err := http.NewRequestWithContext(ctx, "POST", endpoint.String(), &body); err != nil {
 			log.Error(err, unrecoverableErrMsg)
 			return true
 		} else {
+			req.Header.Set("User-Agent", constants.UserAgent())
+			req.Header.Set("Accept", "application/json")
+			req.Header.Set("Prefer", "wait=60")
+			req.Header.Set("Content-Encoding", "gzip")
 			for retry := 0; retry < maxRetries; retry++ {
 				//No retries on regular err cases, only on HTTP 504 Gateway Timeout and HTTP 503 Service Unavailable
 				if response, err := bheClient.Do(req); err != nil {
