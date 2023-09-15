@@ -78,6 +78,10 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 		logicApps  = make(chan interface{})
 		logicApps2 = make(chan interface{})
 
+		storageAccounts  = make(chan interface{})
+		storageAccounts2 = make(chan interface{})
+		storageAccounts3 = make(chan interface{})
+
 		managedClusters  = make(chan interface{})
 		managedClusters2 = make(chan interface{})
 
@@ -115,6 +119,7 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 		subscriptions10              = make(chan interface{})
 		subscriptions11              = make(chan interface{})
 		subscriptions12              = make(chan interface{})
+		subscriptions13              = make(chan interface{})
 		subscriptionRoleAssignments1 = make(chan interface{})
 		subscriptionRoleAssignments2 = make(chan interface{})
 
@@ -142,6 +147,7 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 		subscriptions10,
 		subscriptions11,
 		subscriptions12,
+		subscriptions13,
 	)
 	pipeline.Tee(ctx.Done(), listResourceGroups(ctx, client, subscriptions2), resourceGroups, resourceGroups2)
 	pipeline.Tee(ctx.Done(), listKeyVaults(ctx, client, subscriptions3), keyVaults, keyVaults2, keyVaults3)
@@ -153,6 +159,7 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 	pipeline.Tee(ctx.Done(), listLogicApps(ctx, client, subscriptions10), logicApps, logicApps2)
 	pipeline.Tee(ctx.Done(), listManagedClusters(ctx, client, subscriptions11), managedClusters, managedClusters2)
 	pipeline.Tee(ctx.Done(), listVMScaleSets(ctx, client, subscriptions12), vmScaleSets, vmScaleSets2)
+	pipeline.Tee(ctx.Done(), listStorageAccounts(ctx, client, subscriptions13), storageAccounts, storageAccounts2, storageAccounts3)
 
 	// Enumerate Relationships
 	// ManagementGroups: Descendants, Owners and UserAccessAdmins
@@ -196,6 +203,10 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 	// Enumerate Automation Account Role Assignments
 	automationAccountRoleAssignments := listAutomationAccountRoleAssignments(ctx, client, automationAccounts2)
 
+	//Enumerate storage accounts
+	storageContainers := listStorageContainers(ctx, client, storageAccounts2)
+	storageAccountRoleAssignments := listStorageAccountRoleAssignments(ctx, client, storageAccounts3)
+
 	// Enumerate Container Registry Role Assignments
 	containerRegistryRoleAssignments := listContainerRegistryRoleAssignments(ctx, client, containerRegistries2)
 
@@ -232,6 +243,9 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 		resourceGroupOwners,
 		resourceGroupUserAccessAdmins,
 		resourceGroups,
+		storageAccounts,
+		storageContainers,
+		storageAccountRoleAssignments,
 		subscriptionOwners,
 		subscriptionUserAccessAdmins,
 		subscriptions,
