@@ -72,29 +72,31 @@ func NewRestClient(apiUrl string, config config.Config) (RestClient, error) {
 			Token{},
 			config.SubscriptionId,
 			config.MgmtGroupId,
+			config.SystemAssignedId,
 		}
 		return client, nil
 	}
 }
 
 type restClient struct {
-	api           url.URL
-	authUrl       url.URL
-	jwt           string
-	clientId      string
-	clientSecret  string
-	clientCert    string
-	clientKey     string
-	clientKeyPass string
-	username      string
-	password      string
-	http          *http.Client
-	mutex         sync.RWMutex
-	refreshToken  string
-	tenant        string
-	token         Token
-	subId         []string
-	mgmtGroupId   []string
+	api              url.URL
+	authUrl          url.URL
+	jwt              string
+	clientId         string
+	clientSecret     string
+	clientCert       string
+	clientKey        string
+	clientKeyPass    string
+	username         string
+	password         string
+	http             *http.Client
+	mutex            sync.RWMutex
+	refreshToken     string
+	tenant           string
+	token            Token
+	subId            []string
+	mgmtGroupId      []string
+	systemAssignedId bool
 }
 
 func (s *restClient) Authenticate() error {
@@ -106,41 +108,66 @@ func (s *restClient) Authenticate() error {
 		body         = url.Values{}
 	)
 
-	if s.clientId == "" {
-		body.Add("client_id", constants.AzPowerShellClientID)
+	if s.systemAssignedId {
+
+		endpoint, _ = url.Parse("http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01")
+		scope = &s.api // Don't use the .default after the API, since that's a scope not a resource
+		getArgs := endpoint.Query()
+		getArgs.Add("resource", scope.String())
+		endpoint.RawQuery = getArgs.Encode()
+
 	} else {
-		body.Add("client_id", s.clientId)
-	}
 
-	body.Add("scope", scope.ResolveReference(&defaultScope).String())
-
-	if s.refreshToken != "" {
-		body.Add("grant_type", "refresh_token")
-		body.Add("refresh_token", s.refreshToken)
-		body.Set("client_id", constants.AzPowerShellClientID)
-	} else if s.clientSecret != "" {
-		body.Add("grant_type", "client_credentials")
-		body.Add("client_secret", s.clientSecret)
-	} else if s.clientCert != "" && s.clientKey != "" {
-		if clientAssertion, err := NewClientAssertion(endpoint.String(), s.clientId, s.clientCert, s.clientKey, s.clientKeyPass); err != nil {
-			return err
+		if s.clientId == "" {
+			body.Add("client_id", constants.AzPowerShellClientID)
 		} else {
-			body.Add("grant_type", "client_credentials")
-			body.Add("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-			body.Add("client_assertion", clientAssertion)
+			body.Add("client_id", s.clientId)
 		}
-	} else if s.username != "" && s.password != "" {
-		body.Add("grant_type", "password")
-		body.Add("username", s.username)
-		body.Add("password", s.password)
-		body.Set("client_id", constants.AzPowerShellClientID)
-	} else {
-		return fmt.Errorf("unable to authenticate. no valid credential provided")
+
+		body.Add("scope", scope.ResolveReference(&defaultScope).String())
+
+		if s.refreshToken != "" {
+			body.Add("grant_type", "refresh_token")
+			body.Add("refresh_token", s.refreshToken)
+			body.Set("client_id", constants.AzPowerShellClientID)
+		} else if s.clientSecret != "" {
+			body.Add("grant_type", "client_credentials")
+			body.Add("client_secret", s.clientSecret)
+		} else if s.clientCert != "" && s.clientKey != "" {
+			if clientAssertion, err := NewClientAssertion(endpoint.String(), s.clientId, s.clientCert, s.clientKey, s.clientKeyPass); err != nil {
+				return err
+			} else {
+				body.Add("grant_type", "client_credentials")
+				body.Add("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+				body.Add("client_assertion", clientAssertion)
+			}
+		} else if s.username != "" && s.password != "" {
+			body.Add("grant_type", "password")
+			body.Add("username", s.username)
+			body.Add("password", s.password)
+			body.Set("client_id", constants.AzPowerShellClientID)
+		} else {
+			return fmt.Errorf("unable to authenticate. no valid credential provided")
+		}
 	}
 
-	if req, err := NewRequest(context.Background(), "POST", endpoint, body, nil, nil); err != nil {
-		return err
-	} else if res, err := s.send(req); err != nil {
+	var req *http.Request
+	var err error
+	if s.systemAssignedId {
+		req, err = NewRequest(context.Background(), "GET", endpoint, nil, nil, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Add("Metadata", "true")
+	} else {
+		req, err = NewRequest(context.Background(), "POST", endpoint, body, nil, nil)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	if res, err := s.send(req); err != nil {
 		return err
 	} else {
 		defer res.Body.Close()

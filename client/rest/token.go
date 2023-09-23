@@ -20,14 +20,14 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 )
 
 type Token struct {
-	accessToken  string
-	expiresIn    int
-	extExpiresIn int
-	expires      time.Time
+	accessToken string
+	expiresIn   int
+	expires     time.Time
 }
 
 func (s Token) IsExpired() bool {
@@ -38,21 +38,41 @@ func (s Token) String() string {
 	return fmt.Sprintf("Bearer %s", s.accessToken)
 }
 
+// The code below uses this weird unmarshalling way for ExpiresIn and ExtExpiresIn
+// because the metadata APIs used for obtaining a System Assigned Managed Identity return integer values which are quoted (i.e. {"expires_in" : "86400"})
+// while the normal 'login.microsoft.com' APIs return expires_in as a proper integer (i.e. {"expires_in" : 86400}). The previous code was failing
+// to parse the response of the metadata APIs since it was a string and not an int. This solves it for both.
+// Another change is to remove the "ExtExpiresIn" since this field is not present for (system assigned) managed identities. As this field is not used
+// throughout the code anyway, we can remove it for now. If this field is not present on Windows, everything keeps working without any error. On linux/docker
+// this breaks the authentication flow.
 func (s *Token) UnmarshalJSON(data []byte) error {
 	var res struct {
-		AccessToken  string `json:"access_token"`   // The token to use in calls to Microsoft Graph API
-		ExpiresIn    int    `json:"expires_in"`     // How long the access token is valid in seconds
-		ExtExpiresIn int    `json:"ext_expires_in"` // How long the access token is valid in seconds
-		TokenType    string `json:"token_type"`     // Indicates the token type value. The only type currently supported by Azure AD is `bearer`
+		AccessToken string      `json:"access_token"` // The token to use in calls to Microsoft Graph API
+		ExpiresIn   interface{} `json:"expires_in"`   // How long the access token is valid in seconds
+		TokenType   string      `json:"token_type"`   // Indicates the token type value. The only type currently supported by Azure AD is `bearer`
 	}
 
 	if err := json.Unmarshal(data, &res); err != nil {
 		return err
 	} else {
+		// convert ExpiresIn to int
+		expiresIn, ok := res.ExpiresIn.(int)
+		if !ok {
+			// ExpiresIn is not an int
+			// try to convert it from string to int
+			str, ok := res.ExpiresIn.(string)
+			if !ok {
+				return nil
+			}
+			expiresIn, err = strconv.Atoi(str)
+			if err != nil {
+				return nil
+			}
+		}
+
+		s.expiresIn = expiresIn
 		s.accessToken = res.AccessToken
-		s.expiresIn = res.ExpiresIn
-		s.extExpiresIn = res.ExtExpiresIn
-		s.expires = time.Now().Add(time.Duration(res.ExpiresIn) * time.Second)
+		s.expires = time.Now().Add(time.Duration(expiresIn) * time.Second)
 		return nil
 	}
 }
