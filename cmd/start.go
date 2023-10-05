@@ -32,6 +32,7 @@ import (
 	"os/signal"
 	"runtime"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
@@ -98,18 +99,33 @@ func start(ctx context.Context) {
 
 		var (
 			currentJob *models.ClientJob
+			jobQueued  bool
+			mutex      sync.Mutex
 		)
 
 		for {
+			mutex.Lock()
+			loopJobQueued := jobQueued
+			loopJobExists := currentJob != nil
+			mutex.Unlock()
 			select {
 			case <-ticker.C:
-				if currentJob != nil {
+				if loopJobExists {
 					log.V(1).Info("collection in progress...", "jobId", currentJob.ID)
 					if err := checkin(ctx, *bheInstance, bheClient); err != nil {
 						log.Error(err, "bloodhound enterprise service checkin failed")
 					}
-				} else {
+				} else if !loopJobQueued {
+					mutex.Lock()
+					jobQueued = true
+					mutex.Unlock()
 					go func() {
+						defer (func() {
+							mutex.Lock()
+							jobQueued = false
+							currentJob = nil
+							mutex.Unlock()
+						})()
 						log.V(2).Info("checking for available collection jobs")
 						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient, updatedClient.ID); err != nil {
 							log.Error(err, "unable to fetch available jobs for azurehound")
@@ -134,10 +150,11 @@ func start(ctx context.Context) {
 							} else {
 
 								// Notify BHE instance of job start
+								mutex.Lock()
 								currentJob = &executableJobs[0]
+								mutex.Unlock()
 								if err := startJob(ctx, *bheInstance, bheClient, currentJob.ID); err != nil {
 									log.Error(err, "failed to start job, will retry on next heartbeat")
-									currentJob = nil
 									return
 								}
 
@@ -161,8 +178,6 @@ func start(ctx context.Context) {
 								} else {
 									log.Info(message, "id", currentJob.ID, "duration", duration.String())
 								}
-
-								currentJob = nil
 							}
 						}
 					}()
