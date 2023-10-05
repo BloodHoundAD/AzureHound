@@ -36,7 +36,6 @@ func NewHTTPClient(proxyUrl string) (*http.Client, error) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.MaxConnsPerHost = 200
 	transport.MaxIdleConnsPerHost = 200
-	transport.MaxIdleConns = 200
 	transport.DisableKeepAlives = false
 
 	// defaults to TLS 1.0 which is not favorable
