@@ -34,7 +34,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime/pprof"
 	"time"
+
+	"github.com/spf13/cobra"
+	"golang.org/x/net/proxy"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
 	client_config "github.com/bloodhoundad/azurehound/v2/client/config"
@@ -45,8 +49,6 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/bloodhoundad/azurehound/v2/sinks"
-	"github.com/spf13/cobra"
-	"golang.org/x/net/proxy"
 )
 
 func exit(err error) {
@@ -86,7 +88,9 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 func gracefulShutdown(stop context.CancelFunc) {
 	stop()
 	fmt.Fprintln(os.Stderr, "\nshutting down gracefully, press ctrl+c again to force")
-	// TODO timeout context
+	if profile := pprof.Lookup(config.Pprof.Value().(string)); profile != nil {
+		profile.WriteTo(os.Stderr, 1)
+	}
 }
 
 func testConnections() error {
@@ -224,7 +228,6 @@ func newAzureClient() (client.AzureClient, error) {
 		} else {
 			clientCert = string(content)
 		}
-
 	}
 
 	if file, ok := keyFile.(string); ok && file != "" {

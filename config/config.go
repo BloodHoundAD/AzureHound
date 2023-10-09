@@ -128,6 +128,12 @@ var (
 		Persistent: true,
 		Default:    "",
 	}
+	Pprof = Config{
+		Name:       "pprof",
+		Usage:      "During graceful shutdown, prints the pprof profile with the provided name to stderr",
+		Persistent: true,
+		Default:    "",
+	}
 
 	// Azure Configurations
 	AzAppId = Config{
@@ -283,6 +289,7 @@ var (
 		LogFile,
 		Proxy,
 		RefreshToken,
+		Pprof,
 	}
 
 	AzureConfig = []Config{
