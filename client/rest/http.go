@@ -35,6 +35,8 @@ import (
 func NewHTTPClient(proxyUrl string) (*http.Client, error) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.MaxConnsPerHost = 200
+	transport.MaxIdleConnsPerHost = 200
+	transport.DisableKeepAlives = false
 
 	// defaults to TLS 1.0 which is not favorable
 	transport.TLSClientConfig = &tls.Config{
@@ -43,6 +45,7 @@ func NewHTTPClient(proxyUrl string) (*http.Client, error) {
 
 	// increasing timeout because tls handshakes can take longer when doing a lot of concurrent calls
 	transport.TLSHandshakeTimeout = 20 * time.Second
+
 	// increasing response header timeout to accout for WAF throttling rules
 	transport.ResponseHeaderTimeout = 5 * time.Minute
 
@@ -72,7 +75,6 @@ func NewRequest(
 	params map[string]string,
 	headers map[string]string,
 ) (*http.Request, error) {
-
 	// set query params
 	if params != nil {
 		q := endpoint.Query()
@@ -83,22 +85,26 @@ func NewRequest(
 	}
 
 	// set body
-	var buf io.Reader
+	var (
+		reader io.Reader
+		buffer = &bytes.Buffer{}
+	)
 	if body != nil {
 		switch body := body.(type) {
 		case url.Values:
-			buf = strings.NewReader(body.Encode())
+			reader = strings.NewReader(body.Encode())
 		default:
 			data := new(bytes.Buffer)
 			if err := json.NewEncoder(data).Encode(body); err != nil {
 				return nil, err
 			} else {
-				buf = data
+				reader = data
 			}
 		}
+		buffer.ReadFrom(reader)
 	}
 
-	if req, err := http.NewRequestWithContext(ctx, verb, endpoint.String(), buf); err != nil {
+	if req, err := http.NewRequestWithContext(ctx, verb, endpoint.String(), buffer); err != nil {
 		return nil, err
 	} else {
 		// set headers
