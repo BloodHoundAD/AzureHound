@@ -274,6 +274,22 @@ func newSigningHttpClient(signature, tokenId, token, proxyUrl string) (*http.Cli
 	}
 }
 
+type rewindableByteReader struct {
+	data *bytes.Reader
+}
+
+func (s *rewindableByteReader) Read(p []byte) (int, error) {
+	return s.data.Read(p)
+}
+
+func (s *rewindableByteReader) Close() error {
+	return nil
+}
+
+func (s *rewindableByteReader) Rewind() (int64, error) {
+	return s.data.Seek(0, io.SeekStart)
+}
+
 type signingTransport struct {
 	base      http.RoundTripper
 	tokenId   string
@@ -282,46 +298,66 @@ type signingTransport struct {
 }
 
 func (s signingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	clone := req.Clone(req.Context())
-
-	// token
-	digester := hmac.New(sha256.New, []byte(s.token))
-
-	// path
-	if _, err := digester.Write([]byte(req.Method + req.URL.Path)); err != nil {
-		return nil, err
-	}
-
-	// datetime
-	datetime := time.Now().Format(time.RFC3339)
-	digester = hmac.New(sha256.New, digester.Sum(nil))
-	if _, err := digester.Write([]byte(datetime[:13])); err != nil {
-		return nil, err
-	}
-
-	// body
-	body := &bytes.Buffer{}
-	digester = hmac.New(sha256.New, digester.Sum(nil))
-	if req.Body != nil {
-		defer req.Body.Close()
-		if contentLength, err := body.ReadFrom(req.Body); err != nil {
+	// The http client may try to call RoundTrip more than once to replay the same request; in which case rewind the request
+	if rbr, ok := req.Body.(*rewindableByteReader); ok {
+		if _, err := rbr.Rewind(); err != nil {
 			return nil, err
-		} else if contentLength != 0 {
-			req.Body = io.NopCloser(bytes.NewReader(body.Bytes()))
-			clone.Body = io.NopCloser(bytes.NewReader(body.Bytes()))
 		}
 	}
-	if _, err := digester.Write(body.Bytes()); err != nil {
-		return nil, err
+
+	if req.Header.Get("Signature") == "" {
+
+		// token
+		digester := hmac.New(sha256.New, []byte(s.token))
+
+		// path
+		if _, err := digester.Write([]byte(req.Method + req.URL.Path)); err != nil {
+			return nil, err
+		}
+
+		// datetime
+		datetime := time.Now().Format(time.RFC3339)
+		digester = hmac.New(sha256.New, digester.Sum(nil))
+		if _, err := digester.Write([]byte(datetime[:13])); err != nil {
+			return nil, err
+		}
+
+		// body
+		digester = hmac.New(sha256.New, digester.Sum(nil))
+		if req.Body != nil {
+			var (
+				body    = &bytes.Buffer{}
+				hashBuf = make([]byte, 64*1024) // 64KB buffer, consider benchmarking and optimizing this value
+				tee     = io.TeeReader(req.Body, body)
+			)
+
+			for {
+				numRead, err := tee.Read(hashBuf)
+				if numRead > 0 {
+					if _, err := digester.Write(hashBuf[:numRead]); err != nil {
+						return nil, err
+					}
+				}
+
+				// exit loop on EOF or error
+				if err != nil {
+					if err != io.EOF {
+						return nil, err
+					}
+					break
+				}
+			}
+
+			req.Body = &rewindableByteReader{data: bytes.NewReader(body.Bytes())}
+		}
+
+		signature := digester.Sum(nil)
+
+		req.Header.Set("Authorization", fmt.Sprintf("%s %s", s.signature, s.tokenId))
+		req.Header.Set("RequestDate", datetime)
+		req.Header.Set("Signature", base64.StdEncoding.EncodeToString(signature))
 	}
-
-	signature := digester.Sum(nil)
-
-	clone.Header.Set("Authorization", fmt.Sprintf("%s %s", s.signature, s.tokenId))
-	clone.Header.Set("RequestDate", datetime)
-	clone.Header.Set("Signature", base64.StdEncoding.EncodeToString(signature))
-
-	return s.base.RoundTrip(clone)
+	return s.base.RoundTrip(req)
 }
 
 func contains[T comparable](collection []T, value T) bool {
