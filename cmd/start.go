@@ -32,6 +32,8 @@ import (
 	"os/signal"
 	"runtime"
 	"sort"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
@@ -97,19 +99,21 @@ func start(ctx context.Context) {
 		defer ticker.Stop()
 
 		var (
-			currentJob *models.ClientJob
+			jobQueued    sync.Mutex
+			currentJobID atomic.Int64
 		)
 
 		for {
 			select {
 			case <-ticker.C:
-				if currentJob != nil {
-					log.V(1).Info("collection in progress...", "jobId", currentJob.ID)
+				if jobID := currentJobID.Load(); jobID != 0 {
+					log.V(1).Info("collection in progress...", "jobId", jobID)
 					if err := checkin(ctx, *bheInstance, bheClient); err != nil {
 						log.Error(err, "bloodhound enterprise service checkin failed")
 					}
-				} else {
+				} else if jobQueued.TryLock() {
 					go func() {
+						defer jobQueued.Unlock()
 						log.V(2).Info("checking for available collection jobs")
 						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient, updatedClient.ID); err != nil {
 							log.Error(err, "unable to fetch available jobs for azurehound")
@@ -132,12 +136,12 @@ func start(ctx context.Context) {
 							if len(executableJobs) == 0 {
 								log.V(2).Info("there are no jobs for azurehound to complete at this time")
 							} else {
-
+								defer currentJobID.Store(0)
+								queuedJobID := executableJobs[0].ID
+								currentJobID.Store(int64(queuedJobID))
 								// Notify BHE instance of job start
-								currentJob = &executableJobs[0]
-								if err := startJob(ctx, *bheInstance, bheClient, currentJob.ID); err != nil {
+								if err := startJob(ctx, *bheInstance, bheClient, queuedJobID); err != nil {
 									log.Error(err, "failed to start job, will retry on next heartbeat")
-									currentJob = nil
 									return
 								}
 
@@ -159,10 +163,8 @@ func start(ctx context.Context) {
 								if err := endJob(ctx, *bheInstance, bheClient, models.JobStatusComplete, message); err != nil {
 									log.Error(err, "failed to end job")
 								} else {
-									log.Info(message, "id", currentJob.ID, "duration", duration.String())
+									log.Info(message, "id", queuedJobID, "duration", duration.String())
 								}
-
-								currentJob = nil
 							}
 						}
 					}()
