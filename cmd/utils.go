@@ -290,6 +290,10 @@ func (s *rewindableByteReader) Rewind() (int64, error) {
 	return s.data.Seek(0, io.SeekStart)
 }
 
+func discard(reader io.Reader) {
+	io.Copy(io.Discard, reader)
+}
+
 type signingTransport struct {
 	base      http.RoundTripper
 	tokenId   string
@@ -331,6 +335,10 @@ func (s signingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 				hashBuf = make([]byte, 64*1024) // 64KB buffer, consider benchmarking and optimizing this value
 				tee     = io.TeeReader(req.Body, body)
 			)
+
+			defer req.Body.Close()
+			defer discard(tee)
+			defer discard(body)
 
 			for {
 				numRead, err := tee.Read(hashBuf)
