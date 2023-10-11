@@ -318,6 +318,7 @@ func (s signingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		// datetime
 		datetime := time.Now().Format(time.RFC3339)
 		digester = hmac.New(sha256.New, digester.Sum(nil))
+		// hash the substring of the current datetime excluding minutes, seconds, microseconds and timezone
 		if _, err := digester.Write([]byte(datetime[:13])); err != nil {
 			return nil, err
 		}
