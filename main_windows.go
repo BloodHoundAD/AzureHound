@@ -19,14 +19,23 @@ package main
 
 import (
 	"fmt"
-
-	"golang.org/x/sys/windows/svc"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
+	"runtime"
 
 	"github.com/bloodhoundad/azurehound/v2/cmd"
 	"github.com/bloodhoundad/azurehound/v2/constants"
+	"golang.org/x/sys/windows/svc"
 )
 
 func main() {
+	runtime.SetBlockProfileRate(1)
+
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	fmt.Printf("%s %s\n%s\n\n", constants.DisplayName, constants.Version, constants.AuthorRef)
 
 	if isWinSvc, err := svc.IsWindowsService(); err != nil {
