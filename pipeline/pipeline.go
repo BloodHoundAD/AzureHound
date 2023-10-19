@@ -39,19 +39,47 @@ func OrDone[D, T any](done <-chan D, in <-chan T) <-chan T {
 
 	go func() {
 		defer close(out)
-		for {
+		var (
+			val     T
+			ok      bool
+			quit    bool
+			writing bool
+		)
+		for !quit {
+			if writing {
+				// if we are writing wait until the data sends or until we receive a done signal
+				select {
+				case out <- val:
+					writing = false
+				case <-done:
+					quit = true
+				}
+			} else {
+				// if we are reading wait until data arrives or until we receive a done signal
+				select {
+				case val, ok = <-in:
+					if !ok {
+						return
+					}
+					writing = true
+				case <-done:
+					quit = true
+				}
+			}
+		}
+		// if we are reading do one last check in case we received data at the same time as the done signal
+		if !writing {
+			// check for any data but continue if blocked
 			select {
-			case <-done:
-				return
-			case val, ok := <-in:
-				if !ok {
-					return
-				} else {
+			case val, ok = <-in:
+				if ok {
+					// try sending the data but continue if blocked
 					select {
 					case out <- val:
-					case <-done:
+					default:
 					}
 				}
+			default:
 			}
 		}
 	}()
