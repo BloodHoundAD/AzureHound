@@ -17,13 +17,12 @@
 
 package client
 
-//go:generate go run github.com/golang/mock/mockgen -destination=./mocks/client.go -package=mocks . AzureClient
+//go:generate go run go.uber.org/mock/mockgen -destination=./mocks/client.go -package=mocks . AzureClient
 
 import (
 	"context"
-	"fmt"
-
 	"encoding/json"
+	"fmt"
 
 	"github.com/bloodhoundad/azurehound/v2/client/config"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
@@ -36,7 +35,6 @@ func NewClient(config config.Config) (AzureClient, error) {
 	} else if resourceManager, err := rest.NewRestClient(config.ResourceManagerUrl(), config); err != nil {
 		return nil, err
 	} else {
-
 		if config.JWT != "" {
 			if aud, err := rest.ParseAud(config.JWT); err != nil {
 				return nil, err
@@ -96,6 +94,11 @@ type azureClient struct {
 
 func (s azureClient) TenantInfo() azure.Tenant {
 	return s.tenant
+}
+
+func (s azureClient) CloseIdleConnections() {
+	s.msgraph.CloseIdleConnections()
+	s.resourceManager.CloseIdleConnections()
 }
 
 type AzureClient interface {
@@ -165,4 +168,5 @@ type AzureClient interface {
 	ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter string) <-chan azure.RoleAssignmentResult
 	ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipal, filter, search, orderBy, expand string, selectCols []string) <-chan azure.AppRoleAssignmentResult
 	TenantInfo() azure.Tenant
+	CloseIdleConnections()
 }

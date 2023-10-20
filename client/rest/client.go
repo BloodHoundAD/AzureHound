@@ -17,7 +17,7 @@
 
 package rest
 
-//go:generate go run github.com/golang/mock/mockgen -destination=./mocks/client.go -package=mocks . RestClient
+//go:generate go run go.uber.org/mock/mockgen -destination=./mocks/client.go -package=mocks . RestClient
 
 import (
 	"bytes"
@@ -44,6 +44,7 @@ type RestClient interface {
 	Post(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
 	Put(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
 	Send(req *http.Request) (*http.Response, error)
+	CloseIdleConnections()
 }
 
 func NewRestClient(apiUrl string, config config.Config) (RestClient, error) {
@@ -288,4 +289,8 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 		}
 		return nil, fmt.Errorf("unable to complete the request after %d attempts: %w", maxRetries, err)
 	}
+}
+
+func (s *restClient) CloseIdleConnections() {
+	s.http.CloseIdleConnections()
 }

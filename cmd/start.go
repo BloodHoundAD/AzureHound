@@ -36,21 +36,20 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
-	"github.com/spf13/cobra"
 )
 
 const (
 	BHEAuthSignature string = "bhesignature"
 )
 
-var (
-	ErrExceededRetryLimit = errors.New("exceeded max retry limit for ingest batch, proceeding with next batch...")
-)
+var ErrExceededRetryLimit = errors.New("exceeded max retry limit for ingest batch, proceeding with next batch...")
 
 func init() {
 	configs := append(config.AzureConfig, config.BloodHoundEnterpriseConfig...)
@@ -114,6 +113,9 @@ func start(ctx context.Context) {
 				} else if jobQueued.TryLock() {
 					go func() {
 						defer jobQueued.Unlock()
+						defer bheClient.CloseIdleConnections()
+						defer azClient.CloseIdleConnections()
+
 						log.V(2).Info("checking for available collection jobs")
 						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient, updatedClient.ID); err != nil {
 							log.Error(err, "unable to fetch available jobs for azurehound")
@@ -158,7 +160,6 @@ func start(ctx context.Context) {
 								message := "Collection completed successfully"
 								if hasIngestErr {
 									message = "Collection completed with errors during ingest"
-
 								}
 								if err := endJob(ctx, *bheInstance, bheClient, models.JobStatusComplete, message); err != nil {
 									log.Error(err, "failed to end job")
@@ -213,7 +214,7 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 			req.Header.Set("Prefer", "wait=60")
 			req.Header.Set("Content-Encoding", "gzip")
 			for retry := 0; retry < maxRetries; retry++ {
-				//No retries on regular err cases, only on HTTP 504 Gateway Timeout and HTTP 503 Service Unavailable
+				// No retries on regular err cases, only on HTTP 504 Gateway Timeout and HTTP 503 Service Unavailable
 				if response, err := bheClient.Do(req); err != nil {
 					log.Error(err, unrecoverableErrMsg)
 					return true

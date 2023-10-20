@@ -9,7 +9,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockRestClient is a mock of RestClient interface.
@@ -47,6 +47,18 @@ func (m *MockRestClient) Authenticate() error {
 func (mr *MockRestClientMockRecorder) Authenticate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Authenticate", reflect.TypeOf((*MockRestClient)(nil).Authenticate))
+}
+
+// CloseIdleConnections mocks base method.
+func (m *MockRestClient) CloseIdleConnections() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CloseIdleConnections")
+}
+
+// CloseIdleConnections indicates an expected call of CloseIdleConnections.
+func (mr *MockRestClientMockRecorder) CloseIdleConnections() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseIdleConnections", reflect.TypeOf((*MockRestClient)(nil).CloseIdleConnections))
 }
 
 // Delete mocks base method.
