@@ -224,6 +224,9 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 						log.Error(ErrExceededRetryLimit, "")
 						hasErrors = true
 					}
+					if err := response.Body.Close(); err != nil {
+						log.Error(fmt.Errorf("failed to close ingest body: %w", err), unrecoverableErrMsg)
+					}
 					continue
 				} else if response.StatusCode != http.StatusAccepted {
 					if bodyBytes, err := io.ReadAll(response.Body); err != nil {
@@ -231,7 +234,14 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 					} else {
 						log.Error(fmt.Errorf("received unexpected response code from %v: %s %s", req.URL, response.Status, bodyBytes), unrecoverableErrMsg)
 					}
+					if err := response.Body.Close(); err != nil {
+						log.Error(fmt.Errorf("failed to close ingest body: %w", err), unrecoverableErrMsg)
+					}
 					return true
+				} else {
+					if err := response.Body.Close(); err != nil {
+						log.Error(fmt.Errorf("failed to close ingest body: %w", err), unrecoverableErrMsg)
+					}
 				}
 			}
 		}
