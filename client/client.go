@@ -103,12 +103,16 @@ type AzureClient interface {
 	GetAzureADApps(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.ApplicationList, error)
 	GetAzureADDirectoryObject(ctx context.Context, objectId string) (json.RawMessage, error)
 	GetAzureADGroup(ctx context.Context, objectId string, selectCols []string) (*azure.Group, error)
+	GetAzureADGroupEligibilityScheduleInstance(ctx context.Context, objectId string, selectCols []string) (*azure.PrivilegedAccessGroupEligibilityScheduleInstance, error)
+	GetAzureADGroupEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.PrivilegedAccessGroupEligibilityScheduleInstanceList, error)
 	GetAzureADGroupOwners(ctx context.Context, objectId string, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.DirectoryObjectList, error)
 	GetAzureADGroups(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.GroupList, error)
 	GetAzureADOrganization(ctx context.Context, selectCols []string) (*azure.Organization, error)
 	GetAzureADRole(ctx context.Context, roleId string, selectCols []string) (*azure.Role, error)
 	GetAzureADRoleAssignment(ctx context.Context, objectId string, selectCols []string) (*azure.UnifiedRoleAssignment, error)
 	GetAzureADRoleAssignments(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.UnifiedRoleAssignmentList, error)
+	GetAzureADRoleEligibilityScheduleInstance(ctx context.Context, objectId string, selectCols []string) (*azure.UnifiedRoleEligibilityScheduleInstance, error)
+	GetAzureADRoleEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.UnifiedRoleEligibilityScheduleInstanceList, error)
 	GetAzureADRoles(ctx context.Context, filter, expand string) (azure.RoleList, error)
 	GetAzureADServicePrincipal(ctx context.Context, objectId string, selectCols []string) (*azure.ServicePrincipal, error)
 	GetAzureADServicePrincipalOwners(ctx context.Context, objectId string, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.DirectoryObjectList, error)
@@ -138,7 +142,9 @@ type AzureClient interface {
 	ListAzureADGroupMembers(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.MemberObjectResult
 	ListAzureADGroupOwners(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.GroupOwnerResult
 	ListAzureADGroups(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.GroupResult
+	ListAzureADGroupEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.PrivilegedAccessGroupEligibilityScheduleInstanceResult
 	ListAzureADRoleAssignments(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.UnifiedRoleAssignmentResult
+	ListAzureADRoleEligibilityScheduleInstances(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.UnifiedRoleEligibilityScheduleInstanceResult
 	ListAzureADRoles(ctx context.Context, filter, expand string) <-chan azure.RoleResult
 	ListAzureADServicePrincipalOwners(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.ServicePrincipalOwnerResult
 	ListAzureADServicePrincipals(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.ServicePrincipalResult
