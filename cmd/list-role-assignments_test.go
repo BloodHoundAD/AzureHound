@@ -20,7 +20,7 @@ package cmd
 import (
 	"testing"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func init() {

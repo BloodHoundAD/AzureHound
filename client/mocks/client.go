@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 
 	azure "github.com/bloodhoundad/azurehound/v2/models/azure"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockAzureClient is a mock of AzureClient interface.
@@ -34,6 +34,18 @@ func NewMockAzureClient(ctrl *gomock.Controller) *MockAzureClient {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAzureClient) EXPECT() *MockAzureClientMockRecorder {
 	return m.recorder
+}
+
+// CloseIdleConnections mocks base method.
+func (m *MockAzureClient) CloseIdleConnections() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CloseIdleConnections")
+}
+
+// CloseIdleConnections indicates an expected call of CloseIdleConnections.
+func (mr *MockAzureClientMockRecorder) CloseIdleConnections() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseIdleConnections", reflect.TypeOf((*MockAzureClient)(nil).CloseIdleConnections))
 }
 
 // GetAzureADApp mocks base method.
