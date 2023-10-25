@@ -117,7 +117,7 @@ func start(ctx context.Context) {
 						defer azClient.CloseIdleConnections()
 
 						log.V(2).Info("checking for available collection jobs")
-						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient, updatedClient.ID); err != nil {
+						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient); err != nil {
 							log.Error(err, "unable to fetch available jobs for azurehound")
 						} else {
 
@@ -271,7 +271,7 @@ type basicResponse[T any] struct {
 	Data T `json:"data"`
 }
 
-func getAvailableJobs(ctx context.Context, bheUrl url.URL, bheClient *http.Client, clientId string) ([]models.ClientJob, error) {
+func getAvailableJobs(ctx context.Context, bheUrl url.URL, bheClient *http.Client) ([]models.ClientJob, error) {
 	var (
 		endpoint = bheUrl.ResolveReference(&url.URL{Path: "/api/v2/jobs/available"})
 		response basicResponse[[]models.ClientJob]
@@ -281,10 +281,13 @@ func getAvailableJobs(ctx context.Context, bheUrl url.URL, bheClient *http.Clien
 		return nil, err
 	} else if res, err := do(bheClient, req); err != nil {
 		return nil, err
-	} else if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-		return nil, err
 	} else {
-		return response.Data, nil
+		defer res.Body.Close()
+		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+			return nil, err
+		} else {
+			return response.Data, nil
+		}
 	}
 }
 
@@ -293,9 +296,10 @@ func checkin(ctx context.Context, bheUrl url.URL, bheClient *http.Client) error 
 
 	if req, err := rest.NewRequest(ctx, "GET", endpoint, nil, nil, nil); err != nil {
 		return err
-	} else if _, err := do(bheClient, req); err != nil {
+	} else if res, err := do(bheClient, req); err != nil {
 		return err
 	} else {
+		res.Body.Close()
 		return nil
 	}
 }
@@ -311,9 +315,10 @@ func startJob(ctx context.Context, bheUrl url.URL, bheClient *http.Client, jobId
 
 	if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, nil); err != nil {
 		return err
-	} else if _, err := do(bheClient, req); err != nil {
+	} else if res, err := do(bheClient, req); err != nil {
 		return err
 	} else {
+		res.Body.Close()
 		return nil
 	}
 }
@@ -328,9 +333,10 @@ func endJob(ctx context.Context, bheUrl url.URL, bheClient *http.Client, status 
 
 	if req, err := rest.NewRequest(ctx, "POST", endpoint, body, nil, nil); err != nil {
 		return err
-	} else if _, err := do(bheClient, req); err != nil {
+	} else if res, err := do(bheClient, req); err != nil {
 		return err
 	} else {
+		res.Body.Close()
 		return nil
 	}
 }
@@ -358,10 +364,13 @@ func updateClient(ctx context.Context, bheUrl url.URL, bheClient *http.Client) (
 			return nil, err
 		} else if res, err := do(bheClient, req); err != nil {
 			return nil, err
-		} else if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			return nil, err
 		} else {
-			return &response.Data, nil
+			defer res.Body.Close()
+			if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+				return nil, err
+			} else {
+				return &response.Data, nil
+			}
 		}
 	}
 }
