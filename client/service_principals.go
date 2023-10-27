@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureADServicePrincipal(ctx context.Context, objectId string, selectCols []string) (*azure.ServicePrincipal, error) {
@@ -94,10 +95,14 @@ func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, filter, 
 
 		if list, err := s.GetAzureADServicePrincipals(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.ServicePrincipalResult{Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.ServicePrincipalResult{Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = list.NextLink
@@ -105,23 +110,33 @@ func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, filter, 
 				var list azure.ServicePrincipalList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.ServicePrincipalResult{Ok: u}
+						if ok := pipeline.Send(ctx.Done(), out, azure.ServicePrincipalResult{Ok: u}); !ok {
+							return
+						}
 					}
 					nextLink = list.NextLink
 				}
@@ -146,12 +161,16 @@ func (s *azureClient) ListAzureADServicePrincipalOwners(ctx context.Context, obj
 
 		if list, err := s.GetAzureADServicePrincipalOwners(ctx, objectId, filter, search, orderBy, selectCols, 999, false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.ServicePrincipalOwnerResult{
+				if ok := pipeline.Send(ctx.Done(), out, azure.ServicePrincipalOwnerResult{
 					ServicePrincipalId: objectId,
 					Ok:                 u,
+				}); !ok {
+					return
 				}
 			}
 
@@ -160,25 +179,35 @@ func (s *azureClient) ListAzureADServicePrincipalOwners(ctx context.Context, obj
 				var list azure.DirectoryObjectList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.ServicePrincipalOwnerResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.ServicePrincipalOwnerResult{
 							ServicePrincipalId: objectId,
 							Ok:                 u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink

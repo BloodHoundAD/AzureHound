@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureADGroup(ctx context.Context, objectId string, selectCols []string) (*azure.Group, error) {
@@ -110,10 +111,14 @@ func (s *azureClient) ListAzureADGroups(ctx context.Context, filter, search, ord
 
 		if list, err := s.GetAzureADGroups(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.GroupResult{Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.GroupResult{Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = list.NextLink
@@ -121,23 +126,33 @@ func (s *azureClient) ListAzureADGroups(ctx context.Context, filter, search, ord
 				var list azure.GroupList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.GroupResult{Ok: u}
+						if ok := pipeline.Send(ctx.Done(), out, azure.GroupResult{Ok: u}); !ok {
+							return
+						}
 					}
 					nextLink = list.NextLink
 				}
@@ -160,12 +175,16 @@ func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId strin
 
 		if list, err := s.GetAzureADGroupOwners(ctx, objectId, filter, search, orderBy, selectCols, 999, false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.GroupOwnerResult{
+				if ok := pipeline.Send(ctx.Done(), out, azure.GroupOwnerResult{
 					GroupId: objectId,
 					Ok:      u,
+				}); !ok {
+					return
 				}
 			}
 
@@ -174,25 +193,35 @@ func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId strin
 				var list azure.DirectoryObjectList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.GroupOwnerResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.GroupOwnerResult{
 							GroupId: objectId,
 							Ok:      u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink
@@ -219,13 +248,17 @@ func (s *azureClient) ListAzureADGroupMembers(ctx context.Context, objectId stri
 
 		if list, err := s.GetAzureADGroupMembers(ctx, objectId, filter, search, false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.MemberObjectResult{
+				if ok := pipeline.Send(ctx.Done(), out, azure.MemberObjectResult{
 					ParentId:   objectId,
 					ParentType: string(enums.EntityGroup),
 					Ok:         u,
+				}); !ok {
+					return
 				}
 			}
 
@@ -234,26 +267,36 @@ func (s *azureClient) ListAzureADGroupMembers(ctx context.Context, objectId stri
 				var list azure.MemberObjectList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.MemberObjectResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.MemberObjectResult{
 							ParentId:   objectId,
 							ParentType: string(enums.EntityGroup),
 							Ok:         u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink

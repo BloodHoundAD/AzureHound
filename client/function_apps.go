@@ -25,6 +25,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureFunctionApp(ctx context.Context, subscriptionId, groupName, functionAppName, expand string) (*azure.FunctionApp, error) {
@@ -75,10 +76,14 @@ func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId 
 
 		if result, err := s.GetAzureFunctionApps(ctx, subscriptionId); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range result.Value {
-				out <- azure.FunctionAppResult{SubscriptionId: subscriptionId, Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.FunctionAppResult{SubscriptionId: subscriptionId, Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = result.NextLink
@@ -86,25 +91,35 @@ func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId 
 				var list azure.FunctionAppList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.resourceManager.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.FunctionAppResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.FunctionAppResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink

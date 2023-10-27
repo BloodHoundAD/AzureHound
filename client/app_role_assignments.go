@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.AppRoleAssignmentList, error) {
@@ -64,10 +65,14 @@ func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, service
 
 		if list, err := s.GetAzureADAppRoleAssignments(ctx, servicePrincipal, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.AppRoleAssignmentResult{Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.AppRoleAssignmentResult{Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = list.NextLink
@@ -75,23 +80,33 @@ func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, service
 				var list azure.AppRoleAssignmentList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.AppRoleAssignmentResult{Ok: u}
+						if ok := pipeline.Send(ctx.Done(), out, azure.AppRoleAssignmentResult{Ok: u}); !ok {
+							return
+						}
 					}
 					nextLink = list.NextLink
 				}

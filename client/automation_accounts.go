@@ -25,6 +25,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureAutomationAccount(ctx context.Context, subscriptionId, groupName, aaName, expand string) (*azure.AutomationAccount, error) {
@@ -75,10 +76,14 @@ func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscript
 
 		if result, err := s.GetAzureAutomationAccounts(ctx, subscriptionId); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range result.Value {
-				out <- azure.AutomationAccountResult{SubscriptionId: subscriptionId, Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.AutomationAccountResult{SubscriptionId: subscriptionId, Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = result.NextLink
@@ -86,25 +91,35 @@ func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscript
 				var list azure.AutomationAccountList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.resourceManager.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.AutomationAccountResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.AutomationAccountResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink

@@ -25,6 +25,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureResourceGroup(ctx context.Context, subscriptionId, groupName string) (*azure.ResourceGroup, error) {
@@ -74,12 +75,16 @@ func (s *azureClient) ListAzureResourceGroups(ctx context.Context, subscriptionI
 
 		if result, err := s.GetAzureResourceGroups(ctx, subscriptionId, filter, 1000); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range result.Value {
-				out <- azure.ResourceGroupResult{
+				if ok := pipeline.Send(ctx.Done(), out, azure.ResourceGroupResult{
 					SubscriptionId: objectId,
 					Ok:             u,
+				}); !ok {
+					return
 				}
 			}
 
@@ -88,25 +93,35 @@ func (s *azureClient) ListAzureResourceGroups(ctx context.Context, subscriptionI
 				var list azure.ResourceGroupList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.resourceManager.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.ResourceGroupResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.ResourceGroupResult{
 							SubscriptionId: objectId,
 							Ok:             u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink

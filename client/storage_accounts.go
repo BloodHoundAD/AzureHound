@@ -25,6 +25,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureStorageAccount(ctx context.Context, subscriptionId, groupName, saName, expand string) (*azure.StorageAccount, error) {
@@ -74,10 +75,14 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 
 		if result, err := s.GetAzureStorageAccounts(ctx, subscriptionId); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range result.Value {
-				out <- azure.StorageAccountResult{SubscriptionId: subscriptionId, Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.StorageAccountResult{SubscriptionId: subscriptionId, Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = result.NextLink
@@ -85,25 +90,35 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 				var list azure.StorageAccountList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.resourceManager.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.StorageAccountResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.StorageAccountResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink
@@ -165,10 +180,14 @@ func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscripti
 
 		if result, err := s.GetAzureStorageContainers(ctx, subscriptionId, resourceGroupName, saName, filter, includeDeleted, maxPageSize); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range result.Value {
-				out <- azure.StorageContainerResult{SubscriptionId: subscriptionId, Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.StorageContainerResult{SubscriptionId: subscriptionId, Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = result.NextLink
@@ -176,25 +195,35 @@ func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscripti
 				var list azure.StorageContainerList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.resourceManager.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.StorageContainerResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.StorageContainerResult{
 							SubscriptionId: "/subscriptions/" + subscriptionId,
 							Ok:             u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink
