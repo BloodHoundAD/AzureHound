@@ -161,8 +161,9 @@ func Tee[D, T any](done <-chan D, in <-chan T, outputs ...chan T) {
 		for item := range OrDone(done, in) {
 			for _, out := range outputs {
 				select {
-				case <-done:
 				case out <- item:
+				case <-done:
+					return
 				}
 			}
 		}
@@ -190,10 +191,6 @@ func Batch[D, T any](done <-chan D, in <-chan T, maxItems int, maxTimeout time.D
 		for {
 			select {
 			case <-done:
-				if len(batch) > 0 {
-					out <- batch
-					batch = nil
-				}
 				return
 			case item, ok := <-in:
 				if !ok {
