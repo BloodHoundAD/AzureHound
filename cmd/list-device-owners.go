@@ -72,7 +72,9 @@ func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-
 			if device, ok := result.(AzureWrapper).Data.(models.Device); !ok {
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating device owners", "result", result)
 			} else {
-				ids <- device.Id
+				if ok := pipeline.Send(ctx.Done(), ids, device.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -102,9 +104,11 @@ func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-
 						data.Owners = append(data.Owners, deviceOwner)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZDeviceOwner,
 					Data: data,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing device owners", "deviceId", id, "count", count)
 			}

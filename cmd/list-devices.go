@@ -26,6 +26,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
 
@@ -67,13 +68,15 @@ func listDevices(ctx context.Context, client client.AzureClient) <-chan interfac
 			} else {
 				log.V(2).Info("found device", "device", item)
 				count++
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZDevice,
 					Data: models.Device{
 						Device:     item.Ok,
 						TenantId:   client.TenantInfo().TenantId,
 						TenantName: client.TenantInfo().DisplayName,
 					},
+				})); !ok {
+					return
 				}
 			}
 		}

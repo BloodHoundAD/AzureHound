@@ -80,12 +80,14 @@ func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, 
 			} else {
 				for _, policy := range keyVault.Properties.AccessPolicies {
 					if len(filters) == 0 {
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: kinds.KindAZKeyVaultAccessPolicy,
 							Data: models.KeyVaultAccessPolicy{
 								KeyVaultId:        keyVault.Id,
 								AccessPolicyEntry: policy,
 							},
+						})); !ok {
+							return
 						}
 					} else {
 						for _, filter := range filters {
@@ -103,12 +105,14 @@ func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, 
 								}
 							}()
 							if contains(permissions, "Get") {
-								out <- AzureWrapper{
+								if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 									Kind: kinds.KindAZKeyVaultAccessPolicy,
 									Data: models.KeyVaultAccessPolicy{
 										KeyVaultId:        keyVault.Id,
 										AccessPolicyEntry: policy,
 									},
+								})); !ok {
+									return
 								}
 								break
 							}

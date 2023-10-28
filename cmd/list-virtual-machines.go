@@ -72,7 +72,9 @@ func listVirtualMachines(ctx context.Context, client client.AzureClient, subscri
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machines", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -97,9 +99,11 @@ func listVirtualMachines(ctx context.Context, client client.AzureClient, subscri
 						}
 						log.V(2).Info("found virtual machine", "virtualMachine", virtualMachine)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZVM,
 							Data: virtualMachine,
+						})); !ok {
+							return
 						}
 					}
 				}

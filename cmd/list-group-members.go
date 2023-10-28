@@ -73,7 +73,9 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 				log.Error(fmt.Errorf("failed group type assertion"), "unable to continue enumerating group members", "result", result)
 				return
 			} else {
-				ids <- group.Id
+				if ok := pipeline.Send(ctx.Done(), ids, group.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -103,9 +105,11 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 						data.Members = append(data.Members, groupMember)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZGroupMember,
 					Data: data,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing group memberships", "groupId", id, "count", count)
 			}

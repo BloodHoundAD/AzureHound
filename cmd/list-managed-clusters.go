@@ -77,7 +77,9 @@ func listManagedClusters(ctx context.Context, client client.AzureClient, subscri
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating managed clusters", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -102,9 +104,11 @@ func listManagedClusters(ctx context.Context, client client.AzureClient, subscri
 						}
 						log.V(2).Info("found managed cluster", "managedCluster", managedCluster)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZManagedCluster,
 							Data: managedCluster,
+						})); !ok {
+							return
 						}
 					}
 				}

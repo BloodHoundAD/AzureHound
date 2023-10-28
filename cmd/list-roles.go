@@ -26,6 +26,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
 
@@ -67,13 +68,15 @@ func listRoles(ctx context.Context, client client.AzureClient) <-chan interface{
 			} else {
 				log.V(2).Info("found role", "role", item)
 				count++
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZRole,
 					Data: models.Role{
 						Role:       item.Ok,
 						TenantId:   client.TenantInfo().TenantId,
 						TenantName: client.TenantInfo().DisplayName,
 					},
+				})); !ok {
+					return
 				}
 			}
 		}

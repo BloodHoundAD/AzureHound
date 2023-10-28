@@ -80,7 +80,9 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating container registry role assignments", "result", result)
 				return
 			} else {
-				ids <- containerRegistry.Id
+				if ok := pipeline.Send(ctx.Done(), ids, containerRegistry.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -113,9 +115,11 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 						containerRegistryRoleAssignments.RoleAssignments = append(containerRegistryRoleAssignments.RoleAssignments, containerRegistryRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZContainerRegistryRoleAssignment,
 					Data: containerRegistryRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing container registry role assignments", "containerRegistryId", id, "count", count)
 			}

@@ -80,7 +80,9 @@ func listManagedClusterRoleAssignments(ctx context.Context, client client.AzureC
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating managed cluster role assignments", "result", result)
 				return
 			} else {
-				ids <- managedCluster.Id
+				if ok := pipeline.Send(ctx.Done(), ids, managedCluster.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -113,9 +115,11 @@ func listManagedClusterRoleAssignments(ctx context.Context, client client.AzureC
 						managedClusterRoleAssignments.RoleAssignments = append(managedClusterRoleAssignments.RoleAssignments, managedClusterRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZManagedClusterRoleAssignment,
 					Data: managedClusterRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing managed cluster role assignments", "managedClusterId", id, "count", count)
 			}

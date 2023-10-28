@@ -26,6 +26,7 @@ import (
 
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/config"
@@ -96,9 +97,11 @@ func listSubscriptions(ctx context.Context, client client.AzureClient) <-chan in
 					Subscription: item.Ok,
 				}
 				data.TenantId = client.TenantInfo().TenantId
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZSubscription,
 					Data: data,
+				})); !ok {
+					return
 				}
 			}
 		}

@@ -74,7 +74,9 @@ func listSubscriptionRoleAssignments(ctx context.Context, client client.AzureCli
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating subscription role assignments", "result", result)
 				return
 			} else {
-				ids <- subscription.Id
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -104,9 +106,11 @@ func listSubscriptionRoleAssignments(ctx context.Context, client client.AzureCli
 						subscriptionRoleAssignments.RoleAssignments = append(subscriptionRoleAssignments.RoleAssignments, subscriptionRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZSubscriptionRoleAssignment,
 					Data: subscriptionRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing subscription role assignments", "subscriptionId", id, "count", count)
 			}

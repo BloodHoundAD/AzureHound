@@ -72,7 +72,9 @@ func listAutomationAccounts(ctx context.Context, client client.AzureClient, subs
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating automation accounts", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -97,9 +99,11 @@ func listAutomationAccounts(ctx context.Context, client client.AzureClient, subs
 						}
 						log.V(2).Info("found automation account", "automationAccount", automationAccount)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZAutomationAccount,
 							Data: automationAccount,
+						})); !ok {
+							return
 						}
 					}
 				}

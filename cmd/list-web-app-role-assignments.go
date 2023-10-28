@@ -80,7 +80,9 @@ func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, w
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating web app role assignments", "result", result)
 				return
 			} else {
-				ids <- webApp.Id
+				if ok := pipeline.Send(ctx.Done(), ids, webApp.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -113,9 +115,11 @@ func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, w
 						webAppRoleAssignments.RoleAssignments = append(webAppRoleAssignments.RoleAssignments, webAppRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZWebAppRoleAssignment,
 					Data: webAppRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing web app role assignments", "webAppId", id, "count", count)
 			}

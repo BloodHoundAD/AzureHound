@@ -72,7 +72,9 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating function apps", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -98,9 +100,11 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 						if functionApp.Kind == "functionapp" {
 							log.V(2).Info("found function app", "functionApp", functionApp)
 							count++
-							out <- AzureWrapper{
+							if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 								Kind: enums.KindAZFunctionApp,
 								Data: functionApp,
+							})); !ok {
+								return
 							}
 						}
 					}

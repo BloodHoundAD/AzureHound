@@ -80,7 +80,9 @@ func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient,
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating logic app role assignments", "result", result)
 				return
 			} else {
-				ids <- logicapp.Id
+				if ok := pipeline.Send(ctx.Done(), ids, logicapp.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -113,9 +115,11 @@ func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient,
 						logicappRoleAssignments.RoleAssignments = append(logicappRoleAssignments.RoleAssignments, logicappRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZLogicAppRoleAssignment,
 					Data: logicappRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing logic app role assignments", "logicappId", id, "count", count)
 			}

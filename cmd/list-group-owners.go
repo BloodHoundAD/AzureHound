@@ -73,7 +73,9 @@ func listGroupOwners(ctx context.Context, client client.AzureClient, groups <-ch
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating group owners", "result", result)
 				return
 			} else {
-				ids <- group.Id
+				if ok := pipeline.Send(ctx.Done(), ids, group.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -103,9 +105,11 @@ func listGroupOwners(ctx context.Context, client client.AzureClient, groups <-ch
 						groupOwners.Owners = append(groupOwners.Owners, groupOwner)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZGroupOwner,
 					Data: groupOwners,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing group owners", "groupId", id, "count", count)
 			}

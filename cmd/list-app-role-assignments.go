@@ -75,7 +75,9 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 				return
 			} else {
 				if len(servicePrincipal.AppRoles) != 0 {
-					filteredSPs <- servicePrincipal
+					if ok := pipeline.Send(ctx.Done(), filteredSPs, servicePrincipal); !ok {
+						return
+					}
 				}
 			}
 		}
@@ -96,13 +98,15 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 					} else {
 						log.V(2).Info("found app role assignment", "roleAssignments", item)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZAppRoleAssignment,
 							Data: models.AppRoleAssignment{
 								AppRoleAssignment: item.Ok,
 								AppId:             servicePrincipal.AppId,
 								TenantId:          client.TenantInfo().TenantId,
 							},
+						})); !ok {
+							return
 						}
 					}
 				}

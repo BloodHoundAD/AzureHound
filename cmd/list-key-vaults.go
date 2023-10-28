@@ -73,7 +73,9 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating key vaults", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -100,9 +102,11 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 						}
 						log.V(2).Info("found key vault", "keyVault", keyVault)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZKeyVault,
 							Data: keyVault,
+						})); !ok {
+							return
 						}
 					}
 				}

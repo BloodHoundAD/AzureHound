@@ -77,7 +77,9 @@ func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating logic apps", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -107,9 +109,11 @@ func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions
 						}
 						log.V(2).Info("found logicapp", "logicapp", logicapp)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZLogicApp,
 							Data: logicapp,
+						})); !ok {
+							return
 						}
 					}
 				}

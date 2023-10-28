@@ -26,6 +26,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
 
@@ -62,12 +63,14 @@ func listTenants(ctx context.Context, client client.AzureClient) <-chan interfac
 
 		// Send the fully hydrated tenant that is being collected
 		collectedTenant := client.TenantInfo()
-		out <- AzureWrapper{
+		if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 			Kind: enums.KindAZTenant,
 			Data: models.Tenant{
 				Tenant:    collectedTenant,
 				Collected: true,
 			},
+		})); !ok {
+			return
 		}
 		count := 1
 		for item := range client.ListAzureADTenants(ctx, true) {
@@ -80,11 +83,13 @@ func listTenants(ctx context.Context, client client.AzureClient) <-chan interfac
 
 				// Send the remaining tenant trusts
 				if item.Ok.TenantId != collectedTenant.TenantId {
-					out <- AzureWrapper{
+					if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 						Kind: enums.KindAZTenant,
 						Data: models.Tenant{
 							Tenant: item.Ok,
 						},
+					})); !ok {
+						return
 					}
 				}
 			}

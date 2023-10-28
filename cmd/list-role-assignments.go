@@ -74,7 +74,9 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating role assignments", "result", result)
 				return
 			} else {
-				ids <- role.Id
+				if ok := pipeline.Send(ctx.Done(), ids, role.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -102,9 +104,11 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 						roleAssignments.RoleAssignments = append(roleAssignments.RoleAssignments, item.Ok)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZRoleAssignment,
 					Data: roleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing role assignments", "roleDefinitionId", id, "count", count)
 			}

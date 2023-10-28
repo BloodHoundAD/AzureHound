@@ -75,7 +75,9 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating storage account role assignments", "result", result)
 				return
 			} else {
-				ids <- storageAccount.Id
+				if ok := pipeline.Send(ctx.Done(), ids, storageAccount.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -108,9 +110,11 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 						storageAccountRoleAssignments.RoleAssignments = append(storageAccountRoleAssignments.RoleAssignments, storageAccountRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZStorageAccountRoleAssignment,
 					Data: storageAccountRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing storage account role assignments", "storageAccountId", id, "count", count)
 			}

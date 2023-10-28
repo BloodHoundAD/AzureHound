@@ -89,10 +89,12 @@ func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan a
 					}
 				}
 
-				out <- NewAzureWrapper(
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
 					enums.KindAZAppOwner,
 					data,
-				)
+				)); !ok {
+					return
+				}
 				log.V(1).Info("finished listing app owners", "appId", app.Data.AppId, "count", count)
 			}
 		}()

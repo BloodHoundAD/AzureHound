@@ -74,7 +74,9 @@ func listManagementGroupRoleAssignments(ctx context.Context, client client.Azure
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating management group role assignments", "result", result)
 				return
 			} else {
-				ids <- managementGroup.Id
+				if ok := pipeline.Send(ctx.Done(), ids, managementGroup.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -104,10 +106,12 @@ func listManagementGroupRoleAssignments(ctx context.Context, client client.Azure
 						managementGroupRoleAssignments.RoleAssignments = append(managementGroupRoleAssignments.RoleAssignments, managementGroupRoleAssignment)
 					}
 				}
-				out <- NewAzureWrapper(
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
 					enums.KindAZManagementGroupRoleAssignment,
 					managementGroupRoleAssignments,
-				)
+				)); !ok {
+					return
+				}
 				log.V(1).Info("finished listing managementGroup role assignments", "managementGroupId", id, "count", count)
 			}
 		}()

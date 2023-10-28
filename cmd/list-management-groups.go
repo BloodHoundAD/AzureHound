@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
 
@@ -74,9 +75,11 @@ func listManagementGroups(ctx context.Context, client client.AzureClient) <-chan
 					TenantName:      client.TenantInfo().DisplayName,
 				}
 
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZManagementGroup,
 					Data: mgmtGroup,
+				})); !ok {
+					return
 				}
 			}
 		}

@@ -75,7 +75,9 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating automation account role assignments", "result", result)
 				return
 			} else {
-				ids <- automationAccount.Id
+				if ok := pipeline.Send(ctx.Done(), ids, automationAccount.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -108,9 +110,11 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 						automationAccountRoleAssignments.RoleAssignments = append(automationAccountRoleAssignments.RoleAssignments, automationAccountRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZAutomationAccountRoleAssignment,
 					Data: automationAccountRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing automation account role assignments", "automationAccountId", id, "count", count)
 			}

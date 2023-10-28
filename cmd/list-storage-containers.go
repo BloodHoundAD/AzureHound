@@ -79,7 +79,9 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating storage containers", "result", result)
 				return
 			} else {
-				ids <- storageAccount
+				if ok := pipeline.Send(ctx.Done(), ids, interface{}(storageAccount)); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -107,9 +109,11 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 						}
 						log.V(2).Info("found storage container", "storageContainer", storageContainer)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZStorageContainer,
 							Data: storageContainer,
+						})); !ok {
+							return
 						}
 					}
 					log.V(1).Info("finished listing storage containers", "subscriptionId", stAccount.(models.StorageAccount).SubscriptionId, "count", count)

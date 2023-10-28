@@ -77,7 +77,9 @@ func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating web apps", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -103,9 +105,11 @@ func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <
 						if webApp.Kind == "app" {
 							log.V(2).Info("found web app", "webApp", webApp)
 							count++
-							out <- AzureWrapper{
+							if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 								Kind: enums.KindAZWebApp,
 								Data: webApp,
+							})); !ok {
+								return
 							}
 						}
 					}

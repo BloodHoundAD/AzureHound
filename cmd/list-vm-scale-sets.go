@@ -77,7 +77,9 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine scale sets", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -102,9 +104,11 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 						}
 						log.V(2).Info("found virtual machine scale set", "vmScaleSet", vmScaleSet)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZVMScaleSet,
 							Data: vmScaleSet,
+						})); !ok {
+							return
 						}
 					}
 				}

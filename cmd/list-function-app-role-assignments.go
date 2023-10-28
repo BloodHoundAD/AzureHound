@@ -75,7 +75,9 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating function app role assignments", "result", result)
 				return
 			} else {
-				ids <- functionApp.Id
+				if ok := pipeline.Send(ctx.Done(), ids, functionApp.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -108,9 +110,11 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 						functionAppRoleAssignments.RoleAssignments = append(functionAppRoleAssignments.RoleAssignments, functionAppRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZFunctionAppRoleAssignment,
 					Data: functionAppRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing function app role assignments", "functionAppId", id, "count", count)
 			}

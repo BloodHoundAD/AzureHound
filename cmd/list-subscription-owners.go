@@ -90,9 +90,11 @@ func listSubscriptionOwners(ctx context.Context, client client.AzureClient, role
 						subscriptionOwners.Owners = append(subscriptionOwners.Owners, subscriptionOwner)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZSubscriptionOwner,
 					Data: subscriptionOwners,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing subscription owners", "subscriptionId", roleAssignments.SubscriptionId, "count", count)
 			}

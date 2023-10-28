@@ -73,7 +73,9 @@ func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, 
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating service principal owners", "result", result)
 				return
 			} else {
-				ids <- servicePrincipal.Id
+				if ok := pipeline.Send(ctx.Done(), ids, servicePrincipal.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -103,9 +105,11 @@ func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, 
 						servicePrincipalOwners.Owners = append(servicePrincipalOwners.Owners, servicePrincipalOwner)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZServicePrincipalOwner,
 					Data: servicePrincipalOwners,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing service principal owners", "servicePrincipalId", id, "count", count)
 			}

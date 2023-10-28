@@ -74,7 +74,9 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating key vault role assignments", "result", result)
 				return
 			} else {
-				ids <- keyVault.Id
+				if ok := pipeline.Send(ctx.Done(), ids, keyVault.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -104,7 +106,9 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 						keyVaultRoleAssignments.RoleAssignments = append(keyVaultRoleAssignments.RoleAssignments, keyVaultRoleAssignment)
 					}
 				}
-				out <- NewAzureWrapper(enums.KindAZKeyVaultRoleAssignment, keyVaultRoleAssignments)
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZKeyVaultRoleAssignment, keyVaultRoleAssignments)); !ok {
+					return
+				}
 				log.V(1).Info("finished listing key vault role assignments", "keyVaultId", id, "count", count)
 			}
 		}()

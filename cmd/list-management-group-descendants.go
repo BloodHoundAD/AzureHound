@@ -73,7 +73,9 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating management group descendants", "result", result)
 				return
 			} else {
-				ids <- managementGroup.Name
+				if ok := pipeline.Send(ctx.Done(), ids, managementGroup.Name); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -91,9 +93,11 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 					} else {
 						log.V(2).Info("found management group descendant", "type", item.Ok.Type, "id", item.Ok.Id, "parent", item.Ok.Properties.Parent.Id)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZManagementGroupDescendant,
 							Data: item.Ok,
+						})); !ok {
+							return
 						}
 					}
 				}

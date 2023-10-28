@@ -26,6 +26,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
 
@@ -67,14 +68,16 @@ func listApps(ctx context.Context, client client.AzureClient) <-chan azureWrappe
 			} else {
 				log.V(2).Info("found application", "app", item)
 				count++
-				out <- NewAzureWrapper(
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
 					enums.KindAZApp,
 					models.App{
 						Application: item.Ok,
 						TenantId:    client.TenantInfo().TenantId,
 						TenantName:  client.TenantInfo().DisplayName,
 					},
-				)
+				)); !ok {
+					return
+				}
 			}
 		}
 		log.Info("finished listing all apps", "count", count)

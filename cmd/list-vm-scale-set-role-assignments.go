@@ -80,7 +80,9 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating vm scale set role assignments", "result", result)
 				return
 			} else {
-				ids <- vmScaleSet.Id
+				if ok := pipeline.Send(ctx.Done(), ids, vmScaleSet.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -113,9 +115,11 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 						vmScaleSetRoleAssignments.RoleAssignments = append(vmScaleSetRoleAssignments.RoleAssignments, vmScaleSetRoleAssignment)
 					}
 				}
-				out <- AzureWrapper{
+				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 					Kind: enums.KindAZVMScaleSetRoleAssignment,
 					Data: vmScaleSetRoleAssignments,
+				})); !ok {
+					return
 				}
 				log.V(1).Info("finished listing vm scale set role assignments", "vmScaleSetId", id, "count", count)
 			}

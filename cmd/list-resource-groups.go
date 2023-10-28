@@ -73,7 +73,9 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating resource groups", "result", result)
 				return
 			} else {
-				ids <- subscription.SubscriptionId
+				if ok := pipeline.Send(ctx.Done(), ids, subscription.SubscriptionId); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -96,9 +98,11 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 						}
 						log.V(2).Info("found resource group", "resourceGroup", resourceGroup)
 						count++
-						out <- AzureWrapper{
+						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
 							Kind: enums.KindAZResourceGroup,
 							Data: resourceGroup,
+						})); !ok {
+							return
 						}
 					}
 				}
