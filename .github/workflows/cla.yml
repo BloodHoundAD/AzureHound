@@ -3,7 +3,7 @@ on:
   issue_comment:
     types: [created]
   pull_request_target:
-    types: [opened,closed,synchronize]
+    types: [opened, closed, synchronize]
 
 jobs:
   CLAssistant:
@@ -14,10 +14,11 @@ jobs:
         uses: contributor-assistant/github-action@v2.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PERSONAL_ACCESS_TOKEN : ${{ secrets.REPO_SCOPE }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.REPO_SCOPE }}
         with:
-          path-to-signatures: 'signatures.json'
-          path-to-document: 'https://github.com/BloodHoundAD/CLA/blob/main/ICLA.md'
-          branch: 'main'
+          path-to-signatures: "signatures.json"
+          path-to-document: "https://github.com/BloodHoundAD/CLA/blob/main/ICLA.md"
+          branch: "main"
           remote-organization-name: BloodHoundAD
-          remote-repository-name:  CLA
+          remote-repository-name: CLA
+          allowlist: dependabot[bot]
