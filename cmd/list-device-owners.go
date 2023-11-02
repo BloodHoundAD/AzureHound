@@ -104,10 +104,7 @@ func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-
 						data.Owners = append(data.Owners, deviceOwner)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZDeviceOwner,
-					Data: data,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZDeviceOwner, data)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing device owners", "deviceId", id, "count", count)

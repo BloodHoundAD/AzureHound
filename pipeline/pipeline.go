@@ -41,16 +41,6 @@ func Send[D, T any](done <-chan D, tgt chan<- T, val T) bool {
 	}
 }
 
-// Recv receives a value from a channel while monitoring the done channel for cancellation
-func Recv[D, T any](done <-chan D, src <-chan T) (T, bool) {
-	select {
-	case val, ok := <-src:
-		return val, ok
-	case <-done:
-		return *new(T), false
-	}
-}
-
 // OrDone provides an explicit cancellation mechanism to ensure the encapsulated and downstream goroutines are cleaned
 // up. This frees the caller from depending on the input channel to close in order to free the goroutine, thus
 // preventing possible leaks.

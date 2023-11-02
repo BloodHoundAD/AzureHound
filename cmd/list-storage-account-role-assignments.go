@@ -110,10 +110,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 						storageAccountRoleAssignments.RoleAssignments = append(storageAccountRoleAssignments.RoleAssignments, storageAccountRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZStorageAccountRoleAssignment,
-					Data: storageAccountRoleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZStorageAccountRoleAssignment, storageAccountRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing storage account role assignments", "storageAccountId", id, "count", count)

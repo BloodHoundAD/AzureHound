@@ -104,10 +104,7 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 						roleAssignments.RoleAssignments = append(roleAssignments.RoleAssignments, item.Ok)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZRoleAssignment,
-					Data: roleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZRoleAssignment, roleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing role assignments", "roleDefinitionId", id, "count", count)

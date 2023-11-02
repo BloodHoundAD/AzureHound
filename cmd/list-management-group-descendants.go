@@ -93,10 +93,7 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 					} else {
 						log.V(2).Info("found management group descendant", "type", item.Ok.Type, "id", item.Ok.Id, "parent", item.Ok.Properties.Parent.Id)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZManagementGroupDescendant,
-							Data: item.Ok,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZManagementGroupDescendant, item.Ok)); !ok {
 							return
 						}
 					}

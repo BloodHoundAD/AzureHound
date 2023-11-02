@@ -102,10 +102,7 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 						}
 						log.V(2).Info("found key vault", "keyVault", keyVault)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZKeyVault,
-							Data: keyVault,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZKeyVault, keyVault)); !ok {
 							return
 						}
 					}

@@ -109,10 +109,7 @@ func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions
 						}
 						log.V(2).Info("found logicapp", "logicapp", logicapp)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZLogicApp,
-							Data: logicapp,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZLogicApp, logicapp)); !ok {
 							return
 						}
 					}

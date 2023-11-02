@@ -104,10 +104,7 @@ func listContainerRegistries(ctx context.Context, client client.AzureClient, sub
 						}
 						log.V(2).Info("found container registry", "containerRegistry", containerRegistry)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZContainerRegistry,
-							Data: containerRegistry,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZContainerRegistry, containerRegistry)); !ok {
 							return
 						}
 					}

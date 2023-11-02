@@ -90,10 +90,7 @@ func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureCl
 						subscriptionUserAccessAdmins.UserAccessAdmins = append(subscriptionUserAccessAdmins.UserAccessAdmins, subscriptionUserAccessAdmin)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZSubscriptionUserAccessAdmin,
-					Data: subscriptionUserAccessAdmins,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZSubscriptionUserAccessAdmin, subscriptionUserAccessAdmins)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing subscription user access admins", "subscriptionId", roleAssignments.SubscriptionId, "count", count)

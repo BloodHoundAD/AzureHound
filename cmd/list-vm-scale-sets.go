@@ -104,10 +104,7 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 						}
 						log.V(2).Info("found virtual machine scale set", "vmScaleSet", vmScaleSet)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZVMScaleSet,
-							Data: vmScaleSet,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZVMScaleSet, vmScaleSet)); !ok {
 							return
 						}
 					}

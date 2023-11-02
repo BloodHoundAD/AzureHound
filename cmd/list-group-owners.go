@@ -105,10 +105,7 @@ func listGroupOwners(ctx context.Context, client client.AzureClient, groups <-ch
 						groupOwners.Owners = append(groupOwners.Owners, groupOwner)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZGroupOwner,
-					Data: groupOwners,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZGroupOwner, groupOwners)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing group owners", "groupId", id, "count", count)

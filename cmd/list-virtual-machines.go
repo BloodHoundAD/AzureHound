@@ -99,10 +99,7 @@ func listVirtualMachines(ctx context.Context, client client.AzureClient, subscri
 						}
 						log.V(2).Info("found virtual machine", "virtualMachine", virtualMachine)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZVM,
-							Data: virtualMachine,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZVM, virtualMachine)); !ok {
 							return
 						}
 					}

@@ -105,10 +105,7 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 						data.Members = append(data.Members, groupMember)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZGroupMember,
-					Data: data,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZGroupMember, data)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing group memberships", "groupId", id, "count", count)

@@ -115,10 +115,7 @@ func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient,
 						logicappRoleAssignments.RoleAssignments = append(logicappRoleAssignments.RoleAssignments, logicappRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZLogicAppRoleAssignment,
-					Data: logicappRoleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZLogicAppRoleAssignment, logicappRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing logic app role assignments", "logicappId", id, "count", count)

@@ -110,10 +110,7 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 						automationAccountRoleAssignments.RoleAssignments = append(automationAccountRoleAssignments.RoleAssignments, automationAccountRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZAutomationAccountRoleAssignment,
-					Data: automationAccountRoleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZAutomationAccountRoleAssignment, automationAccountRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing automation account role assignments", "automationAccountId", id, "count", count)

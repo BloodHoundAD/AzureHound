@@ -97,10 +97,7 @@ func listSubscriptions(ctx context.Context, client client.AzureClient) <-chan in
 					Subscription: item.Ok,
 				}
 				data.TenantId = client.TenantInfo().TenantId
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZSubscription,
-					Data: data,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZSubscription, data)); !ok {
 					return
 				}
 			}

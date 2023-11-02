@@ -73,10 +73,7 @@ func listGroups(ctx context.Context, client client.AzureClient) <-chan interface
 					TenantId:   client.TenantInfo().TenantId,
 					TenantName: client.TenantInfo().DisplayName,
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZGroup,
-					Data: group,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZGroup, group)); !ok {
 					return
 				}
 			}

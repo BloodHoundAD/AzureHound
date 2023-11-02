@@ -115,10 +115,7 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 						vmScaleSetRoleAssignments.RoleAssignments = append(vmScaleSetRoleAssignments.RoleAssignments, vmScaleSetRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZVMScaleSetRoleAssignment,
-					Data: vmScaleSetRoleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZVMScaleSetRoleAssignment, vmScaleSetRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing vm scale set role assignments", "vmScaleSetId", id, "count", count)

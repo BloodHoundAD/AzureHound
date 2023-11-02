@@ -101,10 +101,7 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, subscri
 						}
 						log.V(2).Info("found storage account", "storageAccount", storageAccount)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZStorageAccount,
-							Data: storageAccount,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZStorageAccount, storageAccount)); !ok {
 							return
 						}
 					}

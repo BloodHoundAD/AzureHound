@@ -100,10 +100,7 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 						if functionApp.Kind == "functionapp" {
 							log.V(2).Info("found function app", "functionApp", functionApp)
 							count++
-							if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-								Kind: enums.KindAZFunctionApp,
-								Data: functionApp,
-							})); !ok {
+							if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZFunctionApp, functionApp)); !ok {
 								return
 							}
 						}

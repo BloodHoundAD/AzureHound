@@ -105,10 +105,7 @@ func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, 
 						servicePrincipalOwners.Owners = append(servicePrincipalOwners.Owners, servicePrincipalOwner)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZServicePrincipalOwner,
-					Data: servicePrincipalOwners,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZServicePrincipalOwner, servicePrincipalOwners)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing service principal owners", "servicePrincipalId", id, "count", count)

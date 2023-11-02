@@ -68,14 +68,13 @@ func listRoles(ctx context.Context, client client.AzureClient) <-chan interface{
 			} else {
 				log.V(2).Info("found role", "role", item)
 				count++
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZRole,
-					Data: models.Role{
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+					enums.KindAZRole,
+					models.Role{
 						Role:       item.Ok,
 						TenantId:   client.TenantInfo().TenantId,
 						TenantName: client.TenantInfo().DisplayName,
-					},
-				})); !ok {
+					})); !ok {
 					return
 				}
 			}

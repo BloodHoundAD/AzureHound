@@ -115,10 +115,7 @@ func listManagedClusterRoleAssignments(ctx context.Context, client client.AzureC
 						managedClusterRoleAssignments.RoleAssignments = append(managedClusterRoleAssignments.RoleAssignments, managedClusterRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZManagedClusterRoleAssignment,
-					Data: managedClusterRoleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZManagedClusterRoleAssignment, managedClusterRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing managed cluster role assignments", "managedClusterId", id, "count", count)

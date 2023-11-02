@@ -106,10 +106,7 @@ func listSubscriptionRoleAssignments(ctx context.Context, client client.AzureCli
 						subscriptionRoleAssignments.RoleAssignments = append(subscriptionRoleAssignments.RoleAssignments, subscriptionRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZSubscriptionRoleAssignment,
-					Data: subscriptionRoleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZSubscriptionRoleAssignment, subscriptionRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing subscription role assignments", "subscriptionId", id, "count", count)

@@ -85,10 +85,7 @@ func listUsers(ctx context.Context, client client.AzureClient) <-chan interface{
 					TenantId:   client.TenantInfo().TenantId,
 					TenantName: client.TenantInfo().DisplayName,
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZUser,
-					Data: user,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZUser, user)); !ok {
 					return
 				}
 			}

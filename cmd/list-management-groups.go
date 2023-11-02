@@ -75,10 +75,7 @@ func listManagementGroups(ctx context.Context, client client.AzureClient) <-chan
 					TenantName:      client.TenantInfo().DisplayName,
 				}
 
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZManagementGroup,
-					Data: mgmtGroup,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZManagementGroup, mgmtGroup)); !ok {
 					return
 				}
 			}

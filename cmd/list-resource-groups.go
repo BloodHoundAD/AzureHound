@@ -98,10 +98,7 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 						}
 						log.V(2).Info("found resource group", "resourceGroup", resourceGroup)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZResourceGroup,
-							Data: resourceGroup,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZResourceGroup, resourceGroup)); !ok {
 							return
 						}
 					}

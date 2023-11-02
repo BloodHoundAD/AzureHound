@@ -27,7 +27,6 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
-	kinds "github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
@@ -80,13 +79,12 @@ func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, 
 			} else {
 				for _, policy := range keyVault.Properties.AccessPolicies {
 					if len(filters) == 0 {
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: kinds.KindAZKeyVaultAccessPolicy,
-							Data: models.KeyVaultAccessPolicy{
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+							enums.KindAZKeyVaultAccessPolicy,
+							models.KeyVaultAccessPolicy{
 								KeyVaultId:        keyVault.Id,
 								AccessPolicyEntry: policy,
-							},
-						})); !ok {
+							})); !ok {
 							return
 						}
 					} else {
@@ -105,13 +103,12 @@ func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, 
 								}
 							}()
 							if contains(permissions, "Get") {
-								if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-									Kind: kinds.KindAZKeyVaultAccessPolicy,
-									Data: models.KeyVaultAccessPolicy{
+								if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+									enums.KindAZKeyVaultAccessPolicy,
+									models.KeyVaultAccessPolicy{
 										KeyVaultId:        keyVault.Id,
 										AccessPolicyEntry: policy,
-									},
-								})); !ok {
+									})); !ok {
 									return
 								}
 								break

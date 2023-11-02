@@ -104,10 +104,7 @@ func listManagedClusters(ctx context.Context, client client.AzureClient, subscri
 						}
 						log.V(2).Info("found managed cluster", "managedCluster", managedCluster)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZManagedCluster,
-							Data: managedCluster,
-						})); !ok {
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZManagedCluster, managedCluster)); !ok {
 							return
 						}
 					}

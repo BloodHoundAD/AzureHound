@@ -98,14 +98,13 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 					} else {
 						log.V(2).Info("found app role assignment", "roleAssignments", item)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-							Kind: enums.KindAZAppRoleAssignment,
-							Data: models.AppRoleAssignment{
+						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+							enums.KindAZAppRoleAssignment,
+							models.AppRoleAssignment{
 								AppRoleAssignment: item.Ok,
 								AppId:             servicePrincipal.AppId,
 								TenantId:          client.TenantInfo().TenantId,
-							},
-						})); !ok {
+							})); !ok {
 							return
 						}
 					}

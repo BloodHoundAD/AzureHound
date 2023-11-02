@@ -110,10 +110,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 						functionAppRoleAssignments.RoleAssignments = append(functionAppRoleAssignments.RoleAssignments, functionAppRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZFunctionAppRoleAssignment,
-					Data: functionAppRoleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZFunctionAppRoleAssignment, functionAppRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing function app role assignments", "functionAppId", id, "count", count)

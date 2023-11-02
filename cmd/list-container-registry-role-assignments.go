@@ -115,10 +115,7 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 						containerRegistryRoleAssignments.RoleAssignments = append(containerRegistryRoleAssignments.RoleAssignments, containerRegistryRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZContainerRegistryRoleAssignment,
-					Data: containerRegistryRoleAssignments,
-				})); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZContainerRegistryRoleAssignment, containerRegistryRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing container registry role assignments", "containerRegistryId", id, "count", count)

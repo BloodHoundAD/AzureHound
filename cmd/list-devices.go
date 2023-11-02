@@ -68,14 +68,13 @@ func listDevices(ctx context.Context, client client.AzureClient) <-chan interfac
 			} else {
 				log.V(2).Info("found device", "device", item)
 				count++
-				if ok := pipeline.Send(ctx.Done(), out, interface{}(AzureWrapper{
-					Kind: enums.KindAZDevice,
-					Data: models.Device{
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+					enums.KindAZDevice,
+					models.Device{
 						Device:     item.Ok,
 						TenantId:   client.TenantInfo().TenantId,
 						TenantName: client.TenantInfo().DisplayName,
-					},
-				})); !ok {
+					})); !ok {
 					return
 				}
 			}
