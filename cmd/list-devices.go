@@ -55,8 +55,8 @@ func listDevicesCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listDevices(ctx context.Context, client client.AzureClient) <-chan interface{} {
-	out := make(chan interface{})
+func listDevices(ctx context.Context, client client.AzureClient) <-chan any {
+	out := make(chan any)
 
 	go func() {
 		defer close(out)
@@ -68,7 +68,7 @@ func listDevices(ctx context.Context, client client.AzureClient) <-chan interfac
 			} else {
 				log.V(2).Info("found device", "device", item)
 				count++
-				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(
 					enums.KindAZDevice,
 					models.Device{
 						Device:     item.Ok,

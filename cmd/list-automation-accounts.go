@@ -57,9 +57,9 @@ func listAutomationAccountsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAutomationAccounts(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listAutomationAccounts(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -99,7 +99,7 @@ func listAutomationAccounts(ctx context.Context, client client.AzureClient, subs
 						}
 						log.V(2).Info("found automation account", "automationAccount", automationAccount)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZAutomationAccount, automationAccount)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZAutomationAccount, automationAccount)); !ok {
 							return
 						}
 					}

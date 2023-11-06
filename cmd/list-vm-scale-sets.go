@@ -62,9 +62,9 @@ func listVMScaleSetsCmdImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -104,7 +104,7 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 						}
 						log.V(2).Info("found virtual machine scale set", "vmScaleSet", vmScaleSet)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZVMScaleSet, vmScaleSet)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZVMScaleSet, vmScaleSet)); !ok {
 							return
 						}
 					}

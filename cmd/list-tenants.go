@@ -55,15 +55,15 @@ func listTenantsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listTenants(ctx context.Context, client client.AzureClient) <-chan interface{} {
-	out := make(chan interface{})
+func listTenants(ctx context.Context, client client.AzureClient) <-chan any {
+	out := make(chan any)
 
 	go func() {
 		defer close(out)
 
 		// Send the fully hydrated tenant that is being collected
 		collectedTenant := client.TenantInfo()
-		if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+		if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(
 			enums.KindAZTenant,
 			models.Tenant{
 				Tenant:    collectedTenant,
@@ -82,7 +82,7 @@ func listTenants(ctx context.Context, client client.AzureClient) <-chan interfac
 
 				// Send the remaining tenant trusts
 				if item.Ok.TenantId != collectedTenant.TenantId {
-					if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+					if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(
 						enums.KindAZTenant,
 						models.Tenant{
 							Tenant: item.Ok,

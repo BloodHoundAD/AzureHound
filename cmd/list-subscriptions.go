@@ -59,8 +59,8 @@ func listSubscriptionsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listSubscriptions(ctx context.Context, client client.AzureClient) <-chan interface{} {
-	out := make(chan interface{})
+func listSubscriptions(ctx context.Context, client client.AzureClient) <-chan any {
+	out := make(chan any)
 
 	go func() {
 		defer close(out)
@@ -97,7 +97,7 @@ func listSubscriptions(ctx context.Context, client client.AzureClient) <-chan in
 					Subscription: item.Ok,
 				}
 				data.TenantId = client.TenantInfo().TenantId
-				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZSubscription, data)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZSubscription, data)); !ok {
 					return
 				}
 			}

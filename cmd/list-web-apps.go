@@ -62,9 +62,9 @@ func listWebAppsCmdImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -105,7 +105,7 @@ func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <
 						if webApp.Kind == "app" {
 							log.V(2).Info("found web app", "webApp", webApp)
 							count++
-							if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZWebApp, webApp)); !ok {
+							if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZWebApp, webApp)); !ok {
 								return
 							}
 						}

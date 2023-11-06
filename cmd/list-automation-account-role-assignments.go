@@ -59,9 +59,9 @@ func listAutomationAccountRoleAssignmentImpl(cmd *cobra.Command, args []string) 
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAutomationAccountRoleAssignments(ctx context.Context, client client.AzureClient, automationAccounts <-chan interface{}) <-chan interface{} {
+func listAutomationAccountRoleAssignments(ctx context.Context, client client.AzureClient, automationAccounts <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -110,7 +110,7 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 						automationAccountRoleAssignments.RoleAssignments = append(automationAccountRoleAssignments.RoleAssignments, automationAccountRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZAutomationAccountRoleAssignment, automationAccountRoleAssignments)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZAutomationAccountRoleAssignment, automationAccountRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing automation account role assignments", "automationAccountId", id, "count", count)

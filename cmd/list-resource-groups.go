@@ -57,9 +57,9 @@ func listResourceGroupsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listResourceGroups(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listResourceGroups(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -98,7 +98,7 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 						}
 						log.V(2).Info("found resource group", "resourceGroup", resourceGroup)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZResourceGroup, resourceGroup)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZResourceGroup, resourceGroup)); !ok {
 							return
 						}
 					}

@@ -58,9 +58,9 @@ func listRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <-chan interface{}) <-chan interface{} {
+func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -104,7 +104,7 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 						roleAssignments.RoleAssignments = append(roleAssignments.RoleAssignments, item.Ok)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZRoleAssignment, roleAssignments)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZRoleAssignment, roleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing role assignments", "roleDefinitionId", id, "count", count)

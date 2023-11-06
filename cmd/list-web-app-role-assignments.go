@@ -64,9 +64,9 @@ func listWebAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, webApps <-chan interface{}) <-chan interface{} {
+func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, webApps <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -115,7 +115,7 @@ func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, w
 						webAppRoleAssignments.RoleAssignments = append(webAppRoleAssignments.RoleAssignments, webAppRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZWebAppRoleAssignment, webAppRoleAssignments)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZWebAppRoleAssignment, webAppRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing web app role assignments", "webAppId", id, "count", count)

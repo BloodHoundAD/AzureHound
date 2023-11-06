@@ -55,8 +55,8 @@ func listUsersCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listUsers(ctx context.Context, client client.AzureClient) <-chan interface{} {
-	out := make(chan interface{})
+func listUsers(ctx context.Context, client client.AzureClient) <-chan any {
+	out := make(chan any)
 
 	go func() {
 		defer close(out)
@@ -85,7 +85,7 @@ func listUsers(ctx context.Context, client client.AzureClient) <-chan interface{
 					TenantId:   client.TenantInfo().TenantId,
 					TenantName: client.TenantInfo().DisplayName,
 				}
-				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZUser, user)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZUser, user)); !ok {
 					return
 				}
 			}

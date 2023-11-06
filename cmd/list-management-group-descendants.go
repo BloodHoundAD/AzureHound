@@ -57,9 +57,9 @@ func listManagementGroupDescendantsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listManagementGroupDescendants(ctx context.Context, client client.AzureClient, managementGroups <-chan interface{}) <-chan interface{} {
+func listManagementGroupDescendants(ctx context.Context, client client.AzureClient, managementGroups <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -93,7 +93,7 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 					} else {
 						log.V(2).Info("found management group descendant", "type", item.Ok.Type, "id", item.Ok.Id, "parent", item.Ok.Properties.Parent.Id)
 						count++
-						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZManagementGroupDescendant, item.Ok)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZManagementGroupDescendant, item.Ok)); !ok {
 							return
 						}
 					}

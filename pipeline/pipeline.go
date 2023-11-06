@@ -41,6 +41,16 @@ func Send[D, T any](done <-chan D, tgt chan<- T, val T) bool {
 	}
 }
 
+// SendAny sends a value to an any channel while monitoring the done channel for cancellation
+func SendAny[T any](done <-chan T, tgt chan<- any, val any) bool {
+	select {
+	case tgt <- val:
+		return true
+	case <-done:
+		return false
+	}
+}
+
 // OrDone provides an explicit cancellation mechanism to ensure the encapsulated and downstream goroutines are cleaned
 // up. This frees the caller from depending on the input channel to close in order to free the goroutine, thus
 // preventing possible leaks.
@@ -71,7 +81,7 @@ func OrDone[D, T any](done <-chan D, in <-chan T) <-chan T {
 // Mux joins multiple channels and returns a channel as single stream of data.
 func Mux[D any](done <-chan D, channels ...<-chan any) <-chan any {
 	var wg sync.WaitGroup
-	out := make(chan interface{})
+	out := make(chan any)
 
 	muxer := func(channel <-chan any) {
 		defer wg.Done()

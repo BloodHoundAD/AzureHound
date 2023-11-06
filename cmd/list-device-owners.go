@@ -57,9 +57,9 @@ func listDeviceOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-chan interface{}) <-chan interface{} {
+func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -104,7 +104,7 @@ func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-
 						data.Owners = append(data.Owners, deviceOwner)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZDeviceOwner, data)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZDeviceOwner, data)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing device owners", "deviceId", id, "count", count)

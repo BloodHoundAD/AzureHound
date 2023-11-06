@@ -66,8 +66,8 @@ func listKeyVaultAccessPoliciesCmdImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}, filters []enums.KeyVaultAccessType) <-chan interface{} {
-	out := make(chan interface{})
+func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, keyVaults <-chan any, filters []enums.KeyVaultAccessType) <-chan any {
+	out := make(chan any)
 
 	go func() {
 		defer close(out)
@@ -79,7 +79,7 @@ func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, 
 			} else {
 				for _, policy := range keyVault.Properties.AccessPolicies {
 					if len(filters) == 0 {
-						if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(
 							enums.KindAZKeyVaultAccessPolicy,
 							models.KeyVaultAccessPolicy{
 								KeyVaultId:        keyVault.Id,
@@ -103,7 +103,7 @@ func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, 
 								}
 							}()
 							if contains(permissions, "Get") {
-								if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(
+								if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(
 									enums.KindAZKeyVaultAccessPolicy,
 									models.KeyVaultAccessPolicy{
 										KeyVaultId:        keyVault.Id,

@@ -64,9 +64,9 @@ func listContainerRegistryRoleAssignmentImpl(cmd *cobra.Command, args []string) 
 	}
 }
 
-func listContainerRegistryRoleAssignments(ctx context.Context, client client.AzureClient, containerRegistries <-chan interface{}) <-chan interface{} {
+func listContainerRegistryRoleAssignments(ctx context.Context, client client.AzureClient, containerRegistries <-chan any) <-chan any {
 	var (
-		out     = make(chan interface{})
+		out     = make(chan any)
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -115,7 +115,7 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 						containerRegistryRoleAssignments.RoleAssignments = append(containerRegistryRoleAssignments.RoleAssignments, containerRegistryRoleAssignment)
 					}
 				}
-				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZContainerRegistryRoleAssignment, containerRegistryRoleAssignments)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZContainerRegistryRoleAssignment, containerRegistryRoleAssignments)); !ok {
 					return
 				}
 				log.V(1).Info("finished listing container registry role assignments", "containerRegistryId", id, "count", count)
