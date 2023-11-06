@@ -39,7 +39,7 @@ func TestListManagementGroupDescendants(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockManagementGroupsChannel := make(chan interface{})
+	mockManagementGroupsChannel := make(chan any)
 	mockManagementGroupDescendantChannel := make(chan azure.DescendantInfoResult)
 	mockManagementGroupDescendantChannel2 := make(chan azure.DescendantInfoResult)
 

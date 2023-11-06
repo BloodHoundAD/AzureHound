@@ -177,7 +177,7 @@ func start(ctx context.Context) {
 	}
 }
 
-func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-chan []interface{}) bool {
+func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-chan []any) bool {
 	endpoint := bheUrl.ResolveReference(&url.URL{Path: "/api/v2/ingest"})
 
 	var (

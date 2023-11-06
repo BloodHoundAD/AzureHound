@@ -39,7 +39,7 @@ func TestListKeyVaults(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockSubscriptionsChannel := make(chan interface{})
+	mockSubscriptionsChannel := make(chan any)
 	mockKeyVaultChannel := make(chan azure.KeyVaultResult)
 	mockKeyVaultChannel2 := make(chan azure.KeyVaultResult)
 

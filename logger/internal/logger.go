@@ -101,7 +101,7 @@ func (s logSink) Enabled(level int) bool {
 
 // Error logs an error, with the given message and key/value pairs as
 // context. See logr.Logger.Error for more details.
-func (s logSink) Error(err error, msg string, keysAndValues ...interface{}) {
+func (s logSink) Error(err error, msg string, keysAndValues ...any) {
 	logEvent := s.logger.Error().Err(err)
 	s.log(logEvent, msg, keysAndValues)
 }
@@ -110,7 +110,7 @@ func (s logSink) Error(err error, msg string, keysAndValues ...interface{}) {
 // The level argument is provided for optional logging.  This method will
 // only be called when Enabled(level) is true. See logr.Logger.Info for more
 // details.
-func (s logSink) Info(level int, msg string, keysAndValues ...interface{}) {
+func (s logSink) Info(level int, msg string, keysAndValues ...any) {
 	lvl := calcLevel(level)
 	logEvent := s.logger.WithLevel(lvl)
 	s.log(logEvent, msg, keysAndValues)
@@ -131,7 +131,7 @@ func (s logSink) WithName(name string) logr.LogSink {
 
 // WithValues returns a new logr.LogSink with additional key/value pairs. See
 // logr.Logger.WithValues for more details.
-func (s logSink) WithValues(keysAndValues ...interface{}) logr.LogSink {
+func (s logSink) WithValues(keysAndValues ...any) logr.LogSink {
 	logger := s.logger.With().Fields(keysAndValues).Logger()
 	s.logger = &logger
 	return &s
@@ -153,7 +153,7 @@ func (s logSink) WithCallDepth(depth int) logr.LogSink {
 	return &s
 }
 
-func (s logSink) log(e *zerolog.Event, msg string, keysAndValues []interface{}) {
+func (s logSink) log(e *zerolog.Event, msg string, keysAndValues []any) {
 	if e != nil {
 		if s.name != "" {
 			e.Str("name", s.name)

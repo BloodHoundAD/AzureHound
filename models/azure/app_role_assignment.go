@@ -22,7 +22,6 @@ import "github.com/gofrs/uuid"
 // Represents an application role that can be requested by (and granted to) a client application, or that can be used to
 // assign an application to users or groups in a specified role.
 //
-//
 // An app role assignment is a relationship between the assigned principal (a user, a group, or a service principal),
 // a resource application (the app's service principal) and an app role defined on the resource application.
 //

@@ -59,23 +59,23 @@ func listAzureADCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listAllAD(ctx context.Context, client client.AzureClient) <-chan any {
 	var (
-		devices  = make(chan interface{})
-		devices2 = make(chan interface{})
+		devices  = make(chan any)
+		devices2 = make(chan any)
 
-		groups  = make(chan interface{})
-		groups2 = make(chan interface{})
-		groups3 = make(chan interface{})
+		groups  = make(chan any)
+		groups2 = make(chan any)
+		groups3 = make(chan any)
 
-		roles  = make(chan interface{})
-		roles2 = make(chan interface{})
+		roles  = make(chan any)
+		roles2 = make(chan any)
 
-		servicePrincipals  = make(chan interface{})
-		servicePrincipals2 = make(chan interface{})
-		servicePrincipals3 = make(chan interface{})
+		servicePrincipals  = make(chan any)
+		servicePrincipals2 = make(chan any)
+		servicePrincipals3 = make(chan any)
 
-		tenants = make(chan interface{})
+		tenants = make(chan any)
 	)
 
 	// Enumerate Apps, AppOwners and AppMembers

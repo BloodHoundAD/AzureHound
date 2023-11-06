@@ -40,7 +40,7 @@ func TestListDeviceOwners(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockDevicesChannel := make(chan interface{})
+	mockDevicesChannel := make(chan any)
 	mockDeviceOwnerChannel := make(chan azure.DeviceRegisteredOwnerResult)
 	mockDeviceOwnerChannel2 := make(chan azure.DeviceRegisteredOwnerResult)
 

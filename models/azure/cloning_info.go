@@ -18,15 +18,15 @@
 package azure
 
 type CloningInfo struct {
-	AppSettingsOverrides      interface{} `json:"appSettingsOverrides,omitempty"`
-	CloneCustomHostNames      bool        `json:"cloneCustomHostNames,omitempty"`
-	CloneSourceControl        bool        `json:"cloneSourceControl,omitempty"`
-	ConfigureLoadBalancing    bool        `json:"configureLoadBalancing,omitempty"`
-	CorrelationId             string      `json:"correlationId,omitempty"`
-	HostingEnvironment        string      `json:"hostingEnvironment,omitempty"`
-	Overwrite                 bool        `json:"overwrite,omitempty"`
-	SourceWebAppId            string      `json:"sourceWebAppId,omitempty"`
-	SourceWebAppLocation      string      `json:"sourceWebAppLocation,omitempty"`
-	TrafficManagerProfileId   string      `json:"trafficManagerProfileId,omitempty"`
-	TrafficManagerProfileName string      `json:"trafficManagerProfileName,omitempty"`
+	AppSettingsOverrides      any    `json:"appSettingsOverrides,omitempty"`
+	CloneCustomHostNames      bool   `json:"cloneCustomHostNames,omitempty"`
+	CloneSourceControl        bool   `json:"cloneSourceControl,omitempty"`
+	ConfigureLoadBalancing    bool   `json:"configureLoadBalancing,omitempty"`
+	CorrelationId             string `json:"correlationId,omitempty"`
+	HostingEnvironment        string `json:"hostingEnvironment,omitempty"`
+	Overwrite                 bool   `json:"overwrite,omitempty"`
+	SourceWebAppId            string `json:"sourceWebAppId,omitempty"`
+	SourceWebAppLocation      string `json:"sourceWebAppLocation,omitempty"`
+	TrafficManagerProfileId   string `json:"trafficManagerProfileId,omitempty"`
+	TrafficManagerProfileName string `json:"trafficManagerProfileName,omitempty"`
 }

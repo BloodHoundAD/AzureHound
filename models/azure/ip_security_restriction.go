@@ -22,7 +22,7 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 type IpSecurityRestriction struct {
 	Action               string            `json:"action,omitempty"`
 	Description          string            `json:"description,omitempty"`
-	Headers              interface{}       `json:"headers,omitempty"`
+	Headers              any               `json:"headers,omitempty"`
 	IpAddress            string            `json:"ipAddress,omitempty"`
 	Name                 string            `json:"name,omitempty"`
 	Priority             int               `json:"priority,omitempty"`

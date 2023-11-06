@@ -21,7 +21,7 @@ type Definition struct {
 	Schema string `json:"$schema,omitempty"`
 	// Certain actions can be nested, have different elements based on the name(key) of given action - Condition is an example
 	// Actions        map[string]Action       `json:"actions,omitempty"`
-	Actions        map[string]interface{}  `json:"actions,omitempty"`
+	Actions        map[string]any          `json:"actions,omitempty"`
 	ContentVersion string                  `json:"contentVersion,omitempty"`
 	Outputs        map[string]Output       `json:"outputs,omitempty"`
 	Parameters     map[string]Parameter    `json:"parameters,omitempty"`
@@ -32,28 +32,28 @@ type Definition struct {
 type Action struct {
 	Type string `json:"type"`
 	// Kind is missing in the MSDN, but returned and present in examples and during testing
-	Kind                 string                 `json:"kind,omitempty"`
-	Inputs               map[string]interface{} `json:"inputs,omitempty"`
-	RunAfter             interface{}            `json:"runAfter,omitempty"`
-	RuntimeConfiguration interface{}            `json:"runtimeConfiguration,omitempty"`
-	OperationOptions     string                 `json:"operationOptions,omitempty"`
+	Kind                 string         `json:"kind,omitempty"`
+	Inputs               map[string]any `json:"inputs,omitempty"`
+	RunAfter             any            `json:"runAfter,omitempty"`
+	RuntimeConfiguration any            `json:"runtimeConfiguration,omitempty"`
+	OperationOptions     string         `json:"operationOptions,omitempty"`
 }
 
 type Output struct {
 	Type string `json:"type,omitempty"`
 	// Type of this is based on above Type
-	Value interface{} `json:"value,omitempty"`
+	Value any `json:"value,omitempty"`
 }
 
 type Parameter struct {
-	Type          string        `json:"type,omitempty"`
-	DefaultValue  interface{}   `json:"defaultValue,omitempty"`
-	AllowedValues []interface{} `json:"allowedValues,omitempty"`
-	Metadata      Metadata      `json:"metadata,omitempty"`
+	Type          string   `json:"type,omitempty"`
+	DefaultValue  any      `json:"defaultValue,omitempty"`
+	AllowedValues []any    `json:"allowedValues,omitempty"`
+	Metadata      Metadata `json:"metadata,omitempty"`
 }
 
 type Metadata struct {
-	Description interface{} `json:"description,omitempty"`
+	Description any `json:"description,omitempty"`
 }
 
 type StaticResult struct {
@@ -71,13 +71,13 @@ type Trigger struct {
 	// Kind is missing in the MSDN, but returned and present in examples and during testing
 	Kind string `json:"kind,omitempty"`
 	// Inputs is a custom element based on the type of trigger
-	Inputs     interface{} `json:"inputs,omitempty"`
+	Inputs     any         `json:"inputs,omitempty"`
 	Recurrence Recurrence  `json:"recurrence,omitempty"`
 	Conditions []Condition `json:"conditions,omitempty"`
 	// Runtime configuration is a custom element based on the type of trigger
-	RuntimeConfiguration interface{} `json:"runtimeConfiguration,omitempty"`
-	SplitOn              string      `json:"splitOn,omitempty"`
-	OperationOptions     string      `json:"operationOptions,omitempty"`
+	RuntimeConfiguration any    `json:"runtimeConfiguration,omitempty"`
+	SplitOn              string `json:"splitOn,omitempty"`
+	OperationOptions     string `json:"operationOptions,omitempty"`
 }
 
 type Recurrence struct {

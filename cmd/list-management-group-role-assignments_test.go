@@ -40,7 +40,7 @@ func TestListResourceGroupRoleAssignments(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockResourceGroupsChannel := make(chan interface{})
+	mockResourceGroupsChannel := make(chan any)
 	mockResourceGroupRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
 	mockResourceGroupRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
 

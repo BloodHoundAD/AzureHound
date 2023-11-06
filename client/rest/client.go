@@ -38,11 +38,11 @@ import (
 
 type RestClient interface {
 	Authenticate() error
-	Delete(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
+	Delete(ctx context.Context, path string, body any, params, headers map[string]string) (*http.Response, error)
 	Get(ctx context.Context, path string, params, headers map[string]string) (*http.Response, error)
-	Patch(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
-	Post(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
-	Put(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
+	Patch(ctx context.Context, path string, body any, params, headers map[string]string) (*http.Response, error)
+	Post(ctx context.Context, path string, body any, params, headers map[string]string) (*http.Response, error)
+	Put(ctx context.Context, path string, body any, params, headers map[string]string) (*http.Response, error)
 	Send(req *http.Request) (*http.Response, error)
 	CloseIdleConnections()
 }
@@ -155,7 +155,7 @@ func (s *restClient) Authenticate() error {
 	}
 }
 
-func (s *restClient) Delete(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Delete(ctx context.Context, path string, body any, params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
 	if req, err := NewRequest(ctx, http.MethodDelete, endpoint, body, params, headers); err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func (s *restClient) Get(ctx context.Context, path string, params, headers map[s
 	}
 }
 
-func (s *restClient) Patch(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Patch(ctx context.Context, path string, body any, params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
 	if req, err := NewRequest(ctx, http.MethodPatch, endpoint, body, params, headers); err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func (s *restClient) Patch(ctx context.Context, path string, body interface{}, p
 	}
 }
 
-func (s *restClient) Post(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Post(ctx context.Context, path string, body any, params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
 	if req, err := NewRequest(ctx, http.MethodPost, endpoint, body, params, headers); err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (s *restClient) Post(ctx context.Context, path string, body interface{}, pa
 	}
 }
 
-func (s *restClient) Put(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Put(ctx context.Context, path string, body any, params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
 	if req, err := NewRequest(ctx, http.MethodPost, endpoint, body, params, headers); err != nil {
 		return nil, err
@@ -275,7 +275,7 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 					continue
 				} else {
 					// Not a status code that warrants a retry
-					var errRes map[string]interface{}
+					var errRes map[string]any
 					if err := Decode(res.Body, &errRes); err != nil {
 						return nil, fmt.Errorf("malformed error response, status code: %d", res.StatusCode)
 					} else {

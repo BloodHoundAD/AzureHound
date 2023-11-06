@@ -71,7 +71,7 @@ func NewRequest(
 	ctx context.Context,
 	verb string,
 	endpoint *url.URL,
-	body interface{},
+	body any,
 	params map[string]string,
 	headers map[string]string,
 ) (*http.Request, error) {

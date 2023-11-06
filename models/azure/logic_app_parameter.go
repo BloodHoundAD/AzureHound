@@ -24,15 +24,15 @@ import (
 type LogicAppParameter struct {
 	Description string `json:"description,omitempty"`
 	//Metadata - marked as object in MSDN, however no other description available - in testing was not able to return a value here
-	Metadata interface{}         `json:"metadata,omitempty"`
+	Metadata any                 `json:"metadata,omitempty"`
 	Type     enums.ParameterType `json:"type,omitempty"`
-	Value    interface{}         `json:"value,omitempty"`
+	Value    any                 `json:"value,omitempty"`
 }
 
-func (s LogicAppParameter) GetValue() interface{} {
+func (s LogicAppParameter) GetValue() any {
 	switch s.Type {
 	case enums.ArrayType:
-		return s.Value.([]interface{})
+		return s.Value.([]any)
 	case enums.BoolType:
 		return s.Value.(bool)
 	case enums.FloatType:

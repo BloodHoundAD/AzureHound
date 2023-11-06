@@ -33,7 +33,7 @@ import (
 	"github.com/youmark/pkcs8"
 )
 
-func Decode(body io.ReadCloser, v interface{}) error {
+func Decode(body io.ReadCloser, v any) error {
 	defer body.Close()
 	defer io.ReadAll(body) // must read all; streaming to the json decoder does not read to EOF making the connection unavailable for reuse
 	return json.NewDecoder(body).Decode(v)
@@ -59,7 +59,7 @@ func NewClientAssertion(tokenUrl string, clientId string, clientCert string, sig
 			IssuedAt:  iat.Unix(),
 		})
 
-		token.Header = map[string]interface{}{
+		token.Header = map[string]any{
 			"alg": "RS256",
 			"typ": "JWT",
 			"x5t": thumbprint,
@@ -73,9 +73,9 @@ func NewClientAssertion(tokenUrl string, clientId string, clientCert string, sig
 	}
 }
 
-func ParseBody(accessToken string) (map[string]interface{}, error) {
+func ParseBody(accessToken string) (map[string]any, error) {
 	var (
-		body  = make(map[string]interface{})
+		body  = make(map[string]any)
 		parts = strings.Split(accessToken, ".")
 	)
 
@@ -100,7 +100,7 @@ func ParseAud(accessToken string) (string, error) {
 	}
 }
 
-func parseRSAPrivateKey(signingKey string, password string) (interface{}, error) {
+func parseRSAPrivateKey(signingKey string, password string) (any, error) {
 	if decodedBlock, _ := pem.Decode([]byte(signingKey)); decodedBlock == nil {
 		return nil, fmt.Errorf("Unable to decode private key")
 	} else if key, _, err := pkcs8.ParsePrivateKey(decodedBlock.Bytes, []byte(password)); err != nil {

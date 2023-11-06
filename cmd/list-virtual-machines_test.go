@@ -39,7 +39,7 @@ func TestListVirtualMachines(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockSubscriptionsChannel := make(chan interface{})
+	mockSubscriptionsChannel := make(chan any)
 	mockVirtualMachineChannel := make(chan azure.VirtualMachineResult)
 	mockVirtualMachineChannel2 := make(chan azure.VirtualMachineResult)
 

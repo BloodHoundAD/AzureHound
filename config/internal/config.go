@@ -35,10 +35,10 @@ type Config struct {
 	Usage      string
 	Required   bool
 	Persistent bool
-	Default    interface{}
+	Default    any
 }
 
-func (s Config) Value() interface{} {
+func (s Config) Value() any {
 	if reflect.ValueOf(s.Default).Kind() == reflect.Slice {
 		return viper.GetStringSlice(s.Name)
 	} else {
@@ -46,7 +46,7 @@ func (s Config) Value() interface{} {
 	}
 }
 
-func (s Config) Set(value interface{}) {
+func (s Config) Set(value any) {
 	viper.Set(s.Name, value)
 }
 
