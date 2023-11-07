@@ -57,9 +57,9 @@ func listStorageAccountsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listStorageAccounts(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
+func listStorageAccounts(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -101,7 +101,10 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, subscri
 						}
 						log.V(2).Info("found storage account", "storageAccount", storageAccount)
 						count++
-						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZStorageAccount, storageAccount)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+							Kind: enums.KindAZStorageAccount,
+							Data: storageAccount,
+						}); !ok {
 							return
 						}
 					}

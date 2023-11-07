@@ -55,8 +55,8 @@ func listRolesCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listRoles(ctx context.Context, client client.AzureClient) <-chan any {
-	out := make(chan any)
+func listRoles(ctx context.Context, client client.AzureClient) <-chan interface{} {
+	out := make(chan interface{})
 
 	go func() {
 		defer close(out)
@@ -68,13 +68,14 @@ func listRoles(ctx context.Context, client client.AzureClient) <-chan any {
 			} else {
 				log.V(2).Info("found role", "role", item)
 				count++
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(
-					enums.KindAZRole,
-					models.Role{
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZRole,
+					Data: models.Role{
 						Role:       item.Ok,
 						TenantId:   client.TenantInfo().TenantId,
 						TenantName: client.TenantInfo().DisplayName,
-					})); !ok {
+					},
+				}); !ok {
 					return
 				}
 			}

@@ -57,9 +57,9 @@ func listFunctionAppsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listFunctionApps(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
+func listFunctionApps(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -100,7 +100,10 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 						if functionApp.Kind == "functionapp" {
 							log.V(2).Info("found function app", "functionApp", functionApp)
 							count++
-							if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZFunctionApp, functionApp)); !ok {
+							if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+								Kind: enums.KindAZFunctionApp,
+								Data: functionApp,
+							}); !ok {
 								return
 							}
 						}

@@ -58,9 +58,9 @@ func listAppRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAppRoleAssignments(ctx context.Context, client client.AzureClient, servicePrincipals <-chan any) <-chan any {
+func listAppRoleAssignments(ctx context.Context, client client.AzureClient, servicePrincipals <-chan interface{}) <-chan interface{} {
 	var (
-		out         = make(chan any)
+		out         = make(chan interface{})
 		filteredSPs = make(chan models.ServicePrincipal)
 		streams     = pipeline.Demux(ctx.Done(), filteredSPs, 25)
 		wg          sync.WaitGroup
@@ -98,13 +98,14 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 					} else {
 						log.V(2).Info("found app role assignment", "roleAssignments", item)
 						count++
-						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(
-							enums.KindAZAppRoleAssignment,
-							models.AppRoleAssignment{
+						if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+							Kind: enums.KindAZAppRoleAssignment,
+							Data: models.AppRoleAssignment{
 								AppRoleAssignment: item.Ok,
 								AppId:             servicePrincipal.AppId,
 								TenantId:          client.TenantInfo().TenantId,
-							})); !ok {
+							},
+						}); !ok {
 							return
 						}
 					}

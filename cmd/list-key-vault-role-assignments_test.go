@@ -40,7 +40,7 @@ func TestListKeyVaultRoleAssignments(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockKeyVaultsChannel := make(chan any)
+	mockKeyVaultsChannel := make(chan interface{})
 	mockKeyVaultRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
 	mockKeyVaultRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
 

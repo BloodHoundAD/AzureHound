@@ -89,26 +89,26 @@ type SiteConfig struct {
 	XManagedServiceIdentityId              int                              `json:"xManagedServiceIdentityId,omitempty"`
 
 	//Following ones have been found in testing, but not present in the documentation
-	AntivirusScanEnabled                   bool `json:"antivirusScanEnabled,omitempty"`
-	AzureMonitorLogCategories              any  `json:"azureMonitorLogCategories,omitempty"`
-	CustomAppPoolIdentityAdminState        any  `json:"customAppPoolIdentityAdminState,omitempty"`
-	CustomAppPoolIdentityTenantState       any  `json:"customAppPoolIdentityTenantState,omitempty"`
-	ElasticWebAppScaleLimit                any  `json:"elasticWebAppScaleLimit,omitempty"`
-	FileChangeAuditEnabled                 bool `json:"fileChangeAuditEnabled,omitempty"`
-	Http20ProxyFlag                        any  `json:"http20ProxyFlag,omitempty"`
-	IpSecurityRestrictionsDefaultAction    any  `json:"ipSecurityRestrictionsDefaultAction,omitempty"`
-	Metadata                               any  `json:"metadata,omitempty"`
-	MinTlsCipherSuite                      any  `json:"minTlsCipherSuite,omitempty"`
-	PublishingPassword                     any  `json:"publishingPassword,omitempty"`
-	RoutingRules                           any  `json:"routingRules,omitempty"`
-	RuntimeADUser                          any  `json:"runtimeADUser,omitempty"`
-	RuntimeADUserPassword                  any  `json:"runtimeADUserPassword,omitempty"`
-	ScmIpSecurityRestrictionsDefaultAction any  `json:"scmIpSecurityRestrictionsDefaultAction,omitempty"`
-	SitePort                               any  `json:"sitePort,omitempty"`
-	StorageType                            any  `json:"storageType,omitempty"`
-	SupportedTlsCipherSuites               any  `json:"supportedTlsCipherSuites,omitempty"`
-	WinAuthAdminState                      any  `json:"winAuthAdminState,omitempty"`
-	WinAuthTenantState                     any  `json:"winAuthTenantState,omitempty"`
+	AntivirusScanEnabled                   bool        `json:"antivirusScanEnabled,omitempty"`
+	AzureMonitorLogCategories              interface{} `json:"azureMonitorLogCategories,omitempty"`
+	CustomAppPoolIdentityAdminState        interface{} `json:"customAppPoolIdentityAdminState,omitempty"`
+	CustomAppPoolIdentityTenantState       interface{} `json:"customAppPoolIdentityTenantState,omitempty"`
+	ElasticWebAppScaleLimit                interface{} `json:"elasticWebAppScaleLimit,omitempty"`
+	FileChangeAuditEnabled                 bool        `json:"fileChangeAuditEnabled,omitempty"`
+	Http20ProxyFlag                        interface{} `json:"http20ProxyFlag,omitempty"`
+	IpSecurityRestrictionsDefaultAction    interface{} `json:"ipSecurityRestrictionsDefaultAction,omitempty"`
+	Metadata                               interface{} `json:"metadata,omitempty"`
+	MinTlsCipherSuite                      interface{} `json:"minTlsCipherSuite,omitempty"`
+	PublishingPassword                     interface{} `json:"publishingPassword,omitempty"`
+	RoutingRules                           interface{} `json:"routingRules,omitempty"`
+	RuntimeADUser                          interface{} `json:"runtimeADUser,omitempty"`
+	RuntimeADUserPassword                  interface{} `json:"runtimeADUserPassword,omitempty"`
+	ScmIpSecurityRestrictionsDefaultAction interface{} `json:"scmIpSecurityRestrictionsDefaultAction,omitempty"`
+	SitePort                               interface{} `json:"sitePort,omitempty"`
+	StorageType                            interface{} `json:"storageType,omitempty"`
+	SupportedTlsCipherSuites               interface{} `json:"supportedTlsCipherSuites,omitempty"`
+	WinAuthAdminState                      interface{} `json:"winAuthAdminState,omitempty"`
+	WinAuthTenantState                     interface{} `json:"winAuthTenantState,omitempty"`
 }
 
 type ApiDefinitionInfo struct {

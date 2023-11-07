@@ -61,7 +61,7 @@ func listCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAll(ctx context.Context, client client.AzureClient) <-chan any {
+func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} {
 	var (
 		azureAD = listAllAD(ctx, client)
 		azureRM = listAllRM(ctx, client)

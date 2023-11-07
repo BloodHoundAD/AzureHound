@@ -58,7 +58,7 @@ func listKeyVaultRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, keyVaults <-chan any) <-chan azureWrapper[models.KeyVaultRoleAssignments] {
+func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan azureWrapper[models.KeyVaultRoleAssignments] {
 	var (
 		out     = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 		ids     = make(chan string)

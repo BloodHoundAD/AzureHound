@@ -60,8 +60,8 @@ func listSubscriptionOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listSubscriptionOwners(ctx context.Context, client client.AzureClient, roleAssignments <-chan any) <-chan any {
-	out := make(chan any)
+func listSubscriptionOwners(ctx context.Context, client client.AzureClient, roleAssignments <-chan interface{}) <-chan interface{} {
+	out := make(chan interface{})
 
 	go func() {
 		defer close(out)
@@ -90,7 +90,10 @@ func listSubscriptionOwners(ctx context.Context, client client.AzureClient, role
 						subscriptionOwners.Owners = append(subscriptionOwners.Owners, subscriptionOwner)
 					}
 				}
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZSubscriptionOwner, subscriptionOwners)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZSubscriptionOwner,
+					Data: subscriptionOwners,
+				}); !ok {
 					return
 				}
 				log.V(1).Info("finished listing subscription owners", "subscriptionId", roleAssignments.SubscriptionId, "count", count)

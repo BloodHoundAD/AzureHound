@@ -40,7 +40,7 @@ func TestListVirtualMachineRoleAssignments(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockVirtualMachinesChannel := make(chan any)
+	mockVirtualMachinesChannel := make(chan interface{})
 	mockVirtualMachineRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
 	mockVirtualMachineRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
 

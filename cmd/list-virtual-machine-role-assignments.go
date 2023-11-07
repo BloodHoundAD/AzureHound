@@ -58,7 +58,7 @@ func listVirtualMachineRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureClient, virtualMachines <-chan any) <-chan azureWrapper[models.VirtualMachineRoleAssignments] {
+func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureClient, virtualMachines <-chan interface{}) <-chan azureWrapper[models.VirtualMachineRoleAssignments] {
 	var (
 		out     = make(chan azureWrapper[models.VirtualMachineRoleAssignments])
 		ids     = make(chan string)

@@ -62,9 +62,9 @@ func listLogicAppsCmdImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
+func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -109,7 +109,10 @@ func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions
 						}
 						log.V(2).Info("found logicapp", "logicapp", logicapp)
 						count++
-						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZLogicApp, logicapp)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+							Kind: enums.KindAZLogicApp,
+							Data: logicapp,
+						}); !ok {
 							return
 						}
 					}

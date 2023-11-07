@@ -18,8 +18,8 @@
 package models
 
 type IngestRequest struct {
-	Meta Meta `json:"meta"`
-	Data any  `json:"data"`
+	Meta Meta        `json:"meta"`
+	Data interface{} `json:"data"`
 }
 
 type Meta struct {

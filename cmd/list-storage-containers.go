@@ -59,10 +59,10 @@ func listStorageContainersCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listStorageContainers(ctx context.Context, client client.AzureClient, storageAccounts <-chan any) <-chan any {
+func listStorageContainers(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
 	var (
-		out = make(chan any)
-		ids = make(chan any)
+		out = make(chan interface{})
+		ids = make(chan interface{})
 		// The original size of the demuxxer cascaded into error messages for a lot of collection steps.
 		// Decreasing the demuxxer size only here is sufficient to prevent the cascade
 		// The error message with higher values for size is
@@ -109,7 +109,10 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 						}
 						log.V(2).Info("found storage container", "storageContainer", storageContainer)
 						count++
-						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZStorageContainer, storageContainer)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+							Kind: enums.KindAZStorageContainer,
+							Data: storageContainer,
+						}); !ok {
 							return
 						}
 					}

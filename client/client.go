@@ -55,7 +55,7 @@ func NewClient(config config.Config) (AzureClient, error) {
 	}
 }
 
-func initClientViaRM(msgraph, resourceManager rest.RestClient, tid any) (AzureClient, error) {
+func initClientViaRM(msgraph, resourceManager rest.RestClient, tid interface{}) (AzureClient, error) {
 	client := &azureClient{
 		msgraph:         msgraph,
 		resourceManager: resourceManager,

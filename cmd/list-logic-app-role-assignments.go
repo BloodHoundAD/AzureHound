@@ -64,9 +64,9 @@ func listLogicAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient, logicapps <-chan any) <-chan any {
+func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient, logicapps <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -115,7 +115,10 @@ func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient,
 						logicappRoleAssignments.RoleAssignments = append(logicappRoleAssignments.RoleAssignments, logicappRoleAssignment)
 					}
 				}
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZLogicAppRoleAssignment, logicappRoleAssignments)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZLogicAppRoleAssignment,
+					Data: logicappRoleAssignments,
+				}); !ok {
 					return
 				}
 				log.V(1).Info("finished listing logic app role assignments", "logicappId", id, "count", count)

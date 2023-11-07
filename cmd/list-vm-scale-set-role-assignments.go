@@ -64,9 +64,9 @@ func listVMScaleSetRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClient, vmScaleSets <-chan any) <-chan any {
+func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClient, vmScaleSets <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -115,7 +115,10 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 						vmScaleSetRoleAssignments.RoleAssignments = append(vmScaleSetRoleAssignments.RoleAssignments, vmScaleSetRoleAssignment)
 					}
 				}
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZVMScaleSetRoleAssignment, vmScaleSetRoleAssignments)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZVMScaleSetRoleAssignment,
+					Data: vmScaleSetRoleAssignments,
+				}); !ok {
 					return
 				}
 				log.V(1).Info("finished listing vm scale set role assignments", "vmScaleSetId", id, "count", count)

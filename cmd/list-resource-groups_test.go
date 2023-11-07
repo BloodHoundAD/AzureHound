@@ -39,7 +39,7 @@ func TestListResourceGroups(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockSubscriptionsChannel := make(chan any)
+	mockSubscriptionsChannel := make(chan interface{})
 	mockResourceGroupChannel := make(chan azure.ResourceGroupResult)
 	mockResourceGroupChannel2 := make(chan azure.ResourceGroupResult)
 

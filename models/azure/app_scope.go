@@ -23,8 +23,8 @@ package azure
 //
 // This may be in both the following principal and scope scenarios:
 //
-//	A single principal and a single scope
-//	Multiple principals and multiple scopes.
+//    A single principal and a single scope
+//    Multiple principals and multiple scopes.
 type AppScope struct {
 	Entity
 

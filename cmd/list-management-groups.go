@@ -56,8 +56,8 @@ func listManagementGroupsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listManagementGroups(ctx context.Context, client client.AzureClient) <-chan any {
-	out := make(chan any)
+func listManagementGroups(ctx context.Context, client client.AzureClient) <-chan interface{} {
+	out := make(chan interface{})
 
 	go func() {
 		defer close(out)
@@ -75,7 +75,10 @@ func listManagementGroups(ctx context.Context, client client.AzureClient) <-chan
 					TenantName:      client.TenantInfo().DisplayName,
 				}
 
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZManagementGroup, mgmtGroup)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZManagementGroup,
+					Data: mgmtGroup,
+				}); !ok {
 					return
 				}
 			}

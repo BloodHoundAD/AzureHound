@@ -62,7 +62,7 @@ func (mr *MockRestClientMockRecorder) CloseIdleConnections() *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockRestClient) Delete(arg0 context.Context, arg1 string, arg2 any, arg3, arg4 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Delete(arg0 context.Context, arg1 string, arg2 interface{}, arg3, arg4 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*http.Response)
@@ -71,7 +71,7 @@ func (m *MockRestClient) Delete(arg0 context.Context, arg1 string, arg2 any, arg
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockRestClientMockRecorder) Delete(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockRestClientMockRecorder) Delete(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRestClient)(nil).Delete), arg0, arg1, arg2, arg3, arg4)
 }
@@ -86,13 +86,13 @@ func (m *MockRestClient) Get(arg0 context.Context, arg1 string, arg2, arg3 map[s
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockRestClientMockRecorder) Get(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockRestClientMockRecorder) Get(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRestClient)(nil).Get), arg0, arg1, arg2, arg3)
 }
 
 // Patch mocks base method.
-func (m *MockRestClient) Patch(arg0 context.Context, arg1 string, arg2 any, arg3, arg4 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Patch(arg0 context.Context, arg1 string, arg2 interface{}, arg3, arg4 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Patch", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*http.Response)
@@ -101,13 +101,13 @@ func (m *MockRestClient) Patch(arg0 context.Context, arg1 string, arg2 any, arg3
 }
 
 // Patch indicates an expected call of Patch.
-func (mr *MockRestClientMockRecorder) Patch(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockRestClientMockRecorder) Patch(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Patch", reflect.TypeOf((*MockRestClient)(nil).Patch), arg0, arg1, arg2, arg3, arg4)
 }
 
 // Post mocks base method.
-func (m *MockRestClient) Post(arg0 context.Context, arg1 string, arg2 any, arg3, arg4 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Post(arg0 context.Context, arg1 string, arg2 interface{}, arg3, arg4 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Post", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*http.Response)
@@ -116,13 +116,13 @@ func (m *MockRestClient) Post(arg0 context.Context, arg1 string, arg2 any, arg3,
 }
 
 // Post indicates an expected call of Post.
-func (mr *MockRestClientMockRecorder) Post(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockRestClientMockRecorder) Post(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Post", reflect.TypeOf((*MockRestClient)(nil).Post), arg0, arg1, arg2, arg3, arg4)
 }
 
 // Put mocks base method.
-func (m *MockRestClient) Put(arg0 context.Context, arg1 string, arg2 any, arg3, arg4 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Put(arg0 context.Context, arg1 string, arg2 interface{}, arg3, arg4 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Put", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*http.Response)
@@ -131,7 +131,7 @@ func (m *MockRestClient) Put(arg0 context.Context, arg1 string, arg2 any, arg3, 
 }
 
 // Put indicates an expected call of Put.
-func (mr *MockRestClientMockRecorder) Put(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockRestClientMockRecorder) Put(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockRestClient)(nil).Put), arg0, arg1, arg2, arg3, arg4)
 }
@@ -146,7 +146,7 @@ func (m *MockRestClient) Send(arg0 *http.Request) (*http.Response, error) {
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockRestClientMockRecorder) Send(arg0 any) *gomock.Call {
+func (mr *MockRestClientMockRecorder) Send(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockRestClient)(nil).Send), arg0)
 }

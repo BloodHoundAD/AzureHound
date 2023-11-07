@@ -57,9 +57,9 @@ func listServicePrincipalOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, servicePrincipals <-chan any) <-chan any {
+func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, servicePrincipals <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -105,7 +105,10 @@ func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, 
 						servicePrincipalOwners.Owners = append(servicePrincipalOwners.Owners, servicePrincipalOwner)
 					}
 				}
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZServicePrincipalOwner, servicePrincipalOwners)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZServicePrincipalOwner,
+					Data: servicePrincipalOwners,
+				}); !ok {
 					return
 				}
 				log.V(1).Info("finished listing service principal owners", "servicePrincipalId", id, "count", count)

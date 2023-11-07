@@ -62,9 +62,9 @@ func listManagedClustersCmdImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listManagedClusters(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
+func listManagedClusters(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -104,7 +104,10 @@ func listManagedClusters(ctx context.Context, client client.AzureClient, subscri
 						}
 						log.V(2).Info("found managed cluster", "managedCluster", managedCluster)
 						count++
-						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZManagedCluster, managedCluster)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+							Kind: enums.KindAZManagedCluster,
+							Data: managedCluster,
+						}); !ok {
 							return
 						}
 					}

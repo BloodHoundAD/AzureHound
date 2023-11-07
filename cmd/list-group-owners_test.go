@@ -40,7 +40,7 @@ func TestListGroupOwners(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockGroupsChannel := make(chan any)
+	mockGroupsChannel := make(chan interface{})
 	mockGroupOwnerChannel := make(chan azure.GroupOwnerResult)
 	mockGroupOwnerChannel2 := make(chan azure.GroupOwnerResult)
 

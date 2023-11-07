@@ -423,8 +423,8 @@ func setupLogger() {
 
 // deprecated: use azureWrapper instead
 type AzureWrapper struct {
-	Kind enums.Kind `json:"kind"`
-	Data any        `json:"data"`
+	Kind enums.Kind  `json:"kind"`
+	Data interface{} `json:"data"`
 }
 
 type azureWrapper[T any] struct {

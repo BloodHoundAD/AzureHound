@@ -81,7 +81,7 @@ func OrDone[D, T any](done <-chan D, in <-chan T) <-chan T {
 // Mux joins multiple channels and returns a channel as single stream of data.
 func Mux[D any](done <-chan D, channels ...<-chan any) <-chan any {
 	var wg sync.WaitGroup
-	out := make(chan any)
+	out := make(chan interface{})
 
 	muxer := func(channel <-chan any) {
 		defer wg.Done()

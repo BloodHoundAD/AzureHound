@@ -60,8 +60,8 @@ func listSubscriptionUserAccessAdminsCmdImpl(cmd *cobra.Command, args []string) 
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan any) <-chan any {
-	out := make(chan any)
+func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
+	out := make(chan interface{})
 
 	go func() {
 		defer close(out)
@@ -90,7 +90,10 @@ func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureCl
 						subscriptionUserAccessAdmins.UserAccessAdmins = append(subscriptionUserAccessAdmins.UserAccessAdmins, subscriptionUserAccessAdmin)
 					}
 				}
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZSubscriptionUserAccessAdmin, subscriptionUserAccessAdmins)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZSubscriptionUserAccessAdmin,
+					Data: subscriptionUserAccessAdmins,
+				}); !ok {
 					return
 				}
 				log.V(1).Info("finished listing subscription user access admins", "subscriptionId", roleAssignments.SubscriptionId, "count", count)

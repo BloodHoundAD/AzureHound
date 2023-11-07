@@ -59,7 +59,7 @@ func listResourceGroupRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) 
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listResourceGroupRoleAssignments(ctx context.Context, client client.AzureClient, resourceGroups <-chan any) <-chan azureWrapper[models.ResourceGroupRoleAssignments] {
+func listResourceGroupRoleAssignments(ctx context.Context, client client.AzureClient, resourceGroups <-chan interface{}) <-chan azureWrapper[models.ResourceGroupRoleAssignments] {
 	var (
 		out     = make(chan azureWrapper[models.ResourceGroupRoleAssignments])
 		ids     = make(chan string)

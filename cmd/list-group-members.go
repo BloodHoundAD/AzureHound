@@ -57,9 +57,9 @@ func listGroupMembersCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-chan any) <-chan any {
+func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -105,7 +105,10 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 						data.Members = append(data.Members, groupMember)
 					}
 				}
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZGroupMember, data)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZGroupMember,
+					Data: data,
+				}); !ok {
 					return
 				}
 				log.V(1).Info("finished listing group memberships", "groupId", id, "count", count)

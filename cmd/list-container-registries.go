@@ -62,9 +62,9 @@ func listContainerRegistriesCmdImpl(cmd *cobra.Command, args []string) {
 	}
 }
 
-func listContainerRegistries(ctx context.Context, client client.AzureClient, subscriptions <-chan any) <-chan any {
+func listContainerRegistries(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -104,7 +104,10 @@ func listContainerRegistries(ctx context.Context, client client.AzureClient, sub
 						}
 						log.V(2).Info("found container registry", "containerRegistry", containerRegistry)
 						count++
-						if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZContainerRegistry, containerRegistry)); !ok {
+						if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+							Kind: enums.KindAZContainerRegistry,
+							Data: containerRegistry,
+						}); !ok {
 							return
 						}
 					}

@@ -40,7 +40,7 @@ func TestListServicePrincipalOwners(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockServicePrincipalsChannel := make(chan any)
+	mockServicePrincipalsChannel := make(chan interface{})
 	mockServicePrincipalOwnerChannel := make(chan azure.ServicePrincipalOwnerResult)
 	mockServicePrincipalOwnerChannel2 := make(chan azure.ServicePrincipalOwnerResult)
 

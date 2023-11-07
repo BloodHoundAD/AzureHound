@@ -28,7 +28,7 @@ import (
 
 func TestBatch(t *testing.T) {
 
-	done := make(chan any)
+	done := make(chan interface{})
 	in := make(chan string)
 
 	go func() {
@@ -71,7 +71,7 @@ func TestBatch(t *testing.T) {
 func TestDemux(t *testing.T) {
 
 	var (
-		done  = make(chan any)
+		done  = make(chan interface{})
 		in    = make(chan string)
 		wg    sync.WaitGroup
 		count int

@@ -59,9 +59,9 @@ func listStorageAccountRoleAssignmentsImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureClient, storageAccounts <-chan any) <-chan any {
+func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
 	var (
-		out     = make(chan any)
+		out     = make(chan interface{})
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
@@ -110,7 +110,10 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 						storageAccountRoleAssignments.RoleAssignments = append(storageAccountRoleAssignments.RoleAssignments, storageAccountRoleAssignment)
 					}
 				}
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(enums.KindAZStorageAccountRoleAssignment, storageAccountRoleAssignments)); !ok {
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZStorageAccountRoleAssignment,
+					Data: storageAccountRoleAssignments,
+				}); !ok {
 					return
 				}
 				log.V(1).Info("finished listing storage account role assignments", "storageAccountId", id, "count", count)

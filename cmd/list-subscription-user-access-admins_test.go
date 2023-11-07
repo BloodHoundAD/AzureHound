@@ -39,7 +39,7 @@ func TestListSubscriptionUserAccessAdmins(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockRoleAssignmentsChannel := make(chan any)
+	mockRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	channel := listSubscriptionUserAccessAdmins(ctx, mockClient, mockRoleAssignmentsChannel)

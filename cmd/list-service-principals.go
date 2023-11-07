@@ -55,8 +55,8 @@ func listServicePrincipalsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listServicePrincipals(ctx context.Context, client client.AzureClient) <-chan any {
-	out := make(chan any)
+func listServicePrincipals(ctx context.Context, client client.AzureClient) <-chan interface{} {
+	out := make(chan interface{})
 
 	go func() {
 		defer close(out)
@@ -68,13 +68,14 @@ func listServicePrincipals(ctx context.Context, client client.AzureClient) <-cha
 			} else {
 				log.V(2).Info("found service principal", "servicePrincipal", item)
 				count++
-				if ok := pipeline.SendAny(ctx.Done(), out, NewAzureWrapper(
-					enums.KindAZServicePrincipal,
-					models.ServicePrincipal{
+				if ok := pipeline.SendAny(ctx.Done(), out, AzureWrapper{
+					Kind: enums.KindAZServicePrincipal,
+					Data: models.ServicePrincipal{
 						ServicePrincipal: item.Ok,
 						TenantId:         client.TenantInfo().TenantId,
 						TenantName:       client.TenantInfo().DisplayName,
-					})); !ok {
+					},
+				}); !ok {
 					return
 				}
 			}

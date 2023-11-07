@@ -40,7 +40,7 @@ func TestListSubscriptionRoleAssignments(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockSubscriptionsChannel := make(chan any)
+	mockSubscriptionsChannel := make(chan interface{})
 	mockSubscriptionRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
 	mockSubscriptionRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
 

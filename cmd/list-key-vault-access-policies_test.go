@@ -38,7 +38,7 @@ func TestListKeyVaultAccessPolicies(t *testing.T) {
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
-	mockKeyVaultsChannel := make(chan any)
+	mockKeyVaultsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	channel := listKeyVaultAccessPolicies(ctx, mockClient, mockKeyVaultsChannel, nil)

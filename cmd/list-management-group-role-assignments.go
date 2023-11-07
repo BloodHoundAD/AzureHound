@@ -58,7 +58,7 @@ func listManagementGroupRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listManagementGroupRoleAssignments(ctx context.Context, client client.AzureClient, managementGroups <-chan any) <-chan azureWrapper[models.ManagementGroupRoleAssignments] {
+func listManagementGroupRoleAssignments(ctx context.Context, client client.AzureClient, managementGroups <-chan interface{}) <-chan azureWrapper[models.ManagementGroupRoleAssignments] {
 	var (
 		out     = make(chan azureWrapper[models.ManagementGroupRoleAssignments])
 		ids     = make(chan string)
