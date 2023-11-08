@@ -75,7 +75,9 @@ func listResourceGroupRoleAssignments(ctx context.Context, client client.AzureCl
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating resource group role assignments", "result", result)
 				return
 			} else {
-				ids <- resourceGroup.Id
+				if ok := pipeline.Send(ctx.Done(), ids, resourceGroup.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -105,7 +107,9 @@ func listResourceGroupRoleAssignments(ctx context.Context, client client.AzureCl
 						resourceGroupRoleAssignments.RoleAssignments = append(resourceGroupRoleAssignments.RoleAssignments, resourceGroupRoleAssignment)
 					}
 				}
-				out <- NewAzureWrapper(enums.KindAZResourceGroupRoleAssignment, resourceGroupRoleAssignments)
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZResourceGroupRoleAssignment, resourceGroupRoleAssignments)); !ok {
+					return
+				}
 				log.V(1).Info("finished listing resourceGroup role assignments", "resourceGroupId", id, "count", count)
 			}
 		}()

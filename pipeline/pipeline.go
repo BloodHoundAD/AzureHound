@@ -31,6 +31,26 @@ type Result[T any] struct {
 	Ok    T
 }
 
+// Send sends a value to a channel while monitoring the done channel for cancellation
+func Send[D, T any](done <-chan D, tgt chan<- T, val T) bool {
+	select {
+	case tgt <- val:
+		return true
+	case <-done:
+		return false
+	}
+}
+
+// SendAny sends a value to an any channel while monitoring the done channel for cancellation
+func SendAny[T any](done <-chan T, tgt chan<- any, val any) bool {
+	select {
+	case tgt <- val:
+		return true
+	case <-done:
+		return false
+	}
+}
+
 // OrDone provides an explicit cancellation mechanism to ensure the encapsulated and downstream goroutines are cleaned
 // up. This frees the caller from depending on the input channel to close in order to free the goroutine, thus
 // preventing possible leaks.
@@ -66,7 +86,9 @@ func Mux[D any](done <-chan D, channels ...<-chan any) <-chan any {
 	muxer := func(channel <-chan any) {
 		defer wg.Done()
 		for item := range OrDone(done, channel) {
-			out <- item
+			if ok := Send(done, out, item); !ok {
+				return
+			}
 		}
 	}
 
@@ -129,7 +151,9 @@ func Map[D, T, U any](done <-chan D, in <-chan T, fn func(T) U) <-chan U {
 	go func() {
 		defer close(out)
 		for item := range OrDone(done, in) {
-			out <- fn(item)
+			if ok := Send(done, out, fn(item)); !ok {
+				return
+			}
 		}
 	}()
 	return out
@@ -141,7 +165,9 @@ func Filter[D, T any](done <-chan D, in <-chan T, fn func(T) bool) <-chan T {
 		defer close(out)
 		for item := range OrDone(done, in) {
 			if fn(item) {
-				out <- item
+				if ok := Send(done, out, item); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -161,8 +187,9 @@ func Tee[D, T any](done <-chan D, in <-chan T, outputs ...chan T) {
 		for item := range OrDone(done, in) {
 			for _, out := range outputs {
 				select {
-				case <-done:
 				case out <- item:
+				case <-done:
+					return
 				}
 			}
 		}
@@ -190,15 +217,13 @@ func Batch[D, T any](done <-chan D, in <-chan T, maxItems int, maxTimeout time.D
 		for {
 			select {
 			case <-done:
-				if len(batch) > 0 {
-					out <- batch
-					batch = nil
-				}
 				return
 			case item, ok := <-in:
 				if !ok {
 					if len(batch) > 0 {
-						out <- batch
+						if ok = Send(done, out, batch); !ok {
+							return
+						}
 						batch = nil
 					}
 					return
@@ -208,14 +233,18 @@ func Batch[D, T any](done <-chan D, in <-chan T, maxItems int, maxTimeout time.D
 
 					// Flush if limit is reached
 					if len(batch) >= maxItems {
-						out <- batch
+						if ok = Send(done, out, batch); !ok {
+							return
+						}
 						batch = nil
 						timeout = time.After(maxTimeout)
 					}
 				}
 			case <-timeout:
 				if len(batch) > 0 {
-					out <- batch
+					if ok := Send(done, out, batch); !ok {
+						return
+					}
 					batch = nil
 				}
 				timeout = time.After(maxTimeout)
@@ -236,7 +265,9 @@ func FormatJson[D, T any](done <-chan D, in <-chan T) <-chan string {
 			if bytes, err := json.Marshal(item); err != nil {
 				panic(err)
 			} else {
-				out <- string(bytes)
+				if ok := Send(done, out, string(bytes)); !ok {
+					return
+				}
 			}
 		}
 	}()

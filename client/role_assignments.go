@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureADRoleAssignment(ctx context.Context, objectId string, selectCols []string) (*azure.UnifiedRoleAssignment, error) {
@@ -79,10 +80,14 @@ func (s *azureClient) ListAzureADRoleAssignments(ctx context.Context, filter, se
 
 		if list, err := s.GetAzureADRoleAssignments(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.UnifiedRoleAssignmentResult{Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.UnifiedRoleAssignmentResult{Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = list.NextLink
@@ -90,23 +95,33 @@ func (s *azureClient) ListAzureADRoleAssignments(ctx context.Context, filter, se
 				var list azure.UnifiedRoleAssignmentList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.UnifiedRoleAssignmentResult{Ok: u}
+						if ok := pipeline.Send(ctx.Done(), out, azure.UnifiedRoleAssignmentResult{Ok: u}); !ok {
+							return
+						}
 					}
 					nextLink = list.NextLink
 				}
@@ -147,12 +162,16 @@ func (s *azureClient) ListRoleAssignmentsForResource(ctx context.Context, resour
 
 		if result, err := s.GetRoleAssignmentsForResource(ctx, resourceId, filter); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range result.Value {
-				out <- azure.RoleAssignmentResult{
+				if ok := pipeline.Send(ctx.Done(), out, azure.RoleAssignmentResult{
 					ParentId: resourceId,
 					Ok:       u,
+				}); !ok {
+					return
 				}
 			}
 
@@ -161,25 +180,35 @@ func (s *azureClient) ListRoleAssignmentsForResource(ctx context.Context, resour
 				var list azure.RoleAssignmentList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.resourceManager.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.RoleAssignmentResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.RoleAssignmentResult{
 							ParentId: resourceId,
 							Ok:       u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink
@@ -220,12 +249,16 @@ func (s *azureClient) ListResourceRoleAssignments(ctx context.Context, subscript
 
 		if result, err := s.GetResourceRoleAssignments(ctx, subscriptionId, filter, expand); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range result.Value {
-				out <- azure.RoleAssignmentResult{
+				if ok := pipeline.Send(ctx.Done(), out, azure.RoleAssignmentResult{
 					ParentId: subscriptionId,
 					Ok:       u,
+				}); !ok {
+					return
 				}
 			}
 
@@ -234,25 +267,35 @@ func (s *azureClient) ListResourceRoleAssignments(ctx context.Context, subscript
 				var list azure.RoleAssignmentList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.resourceManager.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.RoleAssignmentResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.RoleAssignmentResult{
 							ParentId: subscriptionId,
 							Ok:       u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink

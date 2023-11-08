@@ -74,7 +74,9 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 				log.Error(fmt.Errorf("failed type assertion"), "unable to continue enumerating virtual machine role assignments", "result", result)
 				return
 			} else {
-				ids <- virtualMachine.Id
+				if ok := pipeline.Send(ctx.Done(), ids, virtualMachine.Id); !ok {
+					return
+				}
 			}
 		}
 	}()
@@ -104,7 +106,9 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 						virtualMachineRoleAssignments.RoleAssignments = append(virtualMachineRoleAssignments.RoleAssignments, virtualMachineRoleAssignment)
 					}
 				}
-				out <- NewAzureWrapper(enums.KindAZVMRoleAssignment, virtualMachineRoleAssignments)
+				if ok := pipeline.Send(ctx.Done(), out, NewAzureWrapper(enums.KindAZVMRoleAssignment, virtualMachineRoleAssignments)); !ok {
+					return
+				}
 				log.V(1).Info("finished listing virtual machine role assignments", "virtualMachineId", id, "count", count)
 			}
 		}()

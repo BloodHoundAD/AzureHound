@@ -26,6 +26,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureADOrganization(ctx context.Context, selectCols []string) (*azure.Organization, error) {
@@ -73,10 +74,14 @@ func (s *azureClient) ListAzureADTenants(ctx context.Context, includeAllTenantCa
 
 		if result, err := s.GetAzureADTenants(ctx, includeAllTenantCategories); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range result.Value {
-				out <- azure.TenantResult{Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.TenantResult{Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = result.NextLink
@@ -84,23 +89,33 @@ func (s *azureClient) ListAzureADTenants(ctx context.Context, includeAllTenantCa
 				var list azure.TenantList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.resourceManager.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.TenantResult{Ok: u}
+						if ok := pipeline.Send(ctx.Done(), out, azure.TenantResult{Ok: u}); !ok {
+							return
+						}
 					}
 					nextLink = list.NextLink
 				}

@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
 func (s *azureClient) GetAzureDevice(ctx context.Context, objectId string, selectCols []string) (*azure.Device, error) {
@@ -94,10 +95,14 @@ func (s *azureClient) ListAzureDevices(ctx context.Context, filter, search, orde
 
 		if list, err := s.GetAzureDevices(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.DeviceResult{Ok: u}
+				if ok := pipeline.Send(ctx.Done(), out, azure.DeviceResult{Ok: u}); !ok {
+					return
+				}
 			}
 
 			nextLink = list.NextLink
@@ -105,23 +110,33 @@ func (s *azureClient) ListAzureDevices(ctx context.Context, filter, search, orde
 				var list azure.DeviceList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.DeviceResult{Ok: u}
+						if ok := pipeline.Send(ctx.Done(), out, azure.DeviceResult{Ok: u}); !ok {
+							return
+						}
 					}
 					nextLink = list.NextLink
 				}
@@ -146,12 +161,16 @@ func (s *azureClient) ListAzureDeviceRegisteredOwners(ctx context.Context, objec
 
 		if list, err := s.GetAzureDeviceRegisteredOwners(ctx, objectId, "", "", false); err != nil {
 			errResult.Error = err
-			out <- errResult
+			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+				return
+			}
 		} else {
 			for _, u := range list.Value {
-				out <- azure.DeviceRegisteredOwnerResult{
+				if ok := pipeline.Send(ctx.Done(), out, azure.DeviceRegisteredOwnerResult{
 					DeviceId: objectId,
 					Ok:       u,
+				}); !ok {
+					return
 				}
 			}
 
@@ -160,25 +179,35 @@ func (s *azureClient) ListAzureDeviceRegisteredOwners(ctx context.Context, objec
 				var list azure.DirectoryObjectList
 				if url, err := url.Parse(nextLink); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if res, err := s.msgraph.Send(req); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else if err := rest.Decode(res.Body, &list); err != nil {
 					errResult.Error = err
-					out <- errResult
+					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
+						return
+					}
 					nextLink = ""
 				} else {
 					for _, u := range list.Value {
-						out <- azure.DeviceRegisteredOwnerResult{
+						if ok := pipeline.Send(ctx.Done(), out, azure.DeviceRegisteredOwnerResult{
 							DeviceId: objectId,
 							Ok:       u,
+						}); !ok {
+							return
 						}
 					}
 					nextLink = list.NextLink
