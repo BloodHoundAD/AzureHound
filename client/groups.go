@@ -61,10 +61,10 @@ func (s *azureClient) GetAzureADGroupOwners(ctx context.Context, objectId string
 	}
 }
 
-func (s *azureClient) GetAzureADGroupMembers(ctx context.Context, objectId string, filter string, search string, count bool) (azure.MemberObjectList, error) {
+func (s *azureClient) GetAzureADGroupMembers(ctx context.Context, objectId string, filter string, search string, count bool, selectCols []string) (azure.MemberObjectList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/groups/%s/members", constants.GraphApiBetaVersion, objectId)
-		params   = query.Params{Filter: filter, Search: search, Count: count}.AsMap()
+        params   = query.Params{Filter: filter, Search: search, Count: count, Select: selectCols}.AsMap()
 		response azure.MemberObjectList
 	)
 	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
@@ -246,7 +246,7 @@ func (s *azureClient) ListAzureADGroupMembers(ctx context.Context, objectId stri
 			nextLink string
 		)
 
-		if list, err := s.GetAzureADGroupMembers(ctx, objectId, filter, search, false); err != nil {
+		if list, err := s.GetAzureADGroupMembers(ctx, objectId, filter, search, false, selectCols); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return
