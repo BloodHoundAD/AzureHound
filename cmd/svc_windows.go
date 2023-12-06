@@ -39,13 +39,13 @@ type azurehoundSvc struct {
 }
 
 func (s *azurehoundSvc) Init(env svc.Environment) error {
+	config.LoadValues(nil, config.Options())
+	config.SetAzureDefaults()
+
 	if logr, err := logger.GetLogger(); err != nil {
 		return err
 	} else {
 		log = *logr
-
-		config.LoadValues(nil, config.Options())
-		config.SetAzureDefaults()
 
 		if config.ConfigFileUsed() != "" {
 			log.V(1).Info(fmt.Sprintf("Config File: %v", config.ConfigFileUsed()))
