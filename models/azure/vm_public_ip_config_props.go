@@ -23,21 +23,21 @@ import (
 
 type VMPublicIPConfigProperties struct {
 	// Specify what happens to the public IP address when the VM is deleted.
-	DeleteOption enums.VMDeleteOption `json:"deleteOption"`
+	DeleteOption enums.VMDeleteOption `json:"deleteOption,omitempty"`
 
 	// The dns settings to be applied on the publicIP addresses.
-	DNSSettings VMPublicIPDNSSettings `json:"dnsSettings"`
+	DNSSettings VMPublicIPDNSSettings `json:"dnsSettings,omitempty"`
 
 	// The idle timeout of the public IP address.
-	IdleTimeoutInMinutes int `json:"idleTimeoutInMinutes"`
+	IdleTimeoutInMinutes int `json:"idleTimeoutInMinutes,omitempty"`
 
 	// The list of IP tags associated with the public IP address.
-	IPTags []VMIPTag `json:"ipTags"`
+	IPTags []VMIPTag `json:"ipTags,omitempty"`
 
 	// Available from Api-Version 2019-07-01 onwards, it represents whether the specific ipconfiguration is IPv4 or IPv6.
 	// Default is taken as IPv4. Possible values are: 'IPv4' and 'IPv6'.
-	PublicIPAddressVersion string `json:"publicIpAddressVersion"`
+	PublicIPAddressVersion string `json:"publicIpAddressVersion,omitempty"`
 
 	// Specify the public IP allocation type.
-	PublicIPAllocationMethod enums.IPAllocationMethod `json:"publicIpAllocationMethod"`
+	PublicIPAllocationMethod enums.IPAllocationMethod `json:"publicIpAllocationMethod,omitempty"`
 }

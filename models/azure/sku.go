@@ -22,8 +22,8 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 // SKU details
 type Sku struct {
 	// The SKU family name. Only available option is "A"
-	Family string `json:"family"`
+	Family string `json:"family,omitempty"`
 
 	// SKU name to specify whether the key vault is a standard vault or a premium vault.
-	Name enums.VaultSku `json:"name"`
+	Name enums.VaultSku `json:"name,omitempty"`
 }

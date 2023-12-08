@@ -19,5 +19,5 @@ package azure
 
 type TimeZoneBase struct {
 	// The name of the time zone.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 }

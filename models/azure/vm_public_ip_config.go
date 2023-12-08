@@ -20,10 +20,10 @@ package azure
 // Describes a virtual machines IP Configuration's PublicIPAddress configuration.
 type VMPublicIPConfig struct {
 	// The public IP address configuration name.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
-	Properties VMPublicIPConfigProperties `json:"properties"`
+	Properties VMPublicIPConfigProperties `json:"properties,omitempty"`
 
 	// Describes the public IP Sku
-	Sku VMPublicIPSku `json:"sku"`
+	Sku VMPublicIPSku `json:"sku,omitempty"`
 }

@@ -21,15 +21,15 @@ package azure
 // vault's tenant ID.
 type AccessPolicyEntry struct {
 	// Application ID of the client making request on behalf of a principal
-	ApplicationId string `json:"applicationId"`
+	ApplicationId string `json:"applicationId,omitempty"`
 
 	// The object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault.
 	// The object ID must be unique for the list of access policies.
-	ObjectId string `json:"objectId"`
+	ObjectId string `json:"objectId,omitempty"`
 
 	// Permissions the identity has for keys, secrets and certificates.
-	Permissions KeyVaultPermissions `json:"permissions"`
+	Permissions KeyVaultPermissions `json:"permissions,omitempty"`
 
 	// The Azure Active Directory tenant ID that should be used for authenticating requests to the key vault.
-	TenantId string `json:"tenantId"`
+	TenantId string `json:"tenantId,omitempty"`
 }

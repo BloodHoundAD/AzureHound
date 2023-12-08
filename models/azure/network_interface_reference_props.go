@@ -21,8 +21,8 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 
 type NetworkInterfaceReferenceProperties struct {
 	// Specify what happens to the network interface when the VM is deleted.
-	DeleteOption enums.VMDeleteOption `json:"deleteOption"`
+	DeleteOption enums.VMDeleteOption `json:"deleteOption,omitempty"`
 
 	// Specifies the primary network interface in case the virtual machine has more than 1 network interface.
-	Primary bool `json:"primary"`
+	Primary bool `json:"primary,omitempty"`
 }

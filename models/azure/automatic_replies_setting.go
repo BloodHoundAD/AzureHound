@@ -26,20 +26,20 @@ import (
 type AutomaticRepliesSetting struct {
 	// The set of audience external to the signed-in user's organization who will receive the {@link
 	// ExternalReplyMessage}.
-	ExternalAudience enums.ExternalAudienceScope `json:"externalAudience"`
+	ExternalAudience enums.ExternalAudienceScope `json:"externalAudience,omitempty"`
 
 	// The automatic reply to send to the specified eternal audience.
-	ExternalReplyMessage string `json:"externalReplyMessage"`
+	ExternalReplyMessage string `json:"externalReplyMessage,omitempty"`
 
 	// The automatic reply to send to the audience internal to the signed-in user's organization.
-	InternalReplyMessage string `json:"internalReplyMessage"`
+	InternalReplyMessage string `json:"internalReplyMessage,omitempty"`
 
 	// The date and time that automatic replies are set to end.
-	ScheduledEndDateTime DateTimeTimeZone `json:"scheduledEndDateTime"`
+	ScheduledEndDateTime DateTimeTimeZone `json:"scheduledEndDateTime,omitempty"`
 
 	// The date and time that automatic replies are set to begin.
-	ScheduledStartDateTime DateTimeTimeZone `json:"scheduledStartDateTime"`
+	ScheduledStartDateTime DateTimeTimeZone `json:"scheduledStartDateTime,omitempty"`
 
 	// Configuration status for automatic replies.
-	Status enums.AutoReplyStatus `json:"status"`
+	Status enums.AutoReplyStatus `json:"status,omitempty"`
 }

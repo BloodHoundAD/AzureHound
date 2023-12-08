@@ -23,11 +23,11 @@ type WindowsPatchSettings struct {
 	// Possible values are:
 	// ImageDefault - You control the timing of patch assessments on a virtual machine.
 	// AutomaticByPlatform - The platform will trigger periodic patch assessments. The property provisionVMAgent must be true.
-	AssessmentMode string `json:"assessmentMode"`
+	AssessmentMode string `json:"assessmentMode,omitempty"`
 
 	// Enables customers to patch their Azure VMs without requiring a reboot.
 	// For enableHotpatching, the 'provisionVMAgent' must be set to true and 'patchMode' must be set to 'AutomaticByPlatform'.
-	EnableHotpatching bool `json:"enableHotpatching"`
+	EnableHotpatching bool `json:"enableHotpatching,omitempty"`
 
 	// Specifies the mode of VM Guest Patching to IaaS virtual machine or virtual machines associated to virtual machine
 	// scale set with OrchestrationMode as Flexible.
@@ -35,5 +35,5 @@ type WindowsPatchSettings struct {
 	// Manual - You control the application of patches to a virtual machine. You do this by applying patches manually inside the VM. In this mode, automatic updates are disabled; the property WindowsConfiguration.enableAutomaticUpdates must be false
 	// AutomaticByOS - The virtual machine will automatically be updated by the OS. The property WindowsConfiguration.enableAutomaticUpdates must be true.
 	// AutomaticByPlatform - the virtual machine will automatically updated by the platform. The properties provisionVMAgent and WindowsConfiguration.enableAutomaticUpdates must be true
-	PatchMode string `json:"patchMode"`
+	PatchMode string `json:"patchMode,omitempty"`
 }

@@ -18,5 +18,5 @@
 package azure
 
 type ResourceGroupProperties struct {
-	ProvisioningState string `json:"provisioningState"`
+	ProvisioningState string `json:"provisioningState,omitempty"`
 }

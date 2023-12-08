@@ -23,15 +23,15 @@ package azure
 // programmatically, Get Started ->. Enter any required information and then click Save.
 type Plan struct {
 	// The plan ID.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// Specifies the product of the image from the marketplace. This is the same value as Offer under the imageReference
 	// element.
-	Product string `json:"product"`
+	Product string `json:"product,omitempty"`
 
 	// The promotion code.
-	PromotionCode string `json:"promotionCode"`
+	PromotionCode string `json:"promotionCode,omitempty"`
 
 	// The publisher ID.
-	Publisher string `json:"publisher"`
+	Publisher string `json:"publisher,omitempty"`
 }

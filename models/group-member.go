@@ -26,6 +26,18 @@ type GroupMember struct {
 	GroupId string          `json:"groupId"`
 }
 
+func (s *GroupMember) MarshalJSON() ([]byte, error) {
+	output := make(map[string]any)
+	output["groupId"] = s.GroupId
+
+	if member, err := OmitEmpty(s.Member); err != nil {
+		return nil, err
+	} else {
+		output["member"] = member
+		return json.Marshal(output)
+	}
+}
+
 type GroupMembers struct {
 	Members []GroupMember `json:"members"`
 	GroupId string        `json:"groupId"`

@@ -19,9 +19,9 @@ package azure
 
 type BootDiagnotics struct {
 	// Whether boot diagnostics should be enabled on the virtual machine.
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled,omitempty"`
 
 	// Uri of the storage account to use for placing the console output and screenshot.
 	// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
-	StorageUri string `json:"storageUri"`
+	StorageUri string `json:"storageUri,omitempty"`
 }

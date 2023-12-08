@@ -20,17 +20,17 @@ package azure
 // The instance view of a virtual machine extension.
 type VirtualMachineExtensionInstanceView struct {
 	// The virtual machine extension name.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The resource status information.
-	Statuses []InstanceViewStatus `json:"statuses"`
+	Statuses []InstanceViewStatus `json:"statuses,omitempty"`
 
 	// The resource status information.
-	Substatuses []InstanceViewStatus `json:"substatuses"`
+	Substatuses []InstanceViewStatus `json:"substatuses,omitempty"`
 
 	// Specifies the type of the extension; e.g. "CustomScriptExtension"
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 
 	// Specifies the version of the script handler.
-	TypeHandlerVersion string `json:"typeHandlerVersion"`
+	TypeHandlerVersion string `json:"typeHandlerVersion,omitempty"`
 }

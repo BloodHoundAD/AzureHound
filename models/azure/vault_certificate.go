@@ -24,7 +24,7 @@ type VaultCertificate struct {
 	// For Linux VMs, the certificate file is placed under the /var/lib/waagent directory, with the file name
 	// <UppercaseThumbprint>.crt for the X509 certificate file and <UppercaseThumbprint>.prv for private key.
 	// Both of these files are .pem formatted.
-	CertificateStore string `json:"certificateStore"`
+	CertificateStore string `json:"certificateStore,omitempty"`
 
 	// This is the URL of a certificate that has been uploaded to Key Vault as a secret.
 	// For adding a secret to the Key Vault, see Add a key or secret to the key vault. In this case, your certificate
@@ -40,5 +40,5 @@ type VaultCertificate struct {
 	//
 	// To install certificates on a virtual machine it is recommended to use the Azure Key Vault virtual machine
 	// extension for Linux or the Azure Key Vault virtual machine extension for Windows.
-	CertificateUrl string `json:"certificateUrl"`
+	CertificateUrl string `json:"certificateUrl,omitempty"`
 }

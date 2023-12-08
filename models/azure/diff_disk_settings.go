@@ -21,7 +21,7 @@ package azure
 // NOTE: The ephemeral disk settings can only be specified for managed disk.
 type DiffDiskSettings struct {
 	// Specifies the ephemeral disk settings for operating system disk.
-	Option string `json:"option"`
+	Option string `json:"option,omitempty"`
 
 	// Specifies the ephemeral disk placement for operating system disk.
 	// Possible values are:
@@ -32,5 +32,5 @@ type DiffDiskSettings struct {
 	// Refer to VM size documentation for Windows VM at https://docs.microsoft.com/azure/virtual-machines/windows/sizes
 	// and Linux VM at https://docs.microsoft.com/azure/virtual-machines/linux/sizes to check which VM sizes exposes a
 	// cache disk.
-	Placement string `json:"placement"`
+	Placement string `json:"placement,omitempty"`
 }

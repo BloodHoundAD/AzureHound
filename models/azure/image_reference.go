@@ -24,27 +24,27 @@ package azure
 type ImageReference struct {
 	// Specifies in decimal numbers, the version of platform image or marketplace image used to create the virtual
 	// machine. This readonly field differs from 'version', only if the value specified in 'version' field is 'latest'.
-	ExactVersion string `json:"exactVersion"`
+	ExactVersion string `json:"exactVersion,omitempty"`
 
 	// Resource ID.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 
 	// Specifies the offer of the platform image or marketplace image used to create the virtual machine.
-	Offer string `json:"offer"`
+	Offer string `json:"offer,omitempty"`
 
 	// The image publisher
-	Publisher string `json:"publisher"`
+	Publisher string `json:"publisher,omitempty"`
 
 	// Specified the shared gallery image unique id for vm deployment.
 	// This can be fetched from shared gallery image GET call.
-	SharedGalleryImageId string `json:"sharedGalleryImageId"`
+	SharedGalleryImageId string `json:"sharedGalleryImageId,omitempty"`
 
 	// The image SKU.
-	Sku string `json:"sku"`
+	Sku string `json:"sku,omitempty"`
 
 	// Specifies the version of the platform image or marketplace image used to create the virtual machine.
 	// The allowed formats are Major.Minor.Build or 'latest'. Major, Minor, and Build are decimal numbers.
 	// Specify 'latest' to use the latest version of an image available at deploy time. Even if you use 'latest',
 	// the VM image will not automatically update after deploy time even if a new version becomes available.
-	Version string `json:"version"`
+	Version string `json:"version,omitempty"`
 }

@@ -36,5 +36,5 @@ type BillingProfile struct {
 	// Also, the default max price is -1 if it is not provided by you.
 	//
 	// Minimum api-version: 2019-03-01.
-	MaxPrice float64 `json:"maxPrice"`
+	MaxPrice float64 `json:"maxPrice,omitempty"`
 }

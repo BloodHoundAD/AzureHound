@@ -25,3 +25,14 @@ type AppMember struct {
 	json.RawMessage
 	AppId string `json:"appId"`
 }
+
+func (s *AppMember) MarshalJSON() ([]byte, error) {
+	var data map[string]any
+	if err := json.Unmarshal(s.RawMessage, &data); err != nil {
+		return nil, err
+	} else {
+		StripEmptyEntries(data)
+		data["appId"] = s.AppId
+		return json.Marshal(data)
+	}
+}

@@ -20,8 +20,8 @@ package azure
 // Describes the date, time and time zone of a point in time.
 type DateTimeTimeZone struct {
 	// A single point of time in a combined date and time representation `{date}T{time}
-	DateTime string `json:"dateTime"`
+	DateTime string `json:"dateTime,omitempty"`
 
 	// Represents a time zone
-	TimeZone string `json:"timeZone"`
+	TimeZone string `json:"timeZone,omitempty"`
 }

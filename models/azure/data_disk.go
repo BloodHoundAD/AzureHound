@@ -26,20 +26,20 @@ type DataDisk struct {
 	// ReadWrite
 	//
 	// Default: None for Standard storage. ReadOnly for Premium storage
-	Caching string `json:"caching"`
+	Caching string `json:"caching,omitempty"`
 
 	// Specifies how the virtual machine should be created.
 	// Possible values are:
 	// Attach - This value is used when you are using a specialized disk to create the virtual machine.
 	// FromImage - This value is used when you are using an image to create the virtual machine. If you are using a platform image, you also use the imageReference element described above. If you are using a marketplace image, you also use the plan element previously described.
-	CreateOption string `json:"createOption"`
+	CreateOption string `json:"createOption,omitempty"`
 
 	// Specifies whether data disk should be deleted or detached upon VM deletion.
 	// Possible values:
 	// Delete - If this value is used, the data disk is deleted when VM is deleted.
 	// Detach - If this value is used, the data disk is retained after VM is deleted.
 	// The default value is set to detach
-	DeleteOption string `json:"deleteOption"`
+	DeleteOption string `json:"deleteOption,omitempty"`
 
 	// Specifies the detach behavior to be used while detaching a disk or which is already in the process of detachment
 	// from the virtual machine.
@@ -52,44 +52,44 @@ type DataDisk struct {
 	//
 	// This feature is still in preview mode and is not supported for VirtualMachineScaleSet. To force-detach a data disk
 	// update toBeDetached to 'true' along with setting detachOption: 'ForceDetach'.
-	DetachOption string `json:"detachOption"`
+	DetachOption string `json:"detachOption,omitempty"`
 
 	// Specifies the Read-Write IOPS for the managed disk when StorageAccountType is UltraSSD_LRS.
 	// Returned only for VirtualMachine ScaleSet VM disks. Can be updated only via updates to the
 	// VirtualMachine Scale Set.
-	DiskIOPSReadWrite int `json:"diskIOPSReadWrite"`
+	DiskIOPSReadWrite int `json:"diskIOPSReadWrite,omitempty"`
 
 	// Specifies the bandwidth in MB per second for the managed disk when StorageAccountType is UltraSSD_LRS.
 	// Returned only for VirtualMachine ScaleSet VM disks. Can be updated only via updates to the
 	// VirtualMachine Scale Set.
-	DiskMBpsReadWrite int `json:"diskMBpsReadWrite"`
+	DiskMBpsReadWrite int `json:"diskMBpsReadWrite,omitempty"`
 
 	// Specifies the size of an empty data disk in gigabytes.
 	// This element can be used to overwrite the size of the disk in a virtual machine image.
 	// This value cannot be larger than 1023 GB
-	DiskSizeGB int `json:"diskSizeGB"`
+	DiskSizeGB int `json:"diskSizeGB,omitempty"`
 
 	// The source user image virtual hard disk. The virtual hard disk will be copied before being attached to the
 	// virtual machine. If SourceImage is provided, the destination virtual hard drive must not exist.
-	Image VirtualHardDisk `json:"image"`
+	Image VirtualHardDisk `json:"image,omitempty"`
 
 	// Specifies the logical unit number of the data disk.
 	// This value is used to identify data disks within the VM and therefore must be unique for each data disk attached
 	// to a VM.
-	Lun int `json:"lun"`
+	Lun int `json:"lun,omitempty"`
 
 	// The managed disk parameters.
-	ManagedDisk ManagedDiskParameters `json:"managedDisk"`
+	ManagedDisk ManagedDiskParameters `json:"managedDisk,omitempty"`
 
 	// The disk name.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// Specifies whether the data disk is in process of detachment from the VirtualMachine/VirtualMachineScaleset.
-	ToBeDetached bool `json:"toBeDetached"`
+	ToBeDetached bool `json:"toBeDetached,omitempty"`
 
 	// The virtual hard disk.
-	Vhd VirtualHardDisk `json:"vhd"`
+	Vhd VirtualHardDisk `json:"vhd,omitempty"`
 
 	// Specifies whether writeAccelerator should be enabled or disabled on the disk.
-	WriteAcceleratorEnabled bool `json:"writeAcceleratorEnabled"`
+	WriteAcceleratorEnabled bool `json:"writeAcceleratorEnabled,omitempty"`
 }

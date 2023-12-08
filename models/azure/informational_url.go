@@ -21,17 +21,17 @@ package azure
 // For more detail see https://docs.microsoft.com/en-us/graph/api/resources/informationalurl?view=graph-rest-1.0
 type InformationalUrl struct {
 	// CDN URL to the application's logo, Read-only.
-	LogoUrl string `json:"logoUrl"`
+	LogoUrl string `json:"logoUrl,omitempty"`
 
 	// Link to the application's marketing page. For example, https://www.contoso.com/app/marketing
-	MarketingUrl string `json:"marketingUrl"`
+	MarketingUrl string `json:"marketingUrl,omitempty"`
 
 	// Link to the application's privacy statement. For example, https://www.contoso.com/app/privacy
-	PrivacyStatementUrl string `json:"privacyStatementUrl"`
+	PrivacyStatementUrl string `json:"privacyStatementUrl,omitempty"`
 
 	// Link to the application's support page. For example, https://www.contoso.com/app/support
-	SupportUrl string `json:"supportUrl"`
+	SupportUrl string `json:"supportUrl,omitempty"`
 
 	// Link to the application's terms of service statement. For example, https://www.contoso.com/app/termsofservice
-	TermsOfServiceUrl string `json:"termsOfServiceUrl"`
+	TermsOfServiceUrl string `json:"termsOfServiceUrl,omitempty"`
 }

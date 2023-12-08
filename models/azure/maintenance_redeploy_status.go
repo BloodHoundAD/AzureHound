@@ -22,23 +22,23 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 // Maintenance operations status.
 type MaintenanceRedeployStatus struct {
 	// True if customer is allowed to perform maintenance.
-	IsCustomerInitiatedMaintenanceAllowed bool `json:"isCustomerInitiatedMaintenanceAllowed"`
+	IsCustomerInitiatedMaintenanceAllowed bool `json:"isCustomerInitiatedMaintenanceAllowed,omitempty"`
 
 	// Message returned for the last maintenance operation.
-	LastOperationMessage string `json:"lastOperationMessage"`
+	LastOperationMessage string `json:"lastOperationMessage,omitempty"`
 
 	// The last maintenance operation result code.
-	LastOperationResultCode enums.MaintenanceOperationCode `json:"lastOperationResultCode"`
+	LastOperationResultCode enums.MaintenanceOperationCode `json:"lastOperationResultCode,omitempty"`
 
 	// End time for the maintenance window.
-	MaintenanceWindowEndTime string `json:"maintenanceWindowEndTime"`
+	MaintenanceWindowEndTime string `json:"maintenanceWindowEndTime,omitempty"`
 
 	// Start time for the maintenance window.
-	MaintenanceWindowStartTime string `json:"maintenanceWindowStartTime"`
+	MaintenanceWindowStartTime string `json:"maintenanceWindowStartTime,omitempty"`
 
 	// End time for the pre maintenance window.
-	PreMaintenanceWindowEndTime string `json:"preMaintenanceWindowEndTime"`
+	PreMaintenanceWindowEndTime string `json:"preMaintenanceWindowEndTime,omitempty"`
 
 	// Start time for the pre maintenance window.
-	PreMaintenanceWindowStartTime string `json:"preMaintenanceWindowStartTime"`
+	PreMaintenanceWindowStartTime string `json:"preMaintenanceWindowStartTime,omitempty"`
 }

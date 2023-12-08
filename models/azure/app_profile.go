@@ -20,5 +20,5 @@ package azure
 // Contains the list of gallery applications that should be made available to the VM/VMSS.
 type ApplicationProfile struct {
 	// Specifies the gallery applications that should be made available to the VM/VMSS
-	GalleryApplications []VMGalleryApplication `json:"galleryApplications"`
+	GalleryApplications []VMGalleryApplication `json:"galleryApplications,omitempty"`
 }

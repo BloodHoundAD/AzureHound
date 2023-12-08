@@ -31,11 +31,11 @@ import "github.com/gofrs/uuid"
 // With appRoleAssignments, app roles can be assigned to users, groups, or other applications' service principals.
 // For more detail see https://docs.microsoft.com/en-us/graph/api/resources/approle?view=graph-rest-1.0
 type AppRole struct {
-	AllowedMemberTypes []string  `json:"allowedMemberTypes"`
-	Description        string    `json:"description"`
-	DisplayName        string    `json:"displayName"`
-	Id                 uuid.UUID `json:"id"`
-	IsEnabled          bool      `json:"isEnabled"`
-	Origin             string    `json:"origin"`
-	Value              string    `json:"value"`
+	AllowedMemberTypes []string  `json:"allowedMemberTypes,omitempty"`
+	Description        string    `json:"description,omitempty"`
+	DisplayName        string    `json:"displayName,omitempty"`
+	Id                 uuid.UUID `json:"id,omitempty"`
+	IsEnabled          bool      `json:"isEnabled,omitempty"`
+	Origin             string    `json:"origin,omitempty"`
+	Value              string    `json:"value,omitempty"`
 }

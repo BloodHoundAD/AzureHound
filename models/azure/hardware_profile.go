@@ -30,11 +30,11 @@ type HardwareProfile struct {
 	// For more information about virtual machine sizes, see Sizes for virtual machines.
 	//
 	// The available VM sizes depend on region and availability set.
-	VMSize string `json:"vmSize"`
+	VMSize string `json:"vmSize,omitempty"`
 
 	// Specifies the properties for customizing the size of the virtual machine. Minimum api-version: 2021-07-01.
 	//
 	// This feature is still in preview mode and is not supported for VirtualMachineScaleSet.
 	// Please follow the instructions in VM Customization for more details.
-	VMSizeProperties VMSizeProperties `json:"vmSizeProperties"`
+	VMSizeProperties VMSizeProperties `json:"vmSizeProperties,omitempty"`
 }

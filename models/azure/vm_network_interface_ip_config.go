@@ -19,5 +19,5 @@ package azure
 
 // Describes a virtual machine network profile's IP configuration.
 type VMNetworkInterfaceIPConfig struct {
-	Properties VMIPConfigProperties `json:"properties"`
+	Properties VMIPConfigProperties `json:"properties,omitempty"`
 }

@@ -20,11 +20,11 @@ package azure
 // The instance view of the the VM Agent running on the virtual machine.
 type VirtualMachineAgentInstanceView struct {
 	// The virtual machine extension handler instance view.
-	ExtensionHandlers []VirtualMachineExtensionHandlerInstanceView `json:"extensionHandlers"`
+	ExtensionHandlers []VirtualMachineExtensionHandlerInstanceView `json:"extensionHandlers,omitempty"`
 
 	// The resource status information.
-	Statuses []InstanceViewStatus `json:"statuses"`
+	Statuses []InstanceViewStatus `json:"statuses,omitempty"`
 
 	// The VM Agent full version.
-	VMAgentVersion string `json:"vmAgentVersion"`
+	VMAgentVersion string `json:"vmAgentVersion,omitempty"`
 }

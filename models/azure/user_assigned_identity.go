@@ -18,6 +18,6 @@
 package azure
 
 type UserAssignedIdentity struct {
-	ClientId    string `json:"clientId"`
-	PrincipalId string `json:"principalId"`
+	ClientId    string `json:"clientId,omitempty"`
+	PrincipalId string `json:"principalId,omitempty"`
 }

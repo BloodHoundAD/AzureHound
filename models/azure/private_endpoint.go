@@ -19,5 +19,5 @@ package azure
 
 type PrivateEndpoint struct {
 	// Full identifier of the private endpoint resource.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 }

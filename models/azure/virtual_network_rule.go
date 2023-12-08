@@ -21,8 +21,8 @@ package azure
 type VirtualNetworkRule struct {
 	// Full resource id of a vnet subnet, such as
 	// '/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.Network/virtualNetworks/test-vnet/subnets/subnet1'.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 
 	// Property to specify whether NRP will ignore the check if parent subnet has serviceEndpoints configured.
-	IgnoreMissingVnetServiceEndpoint bool `json:"ignoreMissingVnetServiceEndpoint"`
+	IgnoreMissingVnetServiceEndpoint bool `json:"ignoreMissingVnetServiceEndpoint,omitempty"`
 }

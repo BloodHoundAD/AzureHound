@@ -20,5 +20,5 @@ package azure
 // Properties of the vault
 type ManagedClusterProperties struct {
 	// The name of the AzureRM Resource Group the Managed Cluster's Virtual Machine Scale Set resides
-	NodeResourceGroup string `json:"nodeResourceGroup"`
+	NodeResourceGroup string `json:"nodeResourceGroup,omitempty"`
 }

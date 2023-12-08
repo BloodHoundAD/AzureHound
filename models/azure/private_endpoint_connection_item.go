@@ -20,10 +20,10 @@ package azure
 // Private endpoint connection item.
 type PrivateEndpointConnectionItem struct {
 	// Modified whenever there is a change in the state of private endpoint connection.
-	Etag string `json:"etag"`
+	Etag string `json:"etag,omitempty"`
 
 	// Id of private endpoint connection.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 
-	Properties ConnectionItemProperties `json:"properties"`
+	Properties ConnectionItemProperties `json:"properties,omitempty"`
 }

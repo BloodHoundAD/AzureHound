@@ -21,23 +21,23 @@ package azure
 type WindowsConfiguration struct {
 	// Specifies additional base-64 encoded XML formatted information that can be included in the Unattend.xml file,
 	// which is used by Windows Setup.
-	AdditionalUnattendContent []AdditionalUnattendContent `json:"additionalUnattendContent"`
+	AdditionalUnattendContent []AdditionalUnattendContent `json:"additionalUnattendContent,omitempty"`
 
 	// Indicates whether Automatic Updates is enabled for the Windows virtual machine. Default value is true.
 	// For virtual machine scale sets, this property can be updated and updates will take effect on OS reprovisioning.
-	EnableAutomaticUpdates bool `json:"enableAutomaticUpdates"`
+	EnableAutomaticUpdates bool `json:"enableAutomaticUpdates,omitempty"`
 
 	// [Preview Feature] Specifies settings related to VM Guest Patching on Windows.
-	PatchSettings WindowsPatchSettings `json:"patchSettings"`
+	PatchSettings WindowsPatchSettings `json:"patchSettings,omitempty"`
 
 	// Indicates whether virtual machine agent should be provisioned on the virtual machine.
 	// When this property is not specified in the request body, default behavior is to set it to true. This will ensure
 	// that VM Agent is installed on the VM so that extensions can be added to the VM later.
-	ProvisionVMAgent bool `json:"provisionVMAgent"`
+	ProvisionVMAgent bool `json:"provisionVMAgent,omitempty"`
 
 	// Specifies the time zone of the virtual machine. e.g. "Pacific Standard Time"
-	TimeZone string `json:"timeZone"`
+	TimeZone string `json:"timeZone,omitempty"`
 
 	// Specifies the Windows Remote Management listeners. This enables remote Windows PowerShell.
-	WinRM WinRMConfiguration `json:"winRM"`
+	WinRM WinRMConfiguration `json:"winRM,omitempty"`
 }

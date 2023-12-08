@@ -19,5 +19,5 @@ package azure
 
 type SubResource struct {
 	// The resource ID.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 }

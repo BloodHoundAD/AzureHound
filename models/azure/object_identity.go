@@ -35,7 +35,7 @@ type ObjectIdentity struct {
 	// Additional validation is enforced on issuerAssignedId when the sign-in type is set to Email or UserName.
 	// This property can also be set to any custom string; use string(SignInType) or enums.signintype(someValue) to
 	// convert appropriately.
-	SignInType enums.SigninType `json:"signInType"`
+	SignInType enums.SigninType `json:"signInType,omitempty"`
 
 	// Specifies the issuer of the identity.
 	// **Notes:**
@@ -44,12 +44,12 @@ type ObjectIdentity struct {
 	// * For external users from other Azure AD organizations, this will be the domain of the federated organization.
 	//
 	// Supports `$filter` w/ 512 character limit.
-	Issuer string `json:"issuer"`
+	Issuer string `json:"issuer,omitempty"`
 
 	// Specifies the unique identifier assigned to the user by the issuer. The combination of issuer and
 	// issuerAssignedId must be unique within the organization.
 	// For more detail, see https://docs.microsoft.com/en-us/graph/api/resources/objectidentity?view=graph-rest-1.0
 	//
 	// Supports `$filter` w/ 100 character limit
-	IssuerAssignedId string `json:"issuerAssignedId"`
+	IssuerAssignedId string `json:"issuerAssignedId,omitempty"`
 }

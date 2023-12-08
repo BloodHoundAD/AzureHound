@@ -32,11 +32,11 @@ type WinRMListener struct {
 	// ```
 	// To install certificates on a virtual machine it is recommended to use the Azure Key Vault virtual machine
 	// extension for Linux or the Azure Key Vault virtual machine extension for Windows.
-	CertificateUrl string `json:"certificateUrl"`
+	CertificateUrl string `json:"certificateUrl,omitempty"`
 
 	// Specifies the protocol of WinRM listener.
 	// Possible values are:
 	// - http
 	// - https
-	Protocol string `json:"protocol"`
+	Protocol string `json:"protocol,omitempty"`
 }

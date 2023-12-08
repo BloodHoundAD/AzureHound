@@ -22,5 +22,5 @@ package azure
 // Please refer https://aka.ms/mdssewithcmkoverview for more details.
 type DiskEncryptionSetParameters struct {
 	// Resource ID.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 }

@@ -23,11 +23,11 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 type SubscriptionPolicies struct {
 	// The subscription location placement ID. The ID indicates which regions are visible for a subscription.
 	// For example, a subscription with a location placement Id of Public_2014-09-01 has access to Azure public regions.
-	LocationPlacementId string `json:"locationPlacementId"`
+	LocationPlacementId string `json:"locationPlacementId,omitempty"`
 
 	// The subscription quota ID.
-	QuotaId string `json:"quotaId"`
+	QuotaId string `json:"quotaId,omitempty"`
 
 	// The subscription spending limit.
-	SpendingLimit enums.SpendingLimit `json:"spendingLimit"`
+	SpendingLimit enums.SpendingLimit `json:"spendingLimit,omitempty"`
 }

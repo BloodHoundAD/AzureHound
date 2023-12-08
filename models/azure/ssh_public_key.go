@@ -22,9 +22,9 @@ type SshPublicKey struct {
 	// SSH public key certificate used to authenticate with the VM through ssh.
 	// The key needs to be at least 2048-bit and in ssh-rsa format.
 	// For creating ssh keys, see [Create SSH keys on Linux and Mac for Linux VMs in Azure](https://docs.microsoft.com/azure/virtual-machines/linux/create-ssh-keys-detailed).
-	KeyData string `json:"keyData"`
+	KeyData string `json:"keyData,omitempty"`
 
 	// Specifies the full path on the created VM where ssh public key is stored.
 	// If the file already exists, the specified key is appended to the file. Example: /home/user/.ssh/authorized_keys
-	Path string `json:"path"`
+	Path string `json:"path,omitempty"`
 }

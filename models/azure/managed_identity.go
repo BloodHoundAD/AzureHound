@@ -26,17 +26,17 @@ type VirtualMachineIdentity ManagedIdentity
 type ManagedIdentity struct {
 	// The principal id of the managed identity. The property will only be provided for a system assigned
 	// identity.
-	PrincipalId string `json:"principalId"`
+	PrincipalId string `json:"principalId,omitempty"`
 
 	// The tenant id associated with the managed identity. This property will only be provided for a system assigned
 	// identity.
-	TenantId string `json:"tenantId"`
+	TenantId string `json:"tenantId,omitempty"`
 
 	// The type of identity used.
-	Type enums.Identity `json:"type"`
+	Type enums.Identity `json:"type,omitempty"`
 
 	// The list of user identities associated with the Managed identity. The user identity dictionary key references will be
 	// ARM resource ids in the form:
 	// '/subscriptions/{subscriptionId}/resourceGroups/{groupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}'
-	UserAssignedIdentities map[string]UserAssignedIdentity `json:"userAssignedIdentities"`
+	UserAssignedIdentities map[string]UserAssignedIdentity `json:"userAssignedIdentities,omitempty"`
 }

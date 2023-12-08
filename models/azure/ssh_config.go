@@ -20,5 +20,5 @@ package azure
 // SSH configuration for Linux based VMs running on Azure.
 type SshConfiguration struct {
 	// The list of SSH public keys used to authenticate with linux based VMs.
-	PublicKeys []SshPublicKey `json:"publicKeys"`
+	PublicKeys []SshPublicKey `json:"publicKeys,omitempty"`
 }

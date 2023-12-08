@@ -22,24 +22,24 @@ type UnifiedRoleDefinition struct {
 
 	// The description for the unifiedRoleDefinition.
 	// Read-only when isBuiltIn is true.
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 
 	// The display name for the unifiedRoleDefinition.
 	// Read-only when isBuiltIn is true.
 	// Required.
 	// Supports $filter (eq, in).
-	DisplayName string `json:"displayName"`
+	DisplayName string `json:"displayName,omitempty"`
 
 	// Flag indicating whether the role definition is part of the default set included in
 	// Azure Active Directory (Azure AD) or a custom definition.
 	// Read-only.
 	// Supports $filter (eq, in).
-	IsBuiltIn bool `json:"isBuiltIn"`
+	IsBuiltIn bool `json:"isBuiltIn,omitempty"`
 
 	// Flag indicating whether the role is enabled for assignment.
 	// If false the role is not available for assignment.
 	// Read-only when isBuiltIn is true.
-	IsEnabled bool `json:"isEnabled"`
+	IsEnabled bool `json:"isEnabled,omitempty"`
 
 	// List of the scopes or permissions the role definition applies to.
 	// Currently only / is supported.
@@ -50,7 +50,7 @@ type UnifiedRoleDefinition struct {
 	// List of permissions included in the role.
 	// Read-only when isBuiltIn is true.
 	// Required.
-	RolePermisions []UnifiedRolePermission `json:"rolePermisions"`
+	RolePermisions []UnifiedRolePermission `json:"rolePermisions,omitempty"`
 
 	// Custom template identifier that can be set when isBuiltIn is false but is read-only when isBuiltIn is true.
 	// This identifier is typically used if one needs an identifier to be the same across different directories.
@@ -58,5 +58,5 @@ type UnifiedRoleDefinition struct {
 
 	// Indicates version of the role definition.
 	// Read-only when isBuiltIn is true.
-	Version string `json:"version"`
+	Version string `json:"version,omitempty"`
 }

@@ -21,13 +21,13 @@ package azure
 type BootDiagnoticsInstanceView struct {
 	// The console screenshot blob URI.
 	// NOTE: This will not be set if boot diagnostics is currently enabled with managed storage.
-	ConsoleScreenshotBlobUri string `json:"consoleScreenshotBlobUri"`
+	ConsoleScreenshotBlobUri string `json:"consoleScreenshotBlobUri,omitempty"`
 
 	// The serial console log blob Uri.
 	// NOTE: This will not be set if boot diagnostics is currently enabled with managed storage.
-	SerialConsoleLogBlobUri string `json:"serialConsoleLogBlobUri"`
+	SerialConsoleLogBlobUri string `json:"serialConsoleLogBlobUri,omitempty"`
 
 	// The boot diagnostics status information for the VM.
 	// NOTE: It will be set only if there are errors encountered in enabling boot diagnostics.
-	Status InstanceViewStatus `json:"status"`
+	Status InstanceViewStatus `json:"status,omitempty"`
 }

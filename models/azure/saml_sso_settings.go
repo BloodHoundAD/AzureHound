@@ -20,5 +20,5 @@ package azure
 // Represents a container for settings related to SAML single sign-on.
 type SamlSingleSignOnSettings struct {
 	// The relative URI the service provider would redirect to after completion of the single sign-on flow.
-	RelayState string `json:"relayState"`
+	RelayState string `json:"relayState,omitempty"`
 }

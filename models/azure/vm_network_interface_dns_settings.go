@@ -20,5 +20,5 @@ package azure
 // Describes a virtual machine network configuration's DNS settings.
 type VMNetworkInterfaceDNSSettings struct {
 	// List of DNS server IP addresses
-	DNSServers []string `json:"dnsServers"`
+	DNSServers []string `json:"dnsServers,omitempty"`
 }

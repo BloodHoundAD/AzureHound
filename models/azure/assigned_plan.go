@@ -25,14 +25,14 @@ import (
 // Represents a plan assigned to user and organization entities.
 type AssignedPlan struct {
 	// The date and time at which the plan was assigned using ISO 8601 format.
-	AssignedDateTime string `json:"assignedDateTime"`
+	AssignedDateTime string `json:"assignedDateTime,omitempty"`
 
 	// Condition of the capability assignment.
-	CapabilityStatus enums.CapabiltyStatus `json:"capabilityStatus"`
+	CapabilityStatus enums.CapabiltyStatus `json:"capabilityStatus,omitempty"`
 
 	// The name of the service.
-	Service string `json:"service"`
+	Service string `json:"service,omitempty"`
 
 	// A GUID that identifies the service plan.
-	ServicePlanId uuid.UUID `json:"servicePlanId"`
+	ServicePlanId uuid.UUID `json:"servicePlanId,omitempty"`
 }

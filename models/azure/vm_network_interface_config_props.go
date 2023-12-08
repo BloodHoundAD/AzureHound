@@ -21,29 +21,29 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 
 type VMNetworkInterfaceConfigurationProperties struct {
 	// Specify what happens to the network interface when the VM is deleted.
-	DeleteOption enums.VMDeleteOption `json:"deleteOption"`
+	DeleteOption enums.VMDeleteOption `json:"deleteOption,omitempty"`
 
 	// The dns settings to be applied on the network interfaces.
-	DNSSettings VMNetworkInterfaceDNSSettings `json:"dnsSettings"`
+	DNSSettings VMNetworkInterfaceDNSSettings `json:"dnsSettings,omitempty"`
 
 	// The DSCP resource to be applied to the network interfaces.
-	DSCPConfiguration SubResource `json:"dscpConfiguration"`
+	DSCPConfiguration SubResource `json:"dscpConfiguration,omitempty"`
 
 	// Specifies whether the network interface is accelerated networking-enabled.
-	EnabledAcceleratedNetworking bool `json:"enabledAcceleratedNetworking"`
+	EnabledAcceleratedNetworking bool `json:"enabledAcceleratedNetworking,omitempty"`
 
 	// Specifies whether the network is FPGA networking-enabled
-	EnableFpga bool `json:"enableFpga"`
+	EnableFpga bool `json:"enableFpga,omitempty"`
 
 	// Whether IP forwarding is enabled on this NIC.
-	EnableIPForwarding bool `json:"enableIPForwarding"`
+	EnableIPForwarding bool `json:"enableIPForwarding,omitempty"`
 
 	// Specifies the IP configurations of the network interface.
-	IPConfigurations []VMNetworkInterfaceIPConfig `json:"ipConfigurations"`
+	IPConfigurations []VMNetworkInterfaceIPConfig `json:"ipConfigurations,omitempty"`
 
 	// The network security group.
-	NetworkSecurityGroup SubResource `json:"networkSecurityGroup"`
+	NetworkSecurityGroup SubResource `json:"networkSecurityGroup,omitempty"`
 
 	// Specifies the primary network interface in case the virtual machine has more than one.
-	Primary bool `json:"primary"`
+	Primary bool `json:"primary,omitempty"`
 }

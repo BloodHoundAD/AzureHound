@@ -20,5 +20,5 @@ package azure
 // The health status of the VM.
 type VirtualMachineHealthStatus struct {
 	// The health status information for the VM.
-	Status InstanceViewStatus `json:"status"`
+	Status InstanceViewStatus `json:"status,omitempty"`
 }

@@ -26,10 +26,10 @@ import (
 type ResourceAccess struct {
 	// The unique identifier for one of the OAuth2PermissionScopes or AppRole instances that the resource application
 	// exposes.
-	Id uuid.UUID `json:"id"`
+	Id uuid.UUID `json:"id,omitempty"`
 
 	// Specifies whether the {@link Id} property references an OAuth2PermissionScope or AppRole.
-	Type enums.AccessType `json:"type"`
+	Type enums.AccessType `json:"type,omitempty"`
 }
 
 // Specifies the set of OAuth 2.0 permission scopes and app roles under the specified resource that an application
@@ -37,9 +37,9 @@ type ResourceAccess struct {
 // requiredResourceAccess property.
 type RequiredResourceAccess struct {
 	// The list of OAuth2.0 permission scopes and app roles that the application requires from the specified resource.
-	ResourceAccess []ResourceAccess `json:"resourceAccess"`
+	ResourceAccess []ResourceAccess `json:"resourceAccess,omitempty"`
 
 	// The unique identifier for the resource that the application requires access to. This should be equal to the
 	// {@link AppId} declared on the target resource application.
-	ResourceAppId string `json:"resourceAppId"`
+	ResourceAppId string `json:"resourceAppId,omitempty"`
 }

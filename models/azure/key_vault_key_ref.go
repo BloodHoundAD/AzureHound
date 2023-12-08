@@ -20,8 +20,8 @@ package azure
 // Describes a reference to a Key Vault Key
 type KeyVaultKeyReference struct {
 	// The URL referencing a key encryption key in Key Vault.
-	KeyUrl string `json:"keyUrl"`
+	KeyUrl string `json:"keyUrl,omitempty"`
 
 	// The relative URL of the Key Vault containing the key.
-	SourceVault SubResource `json:"sourceVault"`
+	SourceVault SubResource `json:"sourceVault,omitempty"`
 }

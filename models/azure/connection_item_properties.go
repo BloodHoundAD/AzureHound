@@ -21,11 +21,11 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 
 type ConnectionItemProperties struct {
 	//Properties of the private endpoint object.
-	PrivateEndpoint PrivateEndpoint `json:"privateEndpoint"`
+	PrivateEndpoint PrivateEndpoint `json:"privateEndpoint,omitempty"`
 
 	// Approval state of the private link connection.
-	PrivateLinkServiceConnectionState PrivateLinkServiceConnectionState `json:"privateLinkServiceConnectionState"`
+	PrivateLinkServiceConnectionState PrivateLinkServiceConnectionState `json:"privateLinkServiceConnectionState,omitempty"`
 
 	// Provisioning state of the private endpoint connection.
-	ProvisioningState enums.EndpointProvisioningState `json:"provisioningState"`
+	ProvisioningState enums.EndpointProvisioningState `json:"provisioningState,omitempty"`
 }

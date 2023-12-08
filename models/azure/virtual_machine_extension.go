@@ -20,19 +20,19 @@ package azure
 // Describes a Virtual Machine Extension.
 type VirtualMachineExtension struct {
 	// Resource ID.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 
 	// Resource location.
-	Location string `json:"location"`
+	Location string `json:"location,omitempty"`
 
 	// Resource name.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
-	Properties VMExtensionProperties `json:"properties"`
+	Properties VMExtensionProperties `json:"properties,omitempty"`
 
 	// Resource tags.
-	Tags map[string]string `json:"tags"`
+	Tags map[string]string `json:"tags,omitempty"`
 
 	// Resource type.
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 }

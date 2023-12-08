@@ -21,17 +21,17 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 
 type InstanceViewStatus struct {
 	// The status code.
-	Code string `json:"code"`
+	Code string `json:"code,omitempty"`
 
 	// The short localizable label for the status.
-	DisplayStatus string `json:"displayStatus"`
+	DisplayStatus string `json:"displayStatus,omitempty"`
 
 	// The level code.
-	Level enums.StatusLevel `json:"level"`
+	Level enums.StatusLevel `json:"level,omitempty"`
 
 	// The detailed status message, including for alerts and error messages.
-	Message string `json:"message"`
+	Message string `json:"message,omitempty"`
 
 	// The time of the status.
-	Time string `json:"time"`
+	Time string `json:"time,omitempty"`
 }

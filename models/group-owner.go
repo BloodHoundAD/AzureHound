@@ -26,6 +26,18 @@ type GroupOwner struct {
 	GroupId string          `json:"groupId"`
 }
 
+func (s *GroupOwner) MarshalJSON() ([]byte, error) {
+	output := make(map[string]any)
+	output["groupId"] = s.GroupId
+
+	if owner, err := OmitEmpty(s.Owner); err != nil {
+		return nil, err
+	} else {
+		output["owner"] = owner
+		return json.Marshal(output)
+	}
+}
+
 type GroupOwners struct {
 	Owners  []GroupOwner `json:"owners"`
 	GroupId string       `json:"groupId"`

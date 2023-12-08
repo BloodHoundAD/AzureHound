@@ -20,11 +20,11 @@ package azure
 // The instance view of a virtual machine extension handler.
 type VirtualMachineExtensionHandlerInstanceView struct {
 	// The extension handler status.
-	Status InstanceViewStatus `json:"status"`
+	Status InstanceViewStatus `json:"status,omitempty"`
 
 	// Specifies the type of the extension; an example is "CustomScriptExtension".
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 
 	// Specifies the version of the script handler.
-	TypeHandlerVersion string `json:"typeHandlerVersion"`
+	TypeHandlerVersion string `json:"typeHandlerVersion,omitempty"`
 }

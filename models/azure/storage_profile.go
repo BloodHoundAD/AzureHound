@@ -21,14 +21,14 @@ package azure
 type StorageProfile struct {
 	// Specifies the parameters that are used to add a data disk to a virtual machine.
 	// For more information about disks, see About disks and VHDs for Azure virtual machines.
-	DataDisks []DataDisk `json:"dataDisks"`
+	DataDisks []DataDisk `json:"dataDisks,omitempty"`
 
 	// Specifies information about the image to use. You can specify information about platform images, marketplace
 	// images, or virtual machine images. This element is required when you want to use a platform image, marketplace
 	// image, or virtual machine image, but is not used in other creation operations.
-	ImageReference ImageReference `json:"imageReference"`
+	ImageReference ImageReference `json:"imageReference,omitempty"`
 
 	// Specifies information about the operating system disk used by the virtual machine.
 	// For more information about disks, see About disks and VHDs for Azure virtual machines.
-	OSDisk OSDisk `json:"osDisk"`
+	OSDisk OSDisk `json:"osDisk,omitempty"`
 }

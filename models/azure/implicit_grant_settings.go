@@ -22,8 +22,8 @@ package azure
 // following properties must be set to true.
 type ImplicitGrantSettings struct {
 	// Specifies whether this web application can request an ID token using the OAuth 2.0 implicit flow.
-	EnableIdTokenIssuance bool `json:"enableIdTokenIssuance"`
+	EnableIdTokenIssuance bool `json:"enableIdTokenIssuance,omitempty"`
 
 	// Specifies whether this web application can request an access token using the OAuth 2.0 implicit flow.
-	EnableAccessTokenIssuance bool `json:"enableAccessTokenIssuance"`
+	EnableAccessTokenIssuance bool `json:"enableAccessTokenIssuance,omitempty"`
 }

@@ -21,16 +21,16 @@ package azure
 // For a list of supported Linux distributions, see Linux on Azure-Endorsed Distributions.
 type LinuxConfiguration struct {
 	// Specifies whether password authentication should be disabled.
-	DisablePasswordAuthentication bool `json:"disablePasswordAuthentication"`
+	DisablePasswordAuthentication bool `json:"disablePasswordAuthentication,omitempty"`
 
 	// [Preview Feature] Specifies settings related to VM Guest Patching on Linux.
-	PatchSettings LinuxPatchSettings `json:"patchSettings"`
+	PatchSettings LinuxPatchSettings `json:"patchSettings,omitempty"`
 
 	// Indicates whether virtual machine agent should be provisioned on the virtual machine.
 	// When this property is not specified in the request body, default behavior is to set it to true. This will ensure
 	// that VM Agent is installed on the VM so that extensions can be added to the VM later.
-	ProvisionVMAgent bool `json:"provisionVMAgent"`
+	ProvisionVMAgent bool `json:"provisionVMAgent,omitempty"`
 
 	// Specifies the ssh key configuration for a Linux OS.
-	Ssh SshConfiguration `json:"ssh"`
+	Ssh SshConfiguration `json:"ssh,omitempty"`
 }

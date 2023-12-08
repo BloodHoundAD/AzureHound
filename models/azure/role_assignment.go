@@ -19,27 +19,27 @@ package azure
 
 type RoleAssignmentPropertiesWithScope struct {
 	// The principal ID.
-	PrincipalId string `json:"principalId"`
+	PrincipalId string `json:"principalId,omitempty"`
 
 	// The role definition ID.
-	RoleDefinitionId string `json:"roleDefinitionId"`
+	RoleDefinitionId string `json:"roleDefinitionId,omitempty"`
 
 	// The role assignment scope.
-	Scope string `json:"scope"`
+	Scope string `json:"scope,omitempty"`
 }
 
 type RoleAssignment struct {
 	// The role assignment ID.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 
 	// The role assignment name.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The role assignment type.
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 
 	// Role assignment properties
-	Properties RoleAssignmentPropertiesWithScope `json:"properties"`
+	Properties RoleAssignmentPropertiesWithScope `json:"properties,omitempty"`
 }
 
 type RoleAssignmentList struct {

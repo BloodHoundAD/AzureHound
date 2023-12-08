@@ -25,15 +25,15 @@ import (
 type NetworkRuleSet struct {
 	// Tells what traffic can bypass network rules. This can be 'AzureServices' or 'None'.
 	// If not specified the default is 'AzureServices'.
-	Bypass enums.BypassOption `json:"bypass"`
+	Bypass enums.BypassOption `json:"bypass,omitempty"`
 
 	// The default action when no rule from ipRules and from virtualNetworkRules match.
 	// This is only used after the bypass property has been evaluated.
-	DefaultAction enums.NetworkAction `json:"defaultAction"`
+	DefaultAction enums.NetworkAction `json:"defaultAction,omitempty"`
 
 	// The list of IP address rules.
-	IPRules []IPRule `json:"ipRules"`
+	IPRules []IPRule `json:"ipRules,omitempty"`
 
 	// The list of virtual network rules.
-	VirtualNetworkRules []VirtualNetworkRule `json:"virtualNetworkRules"`
+	VirtualNetworkRules []VirtualNetworkRule `json:"virtualNetworkRules,omitempty"`
 }
