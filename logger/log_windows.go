@@ -47,11 +47,6 @@ func setupLogger() (*logr.Logger, error) {
 		options.Writers = append(options.Writers, eventLogWriter)
 	}
 
-	// XXX: This is gross, however, reading in the config file when starting the process as a windows service before
-	// initializing the eventLogWriter causes the program to panic. It doesn't make sense as to why it does that but
-	// this call will have to remain here until we can figure out what's going on.
-	config.LoadValues(nil, config.Options())
-
 	// emit logs to file if configured
 	if fileLogWriter := getFileLogLevelWriter(); fileLogWriter != nil {
 		options.Writers = append(options.Writers, fileLogWriter)

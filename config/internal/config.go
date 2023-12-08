@@ -39,9 +39,12 @@ type Config struct {
 }
 
 func (s Config) Value() interface{} {
-	if reflect.ValueOf(s.Default).Kind() == reflect.Slice {
+	switch reflect.ValueOf(s.Default).Kind() {
+	case reflect.Slice:
 		return viper.GetStringSlice(s.Name)
-	} else {
+	case reflect.Int:
+		return viper.GetInt(s.Name)
+	default:
 		return viper.Get(s.Name)
 	}
 }
