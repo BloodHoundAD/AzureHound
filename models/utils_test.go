@@ -134,13 +134,13 @@ func TestStripEmptyEntries(t *testing.T) {
 func TestOmitEmpty(t *testing.T) {
 	t.Run("should omit empty basic types", func(t *testing.T) {
 		data := json.RawMessage(`{
-			"string":   "",
-			"number":   0,
-      "object": {},
-      "array": [],
-      "boolean": false,
-      "null": null
-		}`)
+        "string": "",
+        "number": 0,
+        "object": {},
+        "array": [],
+        "boolean": false,
+        "null": null
+    }`)
 
 		filtered, err := models.OmitEmpty(data)
 		require.Nil(t, err)
@@ -149,11 +149,11 @@ func TestOmitEmpty(t *testing.T) {
 
 	t.Run("should not omit non-empty basic types", func(t *testing.T) {
 		data := json.RawMessage(`{
-			"string":   "foo",
-			"number":   1,
-      "object": { "bar": "" },
-      "array": [1],
-      "boolean": true
+        "string": "foo",
+        "number": 1,
+        "object": { "bar": "" },
+        "array": [1],
+        "boolean": true
 		}`)
 
 		filtered, err := models.OmitEmpty(data)
@@ -163,7 +163,7 @@ func TestOmitEmpty(t *testing.T) {
 
 	t.Run("should not omit empty struct/object types, just their empty properties", func(t *testing.T) {
 		data := json.RawMessage(`{
-      "object": { "bar": "" }
+        "object": { "bar": "" }
 		}`)
 
 		filtered, err := models.OmitEmpty(data)
@@ -173,11 +173,11 @@ func TestOmitEmpty(t *testing.T) {
 
 	t.Run("should recursively strip non-empty, nested object entries", func(t *testing.T) {
 		data := json.RawMessage(`{
-      "empty": {},
-      "nonempty": {
-        "emptyprop": 0,
-        "nonemptyprop": 1
-      }
+        "empty": {},
+        "nonempty": {
+          "emptyprop": 0,
+          "nonemptyprop": 1
+        }
 		}`)
 
 		filtered, err := models.OmitEmpty(data)
@@ -187,11 +187,11 @@ func TestOmitEmpty(t *testing.T) {
 
 	t.Run("should strip non-empty array entries of type object", func(t *testing.T) {
 		data := json.RawMessage(`{
-      "empty": [],
-      "nonempty": [{
-        "emptyprop": 0,
-        "nonemptyprop": 1
-      }]
+        "empty": [],
+        "nonempty": [{
+          "emptyprop": 0,
+          "nonemptyprop": 1
+        }]
 		}`)
 
 		filtered, err := models.OmitEmpty(data)
