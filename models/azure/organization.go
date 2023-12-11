@@ -63,7 +63,7 @@ type Organization struct {
 	// Read-only.
 	IsMultipleDataLocationsForServicesEnabled bool `json:"isMultipleDataLocationsForServicesEnabled,omitempty"`
 
-	MarketingNotificationEmails []string
+	MarketingNotificationEmails []string `json:"marketingNotificationEmails,omitempty"`
 
 	// The time and date at which the tenant was last synced with the on-premises directory.
 	// The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time.

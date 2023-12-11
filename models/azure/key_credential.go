@@ -24,33 +24,33 @@ import "github.com/gofrs/uuid"
 type KeyCredential struct {
 	// Custom key identifier
 	// Base64Url encoded.
-	CustomKeyIdentifier string `json:"customKeyIdentifier"`
+	CustomKeyIdentifier string `json:"customKeyIdentifier,omitempty"`
 
 	// Friendly name for the key.
 	// Optional.
-	DisplayName string `json:"displayName"`
+	DisplayName string `json:"displayName,omitempty"`
 
 	// The date and time at which the credential expires.
 	// The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time.
 	// For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
-	EndDateTime string `json:"endDateTime"`
+	EndDateTime string `json:"endDateTime,omitempty"`
 
 	// The certificate's raw data in byte array converted to Base64 string;
 	// For example, [System.Convert]::ToBase64String($Cert.GetRawCertData()).
 	// Base64Url encoded.
-	Key []byte `json:"key"`
+	Key []byte `json:"key,omitempty"`
 
 	// The unique identifier (GUID) for the key.
-	KeyId uuid.UUID `json:"keyId"`
+	KeyId uuid.UUID `json:"keyId,omitempty"`
 
 	// The date and time at which the credential becomes valid.The Timestamp type represents date and time information
 	// using ISO 8601 format and is always in UTC time.
 	// For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
-	StartDateTime string `json:"startDateTime"`
+	StartDateTime string `json:"startDateTime,omitempty"`
 
 	// The type of key credential; for example, Symmetric.
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 
 	// A string that describes the purpose for which the key can be used; for example, Verify.
-	Usage string `json:"usage"`
+	Usage string `json:"usage,omitempty"`
 }

@@ -26,6 +26,18 @@ type DeviceOwner struct {
 	DeviceId string          `json:"deviceId"`
 }
 
+func (s *DeviceOwner) MarshalJSON() ([]byte, error) {
+	output := make(map[string]any)
+	output["deviceId"] = s.DeviceId
+
+	if owner, err := OmitEmpty(s.Owner); err != nil {
+		return nil, err
+	} else {
+		output["owner"] = owner
+		return json.Marshal(output)
+	}
+}
+
 type DeviceOwners struct {
 	Owners   []DeviceOwner `json:"owners"`
 	DeviceId string        `json:"deviceId"`

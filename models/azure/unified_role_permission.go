@@ -21,7 +21,6 @@ package azure
 // Resource actions are tasks that can be performed on a resource. For example, an application resource may support
 // create, update, delete, and reset password actions.
 type UnifiedRolePermission struct {
-
 	// Set of tasks that can be performed on a resource.
 	// Required.
 	//
@@ -42,7 +41,7 @@ type UnifiedRolePermission struct {
 	//		* Update - The ability to update a given property set (including allProperties).
 	//		* Delete - The ability to delete a given entity.
 	//		* AllTasks - Represents all CRUD operations (create, read, update, and delete).
-	AllowedResourceActions []string `json:"allowedResourceActions"`
+	AllowedResourceActions []string `json:"allowedResourceActions,omitempty"`
 
 	// Optional constraints that must be met for the permission to be effective.
 	//

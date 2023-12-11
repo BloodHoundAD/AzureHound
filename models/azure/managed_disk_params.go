@@ -22,12 +22,12 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 // The parameters of a managed disk.
 type ManagedDiskParameters struct {
 	// Specifies the customer managed disk encryption set resource id for the managed disk.
-	DiskEncryptionSet DiskEncryptionSetParameters `json:"diskEncryptionSet"`
+	DiskEncryptionSet DiskEncryptionSetParameters `json:"diskEncryptionSet,omitempty"`
 
 	// Resource ID.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 
 	// Specifies the storage account type for the managed disk. NOTE: UltraSSD_LRS can only be used with data disks,
 	// it cannot be used with OS Disk.
-	StorageAccountType enums.StorageType `json:"storageAccountType"`
+	StorageAccountType enums.StorageType `json:"storageAccountType,omitempty"`
 }

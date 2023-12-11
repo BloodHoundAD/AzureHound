@@ -19,6 +19,6 @@ package azure
 
 type ImmutabilityPolicy struct {
 	Etag          string                       `json:"etag,omitempty"`
-	Properties    ImmutabilityPolicyProperties `json:"properties"`
+	Properties    ImmutabilityPolicyProperties `json:"properties,omitempty"`
 	UpdateHistory ImmutablePolicyUpdateHistory `json:"updateHistory,omitempty"`
 }

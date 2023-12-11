@@ -24,8 +24,8 @@ package azure
 // For more detail see https://docs.microsoft.com/en-us/graph/api/resources/assignedlabel?view=graph-rest-1.0
 type AssignedLabel struct {
 	// The unique identifier of the label.
-	LabelId string `json:"labelId"`
+	LabelId string `json:"labelId,omitempty"`
 
 	// The display name of the label. Read-only.
-	DisplayName string `json:"displayName"`
+	DisplayName string `json:"displayName,omitempty"`
 }

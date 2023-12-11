@@ -20,8 +20,8 @@ package azure
 // Contains the IP tag associated with the public IP address.
 type VMIPTag struct {
 	// IP tag type. Example: FirstPartyUsage.
-	IPTagType string `json:"ipTagType"`
+	IPTagType string `json:"ipTagType,omitempty"`
 
 	// IP tag associated with the public IP. Example: SQL, Storage etc.
-	Tag string `json:"tag"`
+	Tag string `json:"tag,omitempty"`
 }

@@ -21,11 +21,11 @@ package azure
 // For more detail see https://docs.microsoft.com/en-us/graph/api/resources/verifiedpublisher?view=graph-rest-1.0
 type VerifiedPublisher struct {
 	// The verified publisher name from the app publisher's Partner Center account.
-	DisplayName string `json:"displayName"`
+	DisplayName string `json:"displayName,omitempty"`
 
 	// The ID of the verified publisher from the app publisher's Partner Center account.
-	VerifiedPublisherId string `json:"verifiedPublisherId"`
+	VerifiedPublisherId string `json:"verifiedPublisherId,omitempty"`
 
 	// The timestamp when the verified publisher was first added or most recently updated.
-	AddedDateTime string `json:"addedDateTime"`
+	AddedDateTime string `json:"addedDateTime,omitempty"`
 }

@@ -21,11 +21,11 @@ package azure
 type NetworkProfile struct {
 	// Specifies the Microsoft.Network API version used when creating networking resources in the Network Interface
 	// Configurations.
-	NetworkApiVersion string `json:"networkApiVersion"`
+	NetworkApiVersion string `json:"networkApiVersion,omitempty"`
 
 	// Specifies the networking configurations that will be used to create the virtual machine networking resources.
-	NetworkInterfaceConfigurations []VirtualMachineNetworkInterfaceConfiguration `json:"networkInterfaceConfigurations"`
+	NetworkInterfaceConfigurations []VirtualMachineNetworkInterfaceConfiguration `json:"networkInterfaceConfigurations,omitempty"`
 
 	// Specifies the list of resource Ids for the network interfaces associated with the virtual machine.
-	NetworkInterfaces []NetworkInterfaceReference `json:"networkInterfaces"`
+	NetworkInterfaces []NetworkInterfaceReference `json:"networkInterfaces,omitempty"`
 }

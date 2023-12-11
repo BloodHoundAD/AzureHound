@@ -21,8 +21,8 @@ package azure
 // Minimum api-version: 2020-12-01
 type UefiSettings struct {
 	// Specifies whether secure boot should be enabled on the virtual machine.
-	SecureBootEnabled bool `json:"secureBootEnabled"`
+	SecureBootEnabled bool `json:"secureBootEnabled,omitempty"`
 
 	// Specifies whether vTPM should be enabled on the virtual machine.
-	VTpmEnabled bool `json:"vTpmEnabled"`
+	VTpmEnabled bool `json:"vTpmEnabled,omitempty"`
 }

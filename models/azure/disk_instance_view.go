@@ -21,11 +21,11 @@ package azure
 type DiskInstanceView struct {
 	// Specifies the encryption settings for the OS Disk.
 	// Minimum api-version: 2015-06-15
-	EncryptionSettings []DiskEncryptionSettings `json:"encryptionSettings"`
+	EncryptionSettings []DiskEncryptionSettings `json:"encryptionSettings,omitempty"`
 
 	// The disk name.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The resource status information.
-	Statuses []InstanceViewStatus `json:"statuses"`
+	Statuses []InstanceViewStatus `json:"statuses,omitempty"`
 }

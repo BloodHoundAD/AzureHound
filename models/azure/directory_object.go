@@ -17,7 +17,9 @@
 
 package azure
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // Represents an Azure Active Directory object. The directoryObject type is the base type for many other directory entity types.
 type DirectoryObject struct {

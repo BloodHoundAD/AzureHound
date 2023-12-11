@@ -20,11 +20,11 @@ package azure
 // Describes an encryption setting for a disk
 type DiskEncryptionSettings struct {
 	// Specifies the location of the disk encryption key, which is a Key Vault Secret.
-	DiskEncryptionKey KeyVaultSecretReference `json:"diskEncryptionKey"`
+	DiskEncryptionKey KeyVaultSecretReference `json:"diskEncryptionKey,omitempty"`
 
 	// Specifies whether disk encryption should be enabled on the virtual machine.
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled,omitempty"`
 
 	// Specifies the location of the key encryption key in Key Vault.
-	KeyEncryptionKey KeyVaultKeyReference `json:"keyEncryptionKey"`
+	KeyEncryptionKey KeyVaultKeyReference `json:"keyEncryptionKey,omitempty"`
 }

@@ -22,11 +22,11 @@ type VMSizeProperties struct {
 	// Specifies the number of vCPUs available for the VM.
 	// When this property is not specified in the request body the default behavior is to set it to the value of vCPUs
 	// available for that VM size exposed in api response of List all available virtual machine sizes in a region.
-	VCPUsAvailable int `json:"vCPUsAvailable"`
+	VCPUsAvailable int `json:"vCPUsAvailable,omitempty"`
 
 	// Specifies the vCPU to physical core ratio.
 	// When this property is not specified in the request body the default behavior is set to the value of vCPUsPerCore
 	// for the VM Size exposed in api response of List all available virtual machine sizes in a region.
 	// Setting this property to 1 also means that hyper-threading is disabled.
-	VCPUsPerCore int `json:"vCPUsPerCore"`
+	VCPUsPerCore int `json:"vCPUsPerCore,omitempty"`
 }

@@ -67,7 +67,7 @@ type Device struct {
 	// The individual extension attributes are not selectable.
 	// These properties are mastered in cloud and can be set during creation or update of a device object in Azure AD.
 	// Supports $filter (eq, NOT, startsWith).
-	ExtensionAttributes OnPremisesExtensionAttributes `json:"onPremisesExtensionAttributes"`
+	ExtensionAttributes OnPremisesExtensionAttributes `json:"onPremisesExtensionAttributes,omitempty"`
 
 	// true if the device complies with Mobile Device Management (MDM) policies; otherwise, false.
 	// Read-only.

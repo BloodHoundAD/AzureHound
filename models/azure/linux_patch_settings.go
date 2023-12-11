@@ -23,11 +23,11 @@ type LinuxPatchSettings struct {
 	// Possible values are:
 	// ImageDefault - You control the timing of patch assessments on a virtual machine.
 	// AutomaticByPlatform - The platform will trigger periodic patch assessments. The property provisionVMAgent must be true.
-	AssessmentMode string `json:"assessmentMode"`
+	AssessmentMode string `json:"assessmentMode,omitempty"`
 
 	// Specifies the mode of VM Guest Patching to IaaS virtual machine or virtual machines associated to virtual machine scale set with OrchestrationMode as Flexible.
 	// Possible values are:
 	// ImageDefault - The virtual machine's default patching configuration is used.
 	// AutomaticByPlatform - The virtual machine will be automatically updated by the platform. The property provisionVMAgent must be true
-	PatchMode string `json:"patchMode"`
+	PatchMode string `json:"patchMode,omitempty"`
 }

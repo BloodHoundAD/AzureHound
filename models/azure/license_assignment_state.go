@@ -26,23 +26,23 @@ type LicenseAssignmentState struct {
 	// The id of the group that assigns this license. If direct-assigned this field will be null.
 	//
 	// Read-only
-	AssignedByGroup string `json:"assignedByGroup"`
+	AssignedByGroup string `json:"assignedByGroup,omitempty"`
 
 	// The service plans that are disabled in this assignment.
 	//
 	// Read-only
-	DisabledPlans string `json:"disabledPlans"`
+	DisabledPlans string `json:"disabledPlans,omitempty"`
 
 	// License assignment failure error.
-	Error enums.LicenseError `json:"error"`
+	Error enums.LicenseError `json:"error,omitempty"`
 
 	// The unique identifier for the SKU
 	//
 	// Read-only
-	SkuId string `json:"skuId"`
+	SkuId string `json:"skuId,omitempty"`
 
 	// Indicates the current state of this assignment.
 	//
 	// Read-only
-	State enums.LicenseState `json:"state"`
+	State enums.LicenseState `json:"state,omitempty"`
 }

@@ -20,11 +20,11 @@ package azure
 // The status ov virtual machine patch operations.
 type VirtualMachinePatchStatus struct {
 	// The available patch summary of the latest assessment operation for the virtual machine.
-	AvailablePatchSummary AvailablePatchSummary `json:"availablePatchSummary"`
+	AvailablePatchSummary AvailablePatchSummary `json:"availablePatchSummary,omitempty"`
 
 	// The enablement status of the specified patchMode.
-	ConfigurationStatuses []InstanceViewStatus `json:"configurationStatuses"`
+	ConfigurationStatuses []InstanceViewStatus `json:"configurationStatuses,omitempty"`
 
 	// The installation summary of the latest installation operation for the virtual machine.
-	LastPatchInstallationSummary LastPatchInstallationSummary `json:"lastPatchInstallationSummary"`
+	LastPatchInstallationSummary LastPatchInstallationSummary `json:"lastPatchInstallationSummary,omitempty"`
 }

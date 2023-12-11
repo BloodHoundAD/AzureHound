@@ -21,14 +21,14 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 
 type WorkingHours struct {
 	// The days of the week on which the user works.
-	DaysOfWeek []enums.DayOfWeek `json:"daysOfWeek"`
+	DaysOfWeek []enums.DayOfWeek `json:"daysOfWeek,omitempty"`
 
 	// The time of the day that the user starts working.
-	StartTime string `json:"startTime"`
+	StartTime string `json:"startTime,omitempty"`
 
 	// The time of the day that the user stops working.
-	EndTime string `json:"endTime"`
+	EndTime string `json:"endTime,omitempty"`
 
 	// The time zone to which the working hours apply.
-	TimeZone TimeZoneBase `json:"timeZoneBase"`
+	TimeZone TimeZoneBase `json:"timeZoneBase,omitempty"`
 }

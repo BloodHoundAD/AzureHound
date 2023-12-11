@@ -23,11 +23,11 @@ type EmployeeOrgData struct {
 	//
 	// Returned only on `$select`
 	// Supports `$filter`
-	Division string `json:"division"`
+	Division string `json:"division,omitempty"`
 
 	// The cost center assoicated with the user.
 	//
 	// Returned only on `$select`
 	// Supports `$filter`
-	CostCenter string `json:"costCenter"`
+	CostCenter string `json:"costCenter,omitempty"`
 }

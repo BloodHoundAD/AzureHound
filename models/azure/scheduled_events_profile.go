@@ -19,5 +19,5 @@ package azure
 
 type ScheduledEventsProfile struct {
 	// Specifies Terminate Scheduled Event related configurations.
-	TerminateNotificationProfile TerminateNotificationProfile `json:"terminateNotificationProfile"`
+	TerminateNotificationProfile TerminateNotificationProfile `json:"terminateNotificationProfile,omitempty"`
 }

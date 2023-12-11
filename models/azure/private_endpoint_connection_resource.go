@@ -19,8 +19,8 @@ package azure
 
 // Private endpoint connection item.
 type PrivateEndpointConnectionResource struct {
-	Id         string                   `json:"id"`
+	Id         string                   `json:"id,omitempty"`
 	Name       string                   `json:"name,omitempty"`
-	Properties ConnectionItemProperties `json:"properties"`
+	Properties ConnectionItemProperties `json:"properties,omitempty"`
 	Type       string                   `json:"type,omitempty"`
 }

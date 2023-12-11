@@ -26,6 +26,18 @@ type AppOwner struct {
 	AppId string          `json:"appId"`
 }
 
+func (s *AppOwner) MarshalJSON() ([]byte, error) {
+	output := make(map[string]any)
+	output["appId"] = s.AppId
+
+	if owner, err := OmitEmpty(s.Owner); err != nil {
+		return nil, err
+	} else {
+		output["owner"] = owner
+		return json.Marshal(output)
+	}
+}
+
 type AppOwners struct {
 	Owners []AppOwner `json:"owners"`
 	AppId  string     `json:"appId"`

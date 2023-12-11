@@ -20,7 +20,7 @@ package azure
 // Describes a virtual machine network interface configuration.
 type VirtualMachineNetworkInterfaceConfiguration struct {
 	// The network interface configuration name.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
-	Properties VMNetworkInterfaceConfigurationProperties `json:"properties"`
+	Properties VMNetworkInterfaceConfigurationProperties `json:"properties,omitempty"`
 }

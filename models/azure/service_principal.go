@@ -146,7 +146,7 @@ type ServicePrincipal struct {
 	ReplyUrls []string `json:"replyUrls,omitempty"`
 
 	// The collection for settings related to saml single sign-on.
-	SamlSingleSignOnSettings SamlSingleSignOnSettings `json:"samlSingleSignOnSettings"`
+	SamlSingleSignOnSettings SamlSingleSignOnSettings `json:"samlSingleSignOnSettings,omitempty"`
 
 	// Contains the list of identifiersUris, copied over from the associated application.
 	// Additional values can be added to hybrid applications.

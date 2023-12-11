@@ -20,7 +20,7 @@ package azure
 // Describes a network interface reference.
 type NetworkInterfaceReference struct {
 	// Resource ID.
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 
-	Properties NetworkInterfaceReferenceProperties `json:"properties"`
+	Properties NetworkInterfaceReferenceProperties `json:"properties,omitempty"`
 }

@@ -23,5 +23,5 @@ type DiagnosticsProfile struct {
 	// Boot Diagnostics is a debugging feature which allows you to view Console Output and Screenshot to diagnose VM
 	// status. You can easily view the output of your console log. Azure also enables you to see a screenshot of the VM
 	// from the hypervisor.
-	BootDiagnotics BootDiagnotics `json:"bootDiagnotics"`
+	BootDiagnotics BootDiagnotics `json:"bootDiagnotics,omitempty"`
 }

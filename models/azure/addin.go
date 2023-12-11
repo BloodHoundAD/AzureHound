@@ -24,6 +24,6 @@ import "github.com/gofrs/uuid"
 // Microsoft 365 call the application in the context of a document the user is working on.
 type AddIn struct {
 	Id         uuid.UUID  `json:"id,omitempty"`
-	Properties []KeyValue `json:"properties"`
-	Type       string     `json:"type"`
+	Properties []KeyValue `json:"properties,omitempty"`
+	Type       string     `json:"type,omitempty"`
 }

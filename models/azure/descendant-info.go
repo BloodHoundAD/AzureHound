@@ -19,49 +19,46 @@ package azure
 
 // The properties of the parent management group.
 type DescendantParentGroupInfo struct {
-
 	// The fully qualified ID for the parent management group.
 	//
 	// For example:
 	// - /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 }
 
 // DescendantInfoProperties describes the properties of the management group descendant.
 type DescendantInfoProperties struct {
-
 	// The friendly name of the management group.
-	DisplayName string `json:"display_name"`
+	DisplayName string `json:"display_name,omitempty"`
 
 	// The properties of the parent management group.
-	Parent DescendantParentGroupInfo `json:"parent"`
+	Parent DescendantParentGroupInfo `json:"parent,omitempty"`
 }
 
 // DescendantInfo is a management group descendant.
 type DescendantInfo struct {
-
 	// The fully qualified ID for the descendant.
 	//
 	// For example:
 	// - /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
 	// - /subscriptions/0000000-0000-0000-0000-000000000000
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 
 	// The name of the descendant.
 	//
 	// For example:
 	// - 00000000-0000-0000-0000-000000000000
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The properties of the management group descendant.
-	Properties DescendantInfoProperties `json:"properties"`
+	Properties DescendantInfoProperties `json:"properties,omitempty"`
 
 	// The type of the resource.
 	//
 	// For example:
 	// - Microsoft.Management/managementGroups
 	// - /subscriptions
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 }
 
 type DescendantInfoList struct {

@@ -21,8 +21,8 @@ package azure
 type PrivateEndpointConnection struct {
 	Entity
 
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
 
 	Properties PrivateEndpointConnectionProperties `json:"properties,omitempty"`
 }

@@ -19,5 +19,5 @@ package azure
 
 // Describes the uri of a disk.
 type VirtualHardDisk struct {
-	Uri string `json:"uri"`
+	Uri string `json:"uri,omitempty"`
 }

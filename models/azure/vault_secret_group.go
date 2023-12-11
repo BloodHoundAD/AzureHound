@@ -20,8 +20,8 @@ package azure
 // Describes a set of certificates which are all in the same Key Vault.
 type VaultSecretGroup struct {
 	// The relative URL of the Key Vault containing all of the certificates in VaultCertificates.
-	SourceVault SubResource `json:"sourceVault"`
+	SourceVault SubResource `json:"sourceVault,omitempty"`
 
 	// The list of key vault references in SourceVault which contain certificates.
-	VaultCertificates []VaultCertificate `json:"vaultCertificates"`
+	VaultCertificates []VaultCertificate `json:"vaultCertificates,omitempty"`
 }

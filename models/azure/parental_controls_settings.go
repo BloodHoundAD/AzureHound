@@ -23,7 +23,7 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 // For more detail see https://docs.microsoft.com/en-us/graph/api/resources/parentalcontrolsettings?view=graph-rest-1.0
 type ParentalControlSettings struct {
 	// Specifies the ISO 3166 country codes for which access to the application will be blocked for minors.
-	CountriesBlockedForMinors []string `json:"countriesBlockedForMinors"`
+	CountriesBlockedForMinors []string `json:"countriesBlockedForMinors,omitempty"`
 	// Specifies the legal age group rule that applies to users of the app.
-	LegalAgeGroupRule enums.LegalAgeGroupRule `json:"legalAgeGroupRule"`
+	LegalAgeGroupRule enums.LegalAgeGroupRule `json:"legalAgeGroupRule,omitempty"`
 }

@@ -20,5 +20,5 @@ package azure
 // Describes Windows Remote Management configuration of the VM.
 type WinRMConfiguration struct {
 	// The list of Windows Remote Management listeners.
-	Listeners []WinRMListener `json:"listeners"`
+	Listeners []WinRMListener `json:"listeners,omitempty"`
 }

@@ -22,8 +22,8 @@ import "github.com/gofrs/uuid"
 // Represents a license assigned to a user.
 type AssignedLicense struct {
 	// A collection of the unique identifiers for plans that have been disabled.
-	DisabledPlans []uuid.UUID `json:"disabledPlans"`
+	DisabledPlans []uuid.UUID `json:"disabledPlans,omitempty"`
 
 	// The unique identifier for the SKU.
-	SkuId uuid.UUID `json:"skuId"`
+	SkuId uuid.UUID `json:"skuId,omitempty"`
 }

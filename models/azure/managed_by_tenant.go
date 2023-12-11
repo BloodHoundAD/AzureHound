@@ -22,5 +22,5 @@ import "github.com/gofrs/uuid"
 // Information about a tenant managing the subscription.
 type ManagedByTenant struct {
 	// The tenant ID of the managing tenant.
-	TenantId uuid.UUID `json:"tenantId"`
+	TenantId uuid.UUID `json:"tenantId,omitempty"`
 }

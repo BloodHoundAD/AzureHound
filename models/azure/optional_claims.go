@@ -24,20 +24,20 @@ package azure
 type OptionalClaim struct {
 	// Additional properties of the claim. If a property exists in this collection, it modifies the behavior of the
 	// optional claim specified in the name property.
-	AdditionalProperties []string `json:"additionalProperties"`
+	AdditionalProperties []string `json:"additionalProperties,omitempty"`
 
 	// If the value is true, the claim specified by the client is necessary to ensure a smooth authorization experience
 	// for the specific task requested by the end user. The default value is false.
-	Essential bool `json:"essential"`
+	Essential bool `json:"essential,omitempty"`
 
 	// The name of the optional claim.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The source (directory object) of the claim.
 	// There are predefined claims and user-defined claims from extension properties. If the source value is null, the
 	// claim is a predefined optional claim. If the source value is user, the value in the name property is the
 	// extension property from the user object.
-	Source string `json:"source"`
+	Source string `json:"source,omitempty"`
 }
 
 // Declares the optional claims requested by an application. An application can configure optional claims to be returned
@@ -49,11 +49,11 @@ type OptionalClaim struct {
 // For more detail see https://docs.microsoft.com/en-us/graph/api/resources/optionalclaims?view=graph-rest-1.0
 type OptionalClaims struct {
 	// The optional claims returned in the JWT ID token.
-	IdToken []OptionalClaim `json:"idToken"`
+	IdToken []OptionalClaim `json:"idToken,omitempty"`
 
 	// The optional claims returned in the JWT access token.
-	AccessToken []OptionalClaim `json:"accessToken"`
+	AccessToken []OptionalClaim `json:"accessToken,omitempty"`
 
 	// The optional claims returned in the SAML token.
-	Saml2Token []OptionalClaim `json:"saml2Token"`
+	Saml2Token []OptionalClaim `json:"saml2Token,omitempty"`
 }

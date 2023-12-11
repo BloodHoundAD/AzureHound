@@ -19,9 +19,9 @@ package azure
 
 // For internal use only. This complex type will be deprecated in the future.
 type AlternativeSecurityId struct {
-	Type             int32  `json:"type"`
-	IdentityProvider string `json:"identity_provider"`
+	Type             int32  `json:"type,omitempty"`
+	IdentityProvider string `json:"identity_provider,omitempty"`
 
 	// Base64Url encoded.
-	Key string `json:"key"`
+	Key string `json:"key,omitempty"`
 }

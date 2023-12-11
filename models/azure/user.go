@@ -28,7 +28,7 @@ type User struct {
 	// A freeform text entry field for the user to describe themselves.
 	//
 	// Returned only on `$select`
-	AboutMe string `json:"aboutMe"`
+	AboutMe string `json:"aboutMe,omitempty"`
 
 	// `true` if the account is enabled; otherwise `false`. This property is required when a user is created.
 	//
@@ -153,7 +153,7 @@ type User struct {
 	//
 	// Returned only on `$select`
 	// Supports `$filter` (eq,ne,NOT,ge,le,in,startsWith)
-	EmployeeType string `json:"employeeType"`
+	EmployeeType string `json:"employeeType,omitempty"`
 
 	// For an external user invited to the tenant, this represents the invited user's invitation status.
 	//

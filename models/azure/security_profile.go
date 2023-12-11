@@ -23,13 +23,13 @@ type SecurityProfile struct {
 	// or virtual machine scale set. This will enable the encryption for all the disks including Resource/Temp disk at
 	// host itself.
 	// Default: The Encryption at host will be disabled unless this property is set to true for the resource.
-	EncryptionAtHost bool `json:"encryptionAtHost"`
+	EncryptionAtHost bool `json:"encryptionAtHost,omitempty"`
 
 	// Specifies the SecurityType of the virtual machine. It is set as TrustedLaunch to enable UefiSettings.
 	// Default: UefiSettings will not be enabled unless this property is set as TrustedLaunch.
-	SecurityType string `json:"securityType"`
+	SecurityType string `json:"securityType,omitempty"`
 
 	// Specifies the security settings like secure boot and vTPM used while creating the virtual machine.
 	// Minimum api-version: 2020-12-01
-	UefiSettings UefiSettings `json:"uefiSettings"`
+	UefiSettings UefiSettings `json:"uefiSettings,omitempty"`
 }

@@ -20,8 +20,8 @@ package azure
 type LocaleInfo struct {
 	// A locale code for the user, which includes the user's perferred language and country/region as defined
 	// in ISO 639-1 and ISO 3166-1 alpha-2. E.g. "en-us"
-	Locale string `json:"locale"`
+	Locale string `json:"locale,omitempty"`
 
 	// A name representing the user's locale in natural language. E.g. "English (United States)"
-	DisplayName string `json:"displayName"`
+	DisplayName string `json:"displayName,omitempty"`
 }

@@ -23,25 +23,25 @@ import "github.com/gofrs/uuid"
 // For more detail see https://docs.microsoft.com/en-us/graph/api/resources/apiapplication?view=graph-rest-1.0
 type ApiApplication struct {
 	// When true, allows an application to use claims mapping without specifying a custom signing key.
-	AcceptMappedClaims bool `json:"acceptMappedClaims"`
+	AcceptMappedClaims bool `json:"acceptMappedClaims,omitempty"`
 
 	// Used for bundling consent if you have a solution that contains two parts: a client app and a custom web API app.
 	// If you set the appID of the client app to this value, the user only consents once to the client app. Azure AD
 	// knows that consenting to the client means implicitly consenting to the web API and automatically provisions
 	// service principals for both APIs at the same time. Both the client and the web API app must be registered in the
 	// same tenant.
-	KnownClientApplications []uuid.UUID `json:"knownClientApplications"`
+	KnownClientApplications []uuid.UUID `json:"knownClientApplications,omitempty"`
 
 	// The definition of the delegated permissions exposed by the web API represented by this application registration.
 	// These delegated permissions may be requested by a client application, and may be granted by users or
 	// administrators during consent. Delegated permissions are sometimes referred to as OAuth 2.0 scopes.
-	OAuth2PermissionScopes []PermissionScope `json:"oauth2PermissionScopes"`
+	OAuth2PermissionScopes []PermissionScope `json:"oauth2PermissionScopes,omitempty"`
 
 	// Lists the client applications that are pre-authorized with the specified delegated permissions to access this
 	// application's APIs. Users are not required to consent to any pre-authorized application (for the permissions
 	// specified). However, any additional permissions not listed in preAuthorizedApplications (requested through
 	// incremental consent for example) will require user consent.
-	PreAuthorizedApplications []PreAuthorizedApplication `json:"preAuthorizedApplications"`
+	PreAuthorizedApplications []PreAuthorizedApplication `json:"preAuthorizedApplications,omitempty"`
 
 	// Specifies the access token version expected by this resource.
 	// This changes the version and format of the JWT produced independent of the endpoint or client used to request the
@@ -55,5 +55,5 @@ type ApiApplication struct {
 	//
 	// If signInAudience on the application is configured as AzureADandPersonalMicrosoftAccount, the value for this
 	//property must be 2
-	RequestedAccessTokenVersion int32 `json:"requestedAccessTokenVersion"`
+	RequestedAccessTokenVersion int32 `json:"requestedAccessTokenVersion,omitempty"`
 }

@@ -21,5 +21,5 @@ package azure
 type SPAApplication struct {
 	// Specifies the URLs where user tokens are sent for sign-in, or the redirect URIs where OAuth 2.0 authorization
 	// codes and access tokens are sent.
-	RedirectUris []string `json:"redirectUris"`
+	RedirectUris []string `json:"redirectUris,omitempty"`
 }

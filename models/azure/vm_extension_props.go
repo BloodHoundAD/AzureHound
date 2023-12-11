@@ -21,39 +21,39 @@ type VMExtensionProperties struct {
 	// Indicates whether the extension should use a newer minor version if one is available at deployment time.
 	// Once deployed, however, the extension will not upgrade minor versions unless redeployed, even with this property
 	// set to true.
-	AutoUpgradeMinorVersion bool `json:"autoUpgradeMinorVersion"`
+	AutoUpgradeMinorVersion bool `json:"autoUpgradeMinorVersion,omitempty"`
 
 	// Indicates whether the extension should be automatically upgraded by the platform if there is a newer version of
 	// the extension available.
-	EnabledAutomaticUpgrade bool `json:"enabledAutomaticUpgrade"`
+	EnabledAutomaticUpgrade bool `json:"enabledAutomaticUpgrade,omitempty"`
 
 	// How the extension handler should be forced to update even if the extension configuration has not changed.
-	ForceUpdateTag string `json:"forceUpdateTag"`
+	ForceUpdateTag string `json:"forceUpdateTag,omitempty"`
 
 	// The virtual machine extension instance view.
-	InstanceView VirtualMachineExtensionInstanceView `json:"instanceView"`
+	InstanceView VirtualMachineExtensionInstanceView `json:"instanceView,omitempty"`
 
 	// The extension can contain either protectedSettings or protectedSettingsFromKeyVault or no protected settings at
 	// all.
-	ProtectedSettings map[string]string `json:"protectedSettings"`
+	ProtectedSettings map[string]string `json:"protectedSettings,omitempty"`
 
 	// The provisioning state, which only appears in the response.
-	ProvisioningState string `json:"provisioningState"`
+	ProvisioningState string `json:"provisioningState,omitempty"`
 
 	// The name of the extension handler publisher.
-	Publisher string `json:"publisher"`
+	Publisher string `json:"publisher,omitempty"`
 
 	// Json formatted public settings for the extension.
-	Settings map[string]string `json:"settings"`
+	Settings map[string]string `json:"settings,omitempty"`
 
 	// Indicates whether failures stemming from the extension will be suppressed (Operational failures such as not
 	// connecting to the VM will not be suppressed regardless of this value).
 	// The default is false.
-	SuppressFailures bool `json:"suppressFailures"`
+	SuppressFailures bool `json:"suppressFailures,omitempty"`
 
 	// Specifies the type of the extension; an example is "CustomScriptExtension".
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 
 	// Specifies the version of the script handler.
-	TypeHandlerVersion string `json:"typeHandlerVersion"`
+	TypeHandlerVersion string `json:"typeHandlerVersion,omitempty"`
 }

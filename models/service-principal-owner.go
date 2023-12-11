@@ -26,6 +26,18 @@ type ServicePrincipalOwner struct {
 	ServicePrincipalId string          `json:"servicePrincipalId"`
 }
 
+func (s *ServicePrincipalOwner) MarshalJSON() ([]byte, error) {
+	output := make(map[string]any)
+	output["servicePrincipalId"] = s.ServicePrincipalId
+
+	if owner, err := OmitEmpty(s.Owner); err != nil {
+		return nil, err
+	} else {
+		output["owner"] = owner
+		return json.Marshal(output)
+	}
+}
+
 type ServicePrincipalOwners struct {
 	Owners             []ServicePrincipalOwner `json:"owners"`
 	ServicePrincipalId string                  `json:"servicePrincipalId"`

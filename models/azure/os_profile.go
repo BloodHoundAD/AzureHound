@@ -33,7 +33,7 @@ type OSProfile struct {
 	// Disallowed values: "abc@123", "P@$$w0rd", "P@ssw0rd", "P@ssword123", "Pa$$word", "pass@word1", "Password!", "Password1", "Password22", "iloveyou!"
 	// For resetting the password, see How to reset the Remote Desktop service or its login password in a Windows VM
 	// For resetting root password, see Manage users, SSH, and check or repair disks on Azure Linux VMs using the VMAccess Extension
-	AdminPassword string `json:"adminPassword"`
+	AdminPassword string `json:"adminPassword,omitempty,omitempty"`
 
 	// Specifies the name of the administrator account.
 	// This property cannot be updated after the VM is created.
@@ -42,39 +42,39 @@ type OSProfile struct {
 	// Minimum-length (Linux): 1 character
 	// Max-length (Linux): 64 characters
 	// Max-length (Windows): 20 characters.
-	AdminUsername string `json:"adminUsername"`
+	AdminUsername string `json:"adminUsername,omitempty,omitempty"`
 
 	// Specifies whether extension operations should be allowed on the virtual machine.
 	// This may only be set to False when no extensions are present on the virtual machine.
-	AllowExtensionOperations bool `json:"allowExtensionOperations"`
+	AllowExtensionOperations bool `json:"allowExtensionOperations,omitempty,omitempty"`
 
 	// Specifies the host OS name of the virtual machine.
 	// This name cannot be updated after the VM is created.
 	// Max-length (Windows): 15 characters
 	// Max-length (Linux): 64 characters.
 	// For naming conventions and restrictions see Azure infrastructure services implementation guidelines.
-	ComputerName string `json:"computerName"`
+	ComputerName string `json:"computerName,omitempty,omitempty"`
 
 	// Specifies a base-64 encoded string of custom data. The base-64 encoded string is decoded to a binary array that is saved as a file on the Virtual Machine. The maximum length of the binary array is 65535 bytes.
 	// Note: Do not pass any secrets or passwords in customData property
 	// This property cannot be updated after the VM is created.
 	// customData is passed to the VM to be saved as a file, for more information see Custom Data on Azure VMs
 	// For using cloud-init for your Linux VM, see Using cloud-init to customize a Linux VM during creation
-	CustomData string `json:"customData"`
+	CustomData string `json:"customData,omitempty,omitempty"`
 
 	// Specifies the Linux operating system settings on the virtual machine.
 	// For a list of supported Linux distributions, see Linux on Azure-Endorsed Distributions.
-	LinuxConfiguration LinuxConfiguration `json:"linuxConfiguration,omitempty"`
+	LinuxConfiguration LinuxConfiguration `json:"linuxConfiguration,omitempty,omitempty"`
 
 	// Specifies whether the guest provision signal is required to infer provision success of the virtual machine.
 	// Note: This property is for private testing only, and all customers must not set the property to false.
-	RequireGuestProvisionSignal bool `json:"requireGuestProvisionSignal"`
+	RequireGuestProvisionSignal bool `json:"requireGuestProvisionSignal,omitempty,omitempty"`
 
 	// Specifies set of certificates that should be installed onto the virtual machine. To install certificates on a
 	// virtual machine it is recommended to use the Azure Key Vault virtual machine extension for Linux or the
 	// Azure Key Vault virtual machine extension for Windows.
-	Secrets []VaultSecretGroup `json:"secrets"`
+	Secrets []VaultSecretGroup `json:"secrets,omitempty,omitempty"`
 
 	// Specifies Windows operating system settings on the virtual machine.
-	WindowsConfiguration WindowsConfiguration `json:"windowsConfiguration"`
+	WindowsConfiguration WindowsConfiguration `json:"windowsConfiguration,omitempty,omitempty"`
 }

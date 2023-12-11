@@ -21,7 +21,7 @@ package azure
 type VMGalleryApplication struct {
 	// Optional, Specifies the uri to an azure blob that will replace the default configuration for the package if
 	// provided.
-	ConfigurationReference string `json:"configurationReference"`
+	ConfigurationReference string `json:"configurationReference,omitempty"`
 
 	// Optional, Specifies the order in which the packages have to be installed.
 	Order int `json:"order,omitempty"`
@@ -31,5 +31,5 @@ type VMGalleryApplication struct {
 	PackageReferenceId string `json:"packageReferenceId,omitempty"`
 
 	// Optional, Specifies a passthrough value for more generic context.
-	Tags string `json:"tags"`
+	Tags string `json:"tags,omitempty"`
 }

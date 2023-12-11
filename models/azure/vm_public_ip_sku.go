@@ -24,8 +24,8 @@ import (
 // Describes the public IP Sku
 type VMPublicIPSku struct {
 	// Specify the public IP sku name.
-	Name enums.IPSku `json:"name"`
+	Name enums.IPSku `json:"name,omitempty"`
 
 	// Specify the public IP sky tier.
-	Tier enums.IPSkuTier `json:"tier"`
+	Tier enums.IPSkuTier `json:"tier,omitempty"`
 }

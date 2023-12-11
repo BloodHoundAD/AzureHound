@@ -22,11 +22,11 @@ import "github.com/bloodhoundad/azurehound/v2/enums"
 // An object that represents the approval state of the private link connection.
 type PrivateLinkServiceConnectionState struct {
 	// A message indicating if changes on the service provider require any updates on the consumer.
-	ActionsRequired string `json:"actionsRequired"`
+	ActionsRequired string `json:"actionsRequired,omitempty"`
 
 	// The reason for approval or rejection.
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 
 	// Indicates whether the connection has been approved, rejected or removed by the key vault owner.
-	Status enums.EndpointConnectionStatus `json:"status"`
+	Status enums.EndpointConnectionStatus `json:"status,omitempty"`
 }

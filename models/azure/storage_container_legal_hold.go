@@ -18,9 +18,9 @@
 package azure
 
 type LegalHoldProperties struct {
-	HasLegalHold                 bool `json:"hasLegalHold,omitempty"`
-	ProtectedAppendWritesHistory ProtectedAppendWritesHistory
-	Tags                         []TagProperty `json:"tags,omitempty"`
+	HasLegalHold                 bool                         `json:"hasLegalHold,omitempty"`
+	ProtectedAppendWritesHistory ProtectedAppendWritesHistory `json:"protectedAppendWritesHistory,omitempty"`
+	Tags                         []TagProperty                `json:"tags,omitempty"`
 }
 
 type ProtectedAppendWritesHistory struct {

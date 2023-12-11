@@ -23,9 +23,9 @@ package azure
 // example) will require user consent.
 type PreAuthorizedApplication struct {
 	// The unique identifier for the application.
-	AppId string `json:"appId"`
+	AppId string `json:"appId,omitempty"`
 	// The unique identifiers for the OAuth2PermissionScopes the application requires.
-	PermissionIds []string `json:"permissionIds"`
+	PermissionIds []string `json:"permissionIds,omitempty"`
 	// The unique identifiers for the OAuth2PermissionScopes the application requires.
-	DelegatedPermissionIds []string `json:"delegatedPermissionIds"`
+	DelegatedPermissionIds []string `json:"delegatedPermissionIds,omitempty"`
 }

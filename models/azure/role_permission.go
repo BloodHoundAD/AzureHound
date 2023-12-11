@@ -24,12 +24,12 @@ type RolePermission struct {
 	// Set of tasks that can be performed on a resource.
 	//
 	// Required
-	AllowedResourceActions []string `json:"allowedResourceActions"`
+	AllowedResourceActions []string `json:"allowedResourceActions,omitempty"`
 
 	// Optional constraints that must be met for the permission to be effective.
-	Condition string `json:"condition"`
+	Condition string `json:"condition,omitempty"`
 
 	// Set of tasks that may not be performed on a resource.
 	// Not yet supported by MS Graph API.
-	ExcludedResourceActions []string `json:"excludedResourceActions"`
+	ExcludedResourceActions []string `json:"excludedResourceActions,omitempty"`
 }

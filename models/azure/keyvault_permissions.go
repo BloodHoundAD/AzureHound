@@ -20,14 +20,14 @@ package azure
 // Permissions the identity has for keys, secrets, certificates and storage.
 type KeyVaultPermissions struct {
 	// Permissions to certificates
-	Certificates []string `json:"certificates"`
+	Certificates []string `json:"certificates,omitempty"`
 
 	// Permissions to keys
-	Keys []string `json:"keys"`
+	Keys []string `json:"keys,omitempty"`
 
 	// Permissions to secrets
-	Secrets []string `json:"secrets"`
+	Secrets []string `json:"secrets,omitempty"`
 
 	// Permissions to storage accounts
-	Storage []string `json:"storage"`
+	Storage []string `json:"storage,omitempty"`
 }
