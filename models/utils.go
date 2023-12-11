@@ -26,9 +26,8 @@ func StripEmptyEntries(data map[string]any) {
 			for _, item := range slice {
 				if mapValue, ok := item.(map[string]any); ok {
 					StripEmptyEntries(mapValue)
-				} else {
-					data[key] = append(data[key].([]any), item)
 				}
+				data[key] = append(data[key].([]any), item)
 			}
 		} else {
 			data[key] = value
