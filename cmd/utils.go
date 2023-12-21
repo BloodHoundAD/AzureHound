@@ -67,6 +67,7 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 
 	config.LoadValues(cmd, config.Options())
 	config.SetAzureDefaults()
+	config.ReadFromStdInput()
 
 	if logr, err := logger.GetLogger(); err != nil {
 		return err
