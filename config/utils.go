@@ -18,12 +18,17 @@
 package config
 
 import (
+	"bufio"
 	"fmt"
 	"net/url"
+	"os"
+	"strings"
+	"syscall"
 
 	client "github.com/bloodhoundad/azurehound/v2/client/config"
 	config "github.com/bloodhoundad/azurehound/v2/config/internal"
 	"github.com/bloodhoundad/azurehound/v2/constants"
+	"golang.org/x/term"
 )
 
 var Init = config.Init
@@ -47,6 +52,67 @@ func SetAzureDefaults() {
 		url := client.ResourceManagerUrl(region, constants.AzureCloud().ResourceManagerUrl)
 		AzMgmtUrl.Set(url)
 	}
+}
+
+func ReadFromStdInput() error {
+	if RefreshToken.Value() == "-" {
+		fmt.Print("Enter Refresh Token: ")
+		rToken, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			return err
+		}
+		RefreshToken.Set(strings.TrimSpace(string(rToken)))
+	}
+
+	if JWT.Value() == "-" {
+		fmt.Print("Enter JWT: ")
+		jwt, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			return err
+		}
+		JWT.Set((strings.TrimSpace(string(jwt))))
+	}
+
+	if AzSecret.Value() == "-" {
+		fmt.Print("Enter Application Secret: ")
+		azSecret, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			return err
+		}
+		AzSecret.Set((strings.TrimSpace(string(azSecret))))
+	}
+
+	if AzKeyPass.Value() == "-" {
+		fmt.Print("Enter Key Passphrase: ")
+		azKeyPass, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			return err
+		}
+		AzKeyPass.Set((strings.TrimSpace(string(azKeyPass))))
+	}
+
+	if AzUsername.Value() == "-" {
+		r := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter username: ")
+		azUser, err := r.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		AzUsername.Set(strings.TrimSpace(azUser))
+	}
+
+	if AzPassword.Value() == "-" {
+		fmt.Print("Enter password: ")
+		azPass, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			return err
+		}
+		AzPassword.Set((strings.TrimSpace(string(azPass))))
+	}
+
+	//newline to not mess with following logs
+	fmt.Println()
+	return nil
 }
 
 func ValidateURL(input string) error {
