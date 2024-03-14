@@ -34,6 +34,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime/debug"
 	"runtime/pprof"
 	"time"
 
@@ -82,6 +83,12 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		return nil
+	}
+}
+
+func panicRecovery() {
+	if recovery := recover(); recovery != nil {
+		log.V(0).Error(fmt.Errorf("[panic recovery] %s - [stack trace] %s", recovery, debug.Stack()), "")
 	}
 }
 
