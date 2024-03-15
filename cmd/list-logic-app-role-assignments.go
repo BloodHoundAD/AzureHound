@@ -56,15 +56,17 @@ func listLogicAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	} else {
 		log.Info("collecting azure logic app role assignments...")
 		start := time.Now()
-		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listLogicAppRoleAssignments(ctx, azClient, listLogicApps(ctx, azClient, subscriptions))
+		panicChan := panicChan()
+		subscriptions := listSubscriptions(ctx, azClient, panicChan)
+		stream := listLogicAppRoleAssignments(ctx, azClient, panicChan, listLogicApps(ctx, azClient, panicChan, subscriptions))
+		handleBubbledPanic(ctx, panicChan, stop)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient, logicapps <-chan interface{}) <-chan interface{} {
+func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, logicapps <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -73,6 +75,7 @@ func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient,
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), logicapps) {
@@ -91,6 +94,7 @@ func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient,
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

@@ -56,15 +56,17 @@ func listContainerRegistryRoleAssignmentImpl(cmd *cobra.Command, args []string) 
 	} else {
 		log.Info("collecting azure container registry role assignments...")
 		start := time.Now()
-		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listContainerRegistryRoleAssignments(ctx, azClient, listContainerRegistries(ctx, azClient, subscriptions))
+		panicChan := panicChan()
+		subscriptions := listSubscriptions(ctx, azClient, panicChan)
+		stream := listContainerRegistryRoleAssignments(ctx, azClient, panicChan, listContainerRegistries(ctx, azClient, panicChan, subscriptions))
+		handleBubbledPanic(ctx, panicChan, stop)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listContainerRegistryRoleAssignments(ctx context.Context, client client.AzureClient, containerRegistries <-chan interface{}) <-chan interface{} {
+func listContainerRegistryRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, containerRegistries <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -73,6 +75,7 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), containerRegistries) {
@@ -91,6 +94,7 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

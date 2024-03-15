@@ -56,15 +56,17 @@ func listVMScaleSetRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	} else {
 		log.Info("collecting azure vm scale set role assignments...")
 		start := time.Now()
-		subscriptions := listSubscriptions(ctx, azClient)
-		stream := listVMScaleSetRoleAssignments(ctx, azClient, listVMScaleSets(ctx, azClient, subscriptions))
+		panicChan := panicChan()
+		subscriptions := listSubscriptions(ctx, azClient, panicChan)
+		stream := listVMScaleSetRoleAssignments(ctx, azClient, panicChan, listVMScaleSets(ctx, azClient, panicChan, subscriptions))
+		handleBubbledPanic(ctx, panicChan, stop)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClient, vmScaleSets <-chan interface{}) <-chan interface{} {
+func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, vmScaleSets <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -73,6 +75,7 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), vmScaleSets) {
@@ -91,6 +94,7 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

@@ -52,14 +52,16 @@ func listAutomationAccountRoleAssignmentImpl(cmd *cobra.Command, args []string) 
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure automation account role assignments...")
 	start := time.Now()
-	subscriptions := listSubscriptions(ctx, azClient)
-	stream := listAutomationAccountRoleAssignments(ctx, azClient, listAutomationAccounts(ctx, azClient, subscriptions))
+	panicChan := panicChan()
+	subscriptions := listSubscriptions(ctx, azClient, panicChan)
+	stream := listAutomationAccountRoleAssignments(ctx, azClient, panicChan, listAutomationAccounts(ctx, azClient, panicChan, subscriptions))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAutomationAccountRoleAssignments(ctx context.Context, client client.AzureClient, automationAccounts <-chan interface{}) <-chan interface{} {
+func listAutomationAccountRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, automationAccounts <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -68,6 +70,7 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), automationAccounts) {
@@ -86,6 +89,7 @@ func listAutomationAccountRoleAssignments(ctx context.Context, client client.Azu
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

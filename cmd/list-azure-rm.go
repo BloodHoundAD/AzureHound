@@ -193,22 +193,22 @@ func listAllRM(ctx context.Context, client client.AzureClient, panicChan chan er
 	functionAppRoleAssignments := listFunctionAppRoleAssignments(ctx, client, panicChan, functionApps2)
 
 	// Enumerate Web App Role Assignments
-	webAppRoleAssignments := listWebAppRoleAssignments(ctx, client, webApps2)
+	webAppRoleAssignments := listWebAppRoleAssignments(ctx, client, panicChan, webApps2)
 
 	// Enumerate Automation Account Role Assignments
-	automationAccountRoleAssignments := listAutomationAccountRoleAssignments(ctx, client, automationAccounts2)
+	automationAccountRoleAssignments := listAutomationAccountRoleAssignments(ctx, client, panicChan, automationAccounts2)
 
 	// Enumerate Container Registry Role Assignments
-	containerRegistryRoleAssignments := listContainerRegistryRoleAssignments(ctx, client, containerRegistries2)
+	containerRegistryRoleAssignments := listContainerRegistryRoleAssignments(ctx, client, panicChan, containerRegistries2)
 
 	// Enumerate Logic Apps Role Assignments
-	logicAppRoleAssignments := listLogicAppRoleAssignments(ctx, client, logicApps2)
+	logicAppRoleAssignments := listLogicAppRoleAssignments(ctx, client, panicChan, logicApps2)
 
 	// Enumerate Managed Cluster Role Assignments
-	managedClusterRoleAssignments := listManagedClusterRoleAssignments(ctx, client, managedClusters2)
+	managedClusterRoleAssignments := listManagedClusterRoleAssignments(ctx, client, panicChan, managedClusters2)
 
 	// Enumerate VM Scale Set Role Assignments
-	vmScaleSetRoleAssignments := listVMScaleSetRoleAssignments(ctx, client, vmScaleSets2)
+	vmScaleSetRoleAssignments := listVMScaleSetRoleAssignments(ctx, client, panicChan, vmScaleSets2)
 
 	return pipeline.Mux(ctx.Done(),
 		automationAccounts,
