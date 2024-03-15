@@ -87,7 +87,7 @@ func listAllAD(ctx context.Context, client client.AzureClient, panicChan chan er
 
 	// Enumerate Devices and DeviceOwners
 	pipeline.Tee(ctx.Done(), listDevices(ctx, client, panicChan), devices, devices2)
-	deviceOwners := listDeviceOwners(ctx, client, devices2)
+	deviceOwners := listDeviceOwners(ctx, client, panicChan, devices2)
 
 	// Enumerate Groups, GroupOwners and GroupMembers
 	pipeline.Tee(ctx.Done(), listGroups(ctx, client), groups, groups2, groups3)
