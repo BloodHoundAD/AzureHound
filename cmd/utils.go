@@ -86,9 +86,32 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 	}
 }
 
-func panicRecovery() {
+func bubblingPanic() chan error {
+	var bubblingPanic = make(chan error)
+
+	return bubblingPanic
+}
+
+func handleBubbledPanic(ctx context.Context, bubblingPanic chan error) {
+	go func() {
+		defer close(bubblingPanic) // how do we know when the channel is done??
+
+		for {
+			select {
+			case err := <-bubblingPanic:
+				log.V(0).Error(err, "")
+				// TODO: end the program please
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+}
+
+// panicRecovery recovers from and sends that panic to bubblingPanic channel
+func panicRecovery(bubblingPanic chan error) {
 	if recovery := recover(); recovery != nil {
-		log.V(0).Error(fmt.Errorf("[panic recovery] %s - [stack trace] %s", recovery, debug.Stack()), "")
+		bubblingPanic <- fmt.Errorf("[panic recovery] %s - [stack trace] %s", recovery, debug.Stack())
 	}
 }
 

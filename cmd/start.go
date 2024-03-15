@@ -112,7 +112,6 @@ func start(ctx context.Context) {
 					}
 				} else if jobQueued.TryLock() {
 					go func() {
-						defer panicRecovery() // seems like we should stop the program completely if we do
 						defer jobQueued.Unlock()
 						defer bheClient.CloseIdleConnections()
 						defer azClient.CloseIdleConnections()
