@@ -44,19 +44,20 @@ var listAppOwnersCmd = &cobra.Command{
 
 func listAppOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
+	panicChan := panicChan()
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure app owners...")
 	start := time.Now()
-	stream := listAppOwners(ctx, azClient, listApps(ctx, azClient))
+	stream := listAppOwners(ctx, azClient, panicChan, listApps(ctx, azClient, panicChan))
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan azureWrapper[models.App]) <-chan azureWrapper[models.AppOwners] {
+func listAppOwners(ctx context.Context, client client.AzureClient, panicChan chan error, apps <-chan azureWrapper[models.App]) <-chan azureWrapper[models.AppOwners] {
 	var (
 		out     = make(chan azureWrapper[models.AppOwners])
 		streams = pipeline.Demux(ctx.Done(), apps, 25)
@@ -67,6 +68,7 @@ func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan a
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for app := range stream {
 				var (

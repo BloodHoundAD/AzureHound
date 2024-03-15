@@ -42,6 +42,7 @@ var listAzureADCmd = &cobra.Command{
 }
 
 func listAzureADCmdImpl(cmd *cobra.Command, args []string) {
+	var bubblingPanic = make(chan error)
 	if len(args) > 0 {
 		exit(fmt.Errorf("unsupported subcommand: %v", args))
 	}
@@ -53,13 +54,14 @@ func listAzureADCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure ad objects...")
 	start := time.Now()
-	stream := listAllAD(ctx, azClient)
+	stream := listAllAD(ctx, azClient, bubblingPanic)
+	handleBubbledPanic(ctx, bubblingPanic, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listAllAD(ctx context.Context, client client.AzureClient, bubblingPanic chan error) <-chan interface{} {
 	var (
 		devices  = make(chan interface{})
 		devices2 = make(chan interface{})
@@ -79,9 +81,9 @@ func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{
 	)
 
 	// Enumerate Apps, AppOwners and AppMembers
-	appChans := pipeline.TeeFixed(ctx.Done(), listApps(ctx, client), 2)
+	appChans := pipeline.TeeFixed(ctx.Done(), listApps(ctx, client, bubblingPanic), 2)
 	apps := pipeline.ToAny(ctx.Done(), appChans[0])
-	appOwners := pipeline.ToAny(ctx.Done(), listAppOwners(ctx, client, appChans[1]))
+	appOwners := pipeline.ToAny(ctx.Done(), listAppOwners(ctx, client, bubblingPanic, appChans[1]))
 
 	// Enumerate Devices and DeviceOwners
 	pipeline.Tee(ctx.Done(), listDevices(ctx, client), devices, devices2)
