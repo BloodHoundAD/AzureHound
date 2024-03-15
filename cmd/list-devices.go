@@ -49,16 +49,19 @@ func listDevicesCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory devices...")
 	start := time.Now()
-	stream := listDevices(ctx, azClient)
+	panicChan := panicChan()
+	stream := listDevices(ctx, azClient, panicChan)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listDevices(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listDevices(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(out)
 		count := 0
 		for item := range client.ListAzureDevices(ctx, "", "", "", "", nil) {
