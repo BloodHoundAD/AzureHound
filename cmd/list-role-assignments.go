@@ -51,14 +51,16 @@ func listRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory role assignments...")
 	start := time.Now()
-	roles := listRoles(ctx, azClient)
-	stream := listRoleAssignments(ctx, azClient, roles)
+	panicChan := panicChan()
+	roles := listRoles(ctx, azClient, panicChan)
+	stream := listRoleAssignments(ctx, azClient, panicChan, roles)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <-chan interface{}) <-chan interface{} {
+func listRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, roles <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -67,6 +69,7 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), roles) {
@@ -85,6 +88,7 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

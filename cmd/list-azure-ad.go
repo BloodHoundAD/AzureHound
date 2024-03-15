@@ -105,8 +105,8 @@ func listAllAD(ctx context.Context, client client.AzureClient, panicChan chan er
 	users := listUsers(ctx, client, panicChan)
 
 	// Enumerate Roles and RoleAssignments
-	pipeline.Tee(ctx.Done(), listRoles(ctx, client), roles, roles2)
-	roleAssignments := listRoleAssignments(ctx, client, roles2)
+	pipeline.Tee(ctx.Done(), listRoles(ctx, client, panicChan), roles, roles2)
+	roleAssignments := listRoleAssignments(ctx, client, panicChan, roles2)
 
 	// Enumerate AppRoleAssignments
 	appRoleAssignments := listAppRoleAssignments(ctx, client, panicChan, servicePrincipals3)

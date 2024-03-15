@@ -49,16 +49,19 @@ func listRolesCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory roles...")
 	start := time.Now()
-	stream := listRoles(ctx, azClient)
+	panicChan := panicChan()
+	stream := listRoles(ctx, azClient, panicChan)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listRoles(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listRoles(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(out)
 		count := 0
 		for item := range client.ListAzureADRoles(ctx, "", "") {
