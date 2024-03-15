@@ -92,7 +92,7 @@ func bubblingPanic() chan error {
 	return bubblingPanic
 }
 
-func handleBubbledPanic(ctx context.Context, bubblingPanic chan error) {
+func handleBubbledPanic(ctx context.Context, bubblingPanic chan error, stop context.CancelFunc) {
 	go func() {
 		defer close(bubblingPanic) // how do we know when the channel is done??
 
@@ -100,7 +100,7 @@ func handleBubbledPanic(ctx context.Context, bubblingPanic chan error) {
 			select {
 			case err := <-bubblingPanic:
 				log.V(0).Error(err, "")
-				// TODO: end the program please
+				stop()
 			case <-ctx.Done():
 				return
 			}
