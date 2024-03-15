@@ -90,9 +90,9 @@ func listAllAD(ctx context.Context, client client.AzureClient, panicChan chan er
 	deviceOwners := listDeviceOwners(ctx, client, panicChan, devices2)
 
 	// Enumerate Groups, GroupOwners and GroupMembers
-	pipeline.Tee(ctx.Done(), listGroups(ctx, client), groups, groups2, groups3)
-	groupOwners := listGroupOwners(ctx, client, groups2)
-	groupMembers := listGroupMembers(ctx, client, groups3)
+	pipeline.Tee(ctx.Done(), listGroups(ctx, client, panicChan), groups, groups2, groups3)
+	groupOwners := listGroupOwners(ctx, client, panicChan, groups2)
+	groupMembers := listGroupMembers(ctx, client, panicChan, groups3)
 
 	// Enumerate ServicePrincipals and ServicePrincipalOwners
 	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2, servicePrincipals3)

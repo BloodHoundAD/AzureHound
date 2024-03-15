@@ -51,13 +51,14 @@ func listGroupMembersCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure group members...")
 	start := time.Now()
-	stream := listGroupMembers(ctx, azClient, listGroups(ctx, azClient))
+	panicChan := panicChan()
+	stream := listGroupMembers(ctx, azClient, panicChan, listGroups(ctx, azClient, panicChan))
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-chan interface{}) <-chan interface{} {
+func listGroupMembers(ctx context.Context, client client.AzureClient, panicChan chan error, groups <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -66,6 +67,7 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), groups) {
@@ -84,6 +86,7 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (
