@@ -102,7 +102,7 @@ func listAllAD(ctx context.Context, client client.AzureClient, panicChan chan er
 	pipeline.Tee(ctx.Done(), listTenants(ctx, client, panicChan), tenants)
 
 	// Enumerate Users
-	users := listUsers(ctx, client)
+	users := listUsers(ctx, client, panicChan)
 
 	// Enumerate Roles and RoleAssignments
 	pipeline.Tee(ctx.Done(), listRoles(ctx, client), roles, roles2)

@@ -49,16 +49,19 @@ func listUsersCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory users...")
 	start := time.Now()
-	stream := listUsers(ctx, azClient)
+	panicChan := panicChan()
+	stream := listUsers(ctx, azClient, panicChan)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listUsers(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listUsers(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(out)
 		count := 0
 		for item := range client.ListAzureADUsers(ctx, "", "", "", []string{
