@@ -51,14 +51,16 @@ func listKeyVaultRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure key vault role assignments...")
 	start := time.Now()
-	subscriptions := listSubscriptions(ctx, azClient)
-	stream := listKeyVaultRoleAssignments(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions))
+	panicChan := panicChan()
+	subscriptions := listSubscriptions(ctx, azClient, panicChan)
+	stream := listKeyVaultRoleAssignments(ctx, azClient, panicChan, listKeyVaults(ctx, azClient, panicChan, subscriptions))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan azureWrapper[models.KeyVaultRoleAssignments] {
+func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, keyVaults <-chan interface{}) <-chan azureWrapper[models.KeyVaultRoleAssignments] {
 	var (
 		out     = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 		ids     = make(chan string)
@@ -67,6 +69,7 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), keyVaults) {
@@ -85,6 +88,7 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

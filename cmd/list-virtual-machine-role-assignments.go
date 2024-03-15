@@ -51,14 +51,16 @@ func listVirtualMachineRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string)
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure virtual machine role assignments...")
 	start := time.Now()
-	subscriptions := listSubscriptions(ctx, azClient)
-	stream := listVirtualMachineRoleAssignments(ctx, azClient, listVirtualMachines(ctx, azClient, subscriptions))
+	panicChan := panicChan()
+	subscriptions := listSubscriptions(ctx, azClient, panicChan)
+	stream := listVirtualMachineRoleAssignments(ctx, azClient, panicChan, listVirtualMachines(ctx, azClient, panicChan, subscriptions))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureClient, virtualMachines <-chan interface{}) <-chan azureWrapper[models.VirtualMachineRoleAssignments] {
+func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, virtualMachines <-chan interface{}) <-chan azureWrapper[models.VirtualMachineRoleAssignments] {
 	var (
 		out     = make(chan azureWrapper[models.VirtualMachineRoleAssignments])
 		ids     = make(chan string)
@@ -67,6 +69,7 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), virtualMachines) {
@@ -85,6 +88,7 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

@@ -52,14 +52,16 @@ func listFunctionAppRoleAssignmentImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure function app role assignments...")
 	start := time.Now()
-	subscriptions := listSubscriptions(ctx, azClient)
-	stream := listFunctionAppRoleAssignments(ctx, azClient, listFunctionApps(ctx, azClient, subscriptions))
+	panicChan := panicChan()
+	subscriptions := listSubscriptions(ctx, azClient, panicChan)
+	stream := listFunctionAppRoleAssignments(ctx, azClient, panicChan, listFunctionApps(ctx, azClient, panicChan, subscriptions))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClient, functionApps <-chan interface{}) <-chan interface{} {
+func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, functionApps <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -68,6 +70,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), functionApps) {
@@ -86,6 +89,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

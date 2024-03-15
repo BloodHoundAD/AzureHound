@@ -75,7 +75,7 @@ func listSubscriptions(ctx context.Context, client client.AzureClient, panicChan
 		)
 
 		if len(selectedMgmtGroupIds) != 0 {
-			descendantChannel := listManagementGroupDescendants(ctx, client, listManagementGroups(ctx, client))
+			descendantChannel := listManagementGroupDescendants(ctx, client, panicChan, listManagementGroups(ctx, client, panicChan))
 			for i := range descendantChannel {
 				if item, ok := i.(AzureWrapper).Data.(azure.DescendantInfo); !ok {
 					log.Error(fmt.Errorf("failed type assertion"), "unable to continue evaluating management group descendants", "result", i)

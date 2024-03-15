@@ -169,20 +169,20 @@ func listAllRM(ctx context.Context, client client.AzureClient, panicChan chan er
 	subscriptionUserAccessAdmins := listSubscriptionUserAccessAdmins(ctx, client, panicChan, subscriptionRoleAssignments2)
 
 	// ResourceGroups: Owners and UserAccessAdmins
-	pipeline.Tee(ctx.Done(), listResourceGroupRoleAssignments(ctx, client, resourceGroups2), resourceGroupRoleAssignments1, resourceGroupRoleAssignments2)
+	pipeline.Tee(ctx.Done(), listResourceGroupRoleAssignments(ctx, client, panicChan, resourceGroups2), resourceGroupRoleAssignments1, resourceGroupRoleAssignments2)
 	resourceGroupOwners := listResourceGroupOwners(ctx, resourceGroupRoleAssignments1)
 	resourceGroupUserAccessAdmins := listResourceGroupUserAccessAdmins(ctx, resourceGroupRoleAssignments2)
 
 	// KeyVaults: AccessPolicies, Owners, UserAccessAdmins, Contributors and KVContributors
-	pipeline.Tee(ctx.Done(), listKeyVaultRoleAssignments(ctx, client, keyVaults2), keyVaultRoleAssignments1, keyVaultRoleAssignments2, keyVaultRoleAssignments3, keyVaultRoleAssignments4)
-	keyVaultAccessPolicies := listKeyVaultAccessPolicies(ctx, client, keyVaults3, []enums.KeyVaultAccessType{enums.GetCerts, enums.GetKeys, enums.GetCerts})
+	pipeline.Tee(ctx.Done(), listKeyVaultRoleAssignments(ctx, client, panicChan, keyVaults2), keyVaultRoleAssignments1, keyVaultRoleAssignments2, keyVaultRoleAssignments3, keyVaultRoleAssignments4)
+	keyVaultAccessPolicies := listKeyVaultAccessPolicies(ctx, client, panicChan, keyVaults3, []enums.KeyVaultAccessType{enums.GetCerts, enums.GetKeys, enums.GetCerts})
 	keyVaultOwners := listKeyVaultOwners(ctx, keyVaultRoleAssignments1)
 	keyVaultUserAccessAdmins := listKeyVaultUserAccessAdmins(ctx, keyVaultRoleAssignments2)
 	keyVaultContributors := listKeyVaultContributors(ctx, keyVaultRoleAssignments3)
 	keyVaultKVContributors := listKeyVaultKVContributors(ctx, keyVaultRoleAssignments4)
 
 	// VirtualMachines: Owners, AvereContributors, Contributors, AdminLogins and UserAccessAdmins
-	pipeline.Tee(ctx.Done(), listVirtualMachineRoleAssignments(ctx, client, virtualMachines2), virtualMachineRoleAssignments1, virtualMachineRoleAssignments2, virtualMachineRoleAssignments3, virtualMachineRoleAssignments4, virtualMachineRoleAssignments5)
+	pipeline.Tee(ctx.Done(), listVirtualMachineRoleAssignments(ctx, client, panicChan, virtualMachines2), virtualMachineRoleAssignments1, virtualMachineRoleAssignments2, virtualMachineRoleAssignments3, virtualMachineRoleAssignments4, virtualMachineRoleAssignments5)
 	virtualMachineOwners := listVirtualMachineOwners(ctx, virtualMachineRoleAssignments1)
 	virtualMachineAvereContributors := listVirtualMachineAvereContributors(ctx, virtualMachineRoleAssignments2)
 	virtualMachineContributors := listVirtualMachineContributors(ctx, virtualMachineRoleAssignments3)
@@ -190,7 +190,7 @@ func listAllRM(ctx context.Context, client client.AzureClient, panicChan chan er
 	virtualMachineUserAccessAdmins := listVirtualMachineUserAccessAdmins(ctx, virtualMachineRoleAssignments5)
 
 	// Enumerate Function App Role Assignments
-	functionAppRoleAssignments := listFunctionAppRoleAssignments(ctx, client, functionApps2)
+	functionAppRoleAssignments := listFunctionAppRoleAssignments(ctx, client, panicChan, functionApps2)
 
 	// Enumerate Web App Role Assignments
 	webAppRoleAssignments := listWebAppRoleAssignments(ctx, client, webApps2)

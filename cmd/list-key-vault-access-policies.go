@@ -53,24 +53,27 @@ func listKeyVaultAccessPoliciesCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure key vault access policies...")
 	start := time.Now()
-	subscriptions := listSubscriptions(ctx, azClient)
+	panicChan := panicChan()
+	subscriptions := listSubscriptions(ctx, azClient, panicChan)
 	if filters, ok := config.KeyVaultAccessTypes.Value().([]enums.KeyVaultAccessType); !ok {
 		exit(fmt.Errorf("filter failed type assertion"))
 	} else {
 		if len(filters) > 0 {
 			log.Info("applying access type filters", "filters", filters)
 		}
-		stream := listKeyVaultAccessPolicies(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions), filters)
+		stream := listKeyVaultAccessPolicies(ctx, azClient, panicChan, listKeyVaults(ctx, azClient, panicChan, subscriptions), filters)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
+	handleBubbledPanic(ctx, panicChan, stop)
 }
 
-func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}, filters []enums.KeyVaultAccessType) <-chan interface{} {
+func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, panicChan chan error, keyVaults <-chan interface{}, filters []enums.KeyVaultAccessType) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(out)
 
 		for result := range pipeline.OrDone(ctx.Done(), keyVaults) {
