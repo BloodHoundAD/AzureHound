@@ -49,16 +49,19 @@ func listTenantsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory tenants...")
 	start := time.Now()
-	stream := listTenants(ctx, azClient)
+	panicChan := panicChan()
+	stream := listTenants(ctx, azClient, panicChan)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listTenants(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listTenants(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(out)
 
 		// Send the fully hydrated tenant that is being collected

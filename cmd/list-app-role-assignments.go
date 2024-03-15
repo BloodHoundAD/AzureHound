@@ -51,14 +51,16 @@ func listAppRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory app role assignments...")
 	start := time.Now()
-	servicePrincipals := listServicePrincipals(ctx, azClient)
-	stream := listAppRoleAssignments(ctx, azClient, servicePrincipals)
+	panicChan := panicChan()
+	servicePrincipals := listServicePrincipals(ctx, azClient, panicChan)
+	stream := listAppRoleAssignments(ctx, azClient, panicChan, servicePrincipals)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAppRoleAssignments(ctx context.Context, client client.AzureClient, servicePrincipals <-chan interface{}) <-chan interface{} {
+func listAppRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, servicePrincipals <-chan interface{}) <-chan interface{} {
 	var (
 		out         = make(chan interface{})
 		filteredSPs = make(chan models.ServicePrincipal)
@@ -67,6 +69,7 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(filteredSPs)
 
 		for result := range pipeline.OrDone(ctx.Done(), servicePrincipals) {
@@ -87,6 +90,7 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for servicePrincipal := range stream {
 				var (

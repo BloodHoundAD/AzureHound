@@ -95,11 +95,11 @@ func listAllAD(ctx context.Context, client client.AzureClient, panicChan chan er
 	groupMembers := listGroupMembers(ctx, client, panicChan, groups3)
 
 	// Enumerate ServicePrincipals and ServicePrincipalOwners
-	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2, servicePrincipals3)
-	servicePrincipalOwners := listServicePrincipalOwners(ctx, client, servicePrincipals2)
+	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client, panicChan), servicePrincipals, servicePrincipals2, servicePrincipals3)
+	servicePrincipalOwners := listServicePrincipalOwners(ctx, client, panicChan, servicePrincipals2)
 
 	// Enumerate Tenants
-	pipeline.Tee(ctx.Done(), listTenants(ctx, client), tenants)
+	pipeline.Tee(ctx.Done(), listTenants(ctx, client, panicChan), tenants)
 
 	// Enumerate Users
 	users := listUsers(ctx, client)
@@ -109,7 +109,7 @@ func listAllAD(ctx context.Context, client client.AzureClient, panicChan chan er
 	roleAssignments := listRoleAssignments(ctx, client, roles2)
 
 	// Enumerate AppRoleAssignments
-	appRoleAssignments := listAppRoleAssignments(ctx, client, servicePrincipals3)
+	appRoleAssignments := listAppRoleAssignments(ctx, client, panicChan, servicePrincipals3)
 
 	return pipeline.Mux(ctx.Done(),
 		appOwners,
