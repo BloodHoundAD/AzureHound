@@ -51,13 +51,15 @@ func listKeyVaultsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure key vaults...")
 	start := time.Now()
-	stream := listKeyVaults(ctx, azClient, listSubscriptions(ctx, azClient))
+	panicChan := panicChan()
+	stream := listKeyVaults(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listKeyVaults(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -66,6 +68,7 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
@@ -84,6 +87,7 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				count := 0

@@ -51,13 +51,15 @@ func listManagementGroupDescendantsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure management group descendants...")
 	start := time.Now()
-	stream := listManagementGroupDescendants(ctx, azClient, listManagementGroups(ctx, azClient))
+	panicChan := panicChan()
+	stream := listManagementGroupDescendants(ctx, azClient, panicChan, listManagementGroups(ctx, azClient, panicChan))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listManagementGroupDescendants(ctx context.Context, client client.AzureClient, managementGroups <-chan interface{}) <-chan interface{} {
+func listManagementGroupDescendants(ctx context.Context, client client.AzureClient, panicChan chan error, managementGroups <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -66,6 +68,7 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), managementGroups) {
@@ -84,6 +87,7 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				count := 0

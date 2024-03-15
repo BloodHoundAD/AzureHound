@@ -51,14 +51,16 @@ func listManagementGroupRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure management group role assignments...")
 	start := time.Now()
-	managementGroups := listManagementGroups(ctx, azClient)
-	stream := listManagementGroupRoleAssignments(ctx, azClient, managementGroups)
+	panicChan := panicChan()
+	managementGroups := listManagementGroups(ctx, azClient, panicChan)
+	stream := listManagementGroupRoleAssignments(ctx, azClient, panicChan, managementGroups)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listManagementGroupRoleAssignments(ctx context.Context, client client.AzureClient, managementGroups <-chan interface{}) <-chan azureWrapper[models.ManagementGroupRoleAssignments] {
+func listManagementGroupRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, managementGroups <-chan interface{}) <-chan azureWrapper[models.ManagementGroupRoleAssignments] {
 	var (
 		out     = make(chan azureWrapper[models.ManagementGroupRoleAssignments])
 		ids     = make(chan string)
@@ -67,6 +69,7 @@ func listManagementGroupRoleAssignments(ctx context.Context, client client.Azure
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), managementGroups) {
@@ -85,6 +88,7 @@ func listManagementGroupRoleAssignments(ctx context.Context, client client.Azure
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

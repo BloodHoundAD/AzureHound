@@ -55,13 +55,15 @@ func listAzureRMCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure resource management objects...")
 	start := time.Now()
-	stream := listAllRM(ctx, azClient)
+	panicChan := panicChan()
+	stream := listAllRM(ctx, azClient, panicChan)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listAllRM(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
 	var (
 		functionApps  = make(chan interface{})
 		functionApps2 = make(chan interface{})
@@ -128,8 +130,8 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 	)
 
 	// Enumerate entities
-	pipeline.Tee(ctx.Done(), listManagementGroups(ctx, client), mgmtGroups, mgmtGroups2, mgmtGroups3)
-	pipeline.Tee(ctx.Done(), listSubscriptions(ctx, client),
+	pipeline.Tee(ctx.Done(), listManagementGroups(ctx, client, panicChan), mgmtGroups, mgmtGroups2, mgmtGroups3)
+	pipeline.Tee(ctx.Done(), listSubscriptions(ctx, client, panicChan),
 		subscriptions,
 		subscriptions2,
 		subscriptions3,
@@ -143,28 +145,28 @@ func listAllRM(ctx context.Context, client client.AzureClient) <-chan interface{
 		subscriptions11,
 		subscriptions12,
 	)
-	pipeline.Tee(ctx.Done(), listResourceGroups(ctx, client, subscriptions2), resourceGroups, resourceGroups2)
-	pipeline.Tee(ctx.Done(), listKeyVaults(ctx, client, subscriptions3), keyVaults, keyVaults2, keyVaults3)
-	pipeline.Tee(ctx.Done(), listVirtualMachines(ctx, client, subscriptions4), virtualMachines, virtualMachines2)
-	pipeline.Tee(ctx.Done(), listFunctionApps(ctx, client, subscriptions6), functionApps, functionApps2)
-	pipeline.Tee(ctx.Done(), listWebApps(ctx, client, subscriptions7), webApps, webApps2)
-	pipeline.Tee(ctx.Done(), listAutomationAccounts(ctx, client, subscriptions8), automationAccounts, automationAccounts2)
-	pipeline.Tee(ctx.Done(), listContainerRegistries(ctx, client, subscriptions9), containerRegistries, containerRegistries2)
-	pipeline.Tee(ctx.Done(), listLogicApps(ctx, client, subscriptions10), logicApps, logicApps2)
-	pipeline.Tee(ctx.Done(), listManagedClusters(ctx, client, subscriptions11), managedClusters, managedClusters2)
-	pipeline.Tee(ctx.Done(), listVMScaleSets(ctx, client, subscriptions12), vmScaleSets, vmScaleSets2)
+	pipeline.Tee(ctx.Done(), listResourceGroups(ctx, client, panicChan, subscriptions2), resourceGroups, resourceGroups2)
+	pipeline.Tee(ctx.Done(), listKeyVaults(ctx, client, panicChan, subscriptions3), keyVaults, keyVaults2, keyVaults3)
+	pipeline.Tee(ctx.Done(), listVirtualMachines(ctx, client, panicChan, subscriptions4), virtualMachines, virtualMachines2)
+	pipeline.Tee(ctx.Done(), listFunctionApps(ctx, client, panicChan, subscriptions6), functionApps, functionApps2)
+	pipeline.Tee(ctx.Done(), listWebApps(ctx, client, panicChan, subscriptions7), webApps, webApps2)
+	pipeline.Tee(ctx.Done(), listAutomationAccounts(ctx, client, panicChan, subscriptions8), automationAccounts, automationAccounts2)
+	pipeline.Tee(ctx.Done(), listContainerRegistries(ctx, client, panicChan, subscriptions9), containerRegistries, containerRegistries2)
+	pipeline.Tee(ctx.Done(), listLogicApps(ctx, client, panicChan, subscriptions10), logicApps, logicApps2)
+	pipeline.Tee(ctx.Done(), listManagedClusters(ctx, client, panicChan, subscriptions11), managedClusters, managedClusters2)
+	pipeline.Tee(ctx.Done(), listVMScaleSets(ctx, client, panicChan, subscriptions12), vmScaleSets, vmScaleSets2)
 
 	// Enumerate Relationships
 	// ManagementGroups: Descendants, Owners and UserAccessAdmins
-	mgmtGroupDescendants := listManagementGroupDescendants(ctx, client, mgmtGroups2)
-	pipeline.Tee(ctx.Done(), listManagementGroupRoleAssignments(ctx, client, mgmtGroups3), mgmtGroupRoleAssignments1, mgmtGroupRoleAssignments2)
+	mgmtGroupDescendants := listManagementGroupDescendants(ctx, client, panicChan, mgmtGroups2)
+	pipeline.Tee(ctx.Done(), listManagementGroupRoleAssignments(ctx, client, panicChan, mgmtGroups3), mgmtGroupRoleAssignments1, mgmtGroupRoleAssignments2)
 	mgmtGroupOwners := listManagementGroupOwners(ctx, mgmtGroupRoleAssignments1)
 	mgmtGroupUserAccessAdmins := listManagementGroupUserAccessAdmins(ctx, mgmtGroupRoleAssignments2)
 
 	// Subscriptions: Owners and UserAccessAdmins
-	pipeline.Tee(ctx.Done(), listSubscriptionRoleAssignments(ctx, client, subscriptions5), subscriptionRoleAssignments1, subscriptionRoleAssignments2)
-	subscriptionOwners := listSubscriptionOwners(ctx, client, subscriptionRoleAssignments1)
-	subscriptionUserAccessAdmins := listSubscriptionUserAccessAdmins(ctx, client, subscriptionRoleAssignments2)
+	pipeline.Tee(ctx.Done(), listSubscriptionRoleAssignments(ctx, client, panicChan, subscriptions5), subscriptionRoleAssignments1, subscriptionRoleAssignments2)
+	subscriptionOwners := listSubscriptionOwners(ctx, client, panicChan, subscriptionRoleAssignments1)
+	subscriptionUserAccessAdmins := listSubscriptionUserAccessAdmins(ctx, client, panicChan, subscriptionRoleAssignments2)
 
 	// ResourceGroups: Owners and UserAccessAdmins
 	pipeline.Tee(ctx.Done(), listResourceGroupRoleAssignments(ctx, client, resourceGroups2), resourceGroupRoleAssignments1, resourceGroupRoleAssignments2)

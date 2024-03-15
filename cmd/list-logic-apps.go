@@ -45,6 +45,7 @@ var listLogicAppsCmd = &cobra.Command{
 
 func listLogicAppsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
+	panicChan := panicChan()
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
@@ -55,14 +56,16 @@ func listLogicAppsCmdImpl(cmd *cobra.Command, args []string) {
 	} else {
 		log.Info("collecting azure logic apps...")
 		start := time.Now()
-		stream := listLogicApps(ctx, azClient, listSubscriptions(ctx, azClient))
+		stream := listLogicApps(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
+
+	handleBubbledPanic(ctx, panicChan, stop)
 }
 
-func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listLogicApps(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -71,6 +74,7 @@ func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
@@ -88,6 +92,7 @@ func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				count := 0

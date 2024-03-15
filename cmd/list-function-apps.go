@@ -51,13 +51,15 @@ func listFunctionAppsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure function apps...")
 	start := time.Now()
-	stream := listFunctionApps(ctx, azClient, listSubscriptions(ctx, azClient))
+	panicChan := panicChan()
+	stream := listFunctionApps(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listFunctionApps(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listFunctionApps(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -66,6 +68,7 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
@@ -83,6 +86,7 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				count := 0

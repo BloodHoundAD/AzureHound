@@ -52,18 +52,21 @@ func listSubscriptionUserAccessAdminsCmdImpl(cmd *cobra.Command, args []string) 
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure subscription user access admins...")
 	start := time.Now()
-	subscriptions := listSubscriptions(ctx, azClient)
-	roleAssignments := listSubscriptionRoleAssignments(ctx, azClient, subscriptions)
-	stream := listSubscriptionUserAccessAdmins(ctx, azClient, roleAssignments)
+	panicChan := panicChan()
+	subscriptions := listSubscriptions(ctx, azClient, panicChan)
+	roleAssignments := listSubscriptionRoleAssignments(ctx, azClient, panicChan, subscriptions)
+	stream := listSubscriptionUserAccessAdmins(ctx, azClient, panicChan, roleAssignments)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureClient, vmRoleAssignments <-chan interface{}) <-chan interface{} {
+func listSubscriptionUserAccessAdmins(ctx context.Context, client client.AzureClient, panicChan chan error, vmRoleAssignments <-chan interface{}) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(out)
 
 		for result := range pipeline.OrDone(ctx.Done(), vmRoleAssignments) {

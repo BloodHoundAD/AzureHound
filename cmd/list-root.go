@@ -68,7 +68,7 @@ func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} 
 		panicChan = panicChan()
 
 		azureAD = listAllAD(ctx, client, panicChan)
-		azureRM = listAllRM(ctx, client)
+		azureRM = listAllRM(ctx, client, panicChan)
 	)
 
 	handleBubbledPanic(ctx, panicChan, stop)

@@ -50,16 +50,19 @@ func listManagementGroupsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory management groups...")
 	start := time.Now()
-	stream := listManagementGroups(ctx, azClient)
+	panicChan := panicChan()
+	stream := listManagementGroups(ctx, azClient, panicChan)
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listManagementGroups(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listManagementGroups(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(out)
 		count := 0
 		for item := range client.ListAzureManagementGroups(ctx) {

@@ -45,6 +45,7 @@ var listContainerRegistriesCmd = &cobra.Command{
 
 func listContainerRegistriesCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
+	panicChan := panicChan()
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
@@ -55,14 +56,16 @@ func listContainerRegistriesCmdImpl(cmd *cobra.Command, args []string) {
 	} else {
 		log.Info("collecting azure container registries...")
 		start := time.Now()
-		stream := listContainerRegistries(ctx, azClient, listSubscriptions(ctx, azClient))
+		stream := listContainerRegistries(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
+
+	handleBubbledPanic(ctx, panicChan, stop)
 }
 
-func listContainerRegistries(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listContainerRegistries(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -71,6 +74,7 @@ func listContainerRegistries(ctx context.Context, client client.AzureClient, sub
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
@@ -88,6 +92,7 @@ func listContainerRegistries(ctx context.Context, client client.AzureClient, sub
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				count := 0

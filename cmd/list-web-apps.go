@@ -55,14 +55,16 @@ func listWebAppsCmdImpl(cmd *cobra.Command, args []string) {
 	} else {
 		log.Info("collecting azure web apps...")
 		start := time.Now()
-		stream := listWebApps(ctx, azClient, listSubscriptions(ctx, azClient))
+		panicChan := panicChan()
+		stream := listWebApps(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
+		handleBubbledPanic(ctx, panicChan, stop)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listWebApps(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -71,6 +73,7 @@ func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
@@ -88,6 +91,7 @@ func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				count := 0

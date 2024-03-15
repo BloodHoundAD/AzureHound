@@ -51,13 +51,15 @@ func listResourceGroupsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure resource groups...")
 	start := time.Now()
-	stream := listResourceGroups(ctx, azClient, listSubscriptions(ctx, azClient))
+	panicChan := panicChan()
+	stream := listResourceGroups(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listResourceGroups(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
+func listResourceGroups(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -66,6 +68,7 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
@@ -84,6 +87,7 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				count := 0
