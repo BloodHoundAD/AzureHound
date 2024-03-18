@@ -55,18 +55,16 @@ func listCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure objects...")
 	start := time.Now()
-	stream := listAll(ctx, azClient)
+	stream := listAll(ctx, azClient, panicChan())
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAll(ctx context.Context, client client.AzureClient) <-chan interface{} {
+func listAll(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
 	ctx, stop := context.WithCancel(ctx)
 
 	var (
-		panicChan = panicChan()
-
 		azureAD = listAllAD(ctx, client, panicChan)
 		azureRM = listAllRM(ctx, client, panicChan)
 	)

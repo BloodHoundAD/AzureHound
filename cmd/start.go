@@ -96,6 +96,7 @@ func start(ctx context.Context) {
 		log.Info("connected successfully! waiting for jobs...")
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
+		panicChan := panicChan()
 
 		var (
 			jobQueued    sync.Mutex
@@ -150,7 +151,7 @@ func start(ctx context.Context) {
 								start := time.Now()
 
 								// Batch data out for ingestion
-								stream := listAll(ctx, azClient)
+								stream := listAll(ctx, azClient, panicChan)
 								batches := pipeline.Batch(ctx.Done(), stream, 256, 10*time.Second)
 								hasIngestErr := ingest(ctx, *bheInstance, bheClient, batches)
 
