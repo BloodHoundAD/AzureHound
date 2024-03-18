@@ -52,14 +52,16 @@ func listStorageAccountRoleAssignmentsImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure storage account role assignments...")
 	start := time.Now()
-	subscriptions := listSubscriptions(ctx, azClient)
-	stream := listStorageAccountRoleAssignments(ctx, azClient, listStorageAccounts(ctx, azClient, subscriptions))
+	panicChan := panicChan()
+	subscriptions := listSubscriptions(ctx, azClient, panicChan)
+	stream := listStorageAccountRoleAssignments(ctx, azClient, panicChan, listStorageAccounts(ctx, azClient, panicChan, subscriptions))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
+func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, storageAccounts <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -68,6 +70,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), storageAccounts) {
@@ -86,6 +89,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				var (

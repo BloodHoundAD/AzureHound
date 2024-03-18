@@ -51,7 +51,9 @@ func listStorageAccountsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure storage accounts...")
 	start := time.Now()
-	stream := listStorageAccounts(ctx, azClient, listSubscriptions(ctx, azClient))
+	panicChan := panicChan()
+	stream := listStorageAccounts(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -66,6 +68,7 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, panicCh
 	)
 
 	go func() {
+		defer panicRecovery(panicChan)
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
@@ -83,6 +86,7 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, panicCh
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicRecovery(panicChan)
 			defer wg.Done()
 			for id := range stream {
 				count := 0
