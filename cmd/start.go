@@ -150,6 +150,9 @@ func start(ctx context.Context) {
 
 								start := time.Now()
 
+								ctx, stop := context.WithCancel(ctx)
+								handleBubbledPanic(ctx, panicChan, stop)
+
 								// Batch data out for ingestion
 								stream := listAll(ctx, azClient, panicChan)
 								batches := pipeline.Batch(ctx.Done(), stream, 256, 10*time.Second)

@@ -96,7 +96,6 @@ func panicChan() chan error {
 // handleBubbledPanic receives errors from panicChan, then it will print them and stop() context.
 func handleBubbledPanic(ctx context.Context, panicChan chan error, stop context.CancelFunc) {
 	go func() {
-
 		for {
 			select {
 			case err := <-panicChan:

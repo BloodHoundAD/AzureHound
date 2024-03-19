@@ -62,14 +62,11 @@ func listCmdImpl(cmd *cobra.Command, args []string) {
 }
 
 func listAll(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
-	ctx, stop := context.WithCancel(ctx)
 
 	var (
 		azureAD = listAllAD(ctx, client, panicChan)
 		azureRM = listAllRM(ctx, client, panicChan)
 	)
-
-	handleBubbledPanic(ctx, panicChan, stop)
 
 	return pipeline.Mux(ctx.Done(), azureAD, azureRM)
 }
