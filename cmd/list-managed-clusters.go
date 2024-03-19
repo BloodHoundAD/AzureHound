@@ -62,7 +62,6 @@ func listManagedClustersCmdImpl(cmd *cobra.Command, args []string) {
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
-
 }
 
 func listManagedClusters(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {

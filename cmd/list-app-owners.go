@@ -52,6 +52,7 @@ func listAppOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collecting azure app owners...")
 	start := time.Now()
 	stream := listAppOwners(ctx, azClient, panicChan, listApps(ctx, azClient, panicChan))
+	handleBubbledPanic(ctx, panicChan, stop)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())

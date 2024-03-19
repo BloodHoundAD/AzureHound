@@ -45,7 +45,6 @@ var listContainerRegistriesCmd = &cobra.Command{
 
 func listContainerRegistriesCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
-
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
@@ -63,7 +62,6 @@ func listContainerRegistriesCmdImpl(cmd *cobra.Command, args []string) {
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
-
 }
 
 func listContainerRegistries(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
