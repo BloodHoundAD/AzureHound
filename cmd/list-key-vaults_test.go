@@ -48,7 +48,7 @@ func TestListKeyVaults(t *testing.T) {
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	mockClient.EXPECT().ListAzureKeyVaults(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockKeyVaultChannel).Times(1)
 	mockClient.EXPECT().ListAzureKeyVaults(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockKeyVaultChannel2).Times(1)
-	channel := listKeyVaults(ctx, mockClient, mockSubscriptionsChannel)
+	channel := listKeyVaults(ctx, mockClient, panicChan(), mockSubscriptionsChannel)
 
 	go func() {
 		defer close(mockSubscriptionsChannel)

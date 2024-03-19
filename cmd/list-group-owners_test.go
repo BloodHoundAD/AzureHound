@@ -49,7 +49,7 @@ func TestListGroupOwners(t *testing.T) {
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	mockClient.EXPECT().ListAzureADGroupOwners(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupOwnerChannel).Times(1)
 	mockClient.EXPECT().ListAzureADGroupOwners(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupOwnerChannel2).Times(1)
-	channel := listGroupOwners(ctx, mockClient, mockGroupsChannel)
+	channel := listGroupOwners(ctx, mockClient, panicChan(), mockGroupsChannel)
 
 	go func() {
 		defer close(mockGroupsChannel)

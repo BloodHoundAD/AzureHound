@@ -48,7 +48,7 @@ func TestListResourceGroups(t *testing.T) {
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	mockClient.EXPECT().ListAzureResourceGroups(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupChannel).Times(1)
 	mockClient.EXPECT().ListAzureResourceGroups(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupChannel2).Times(1)
-	channel := listResourceGroups(ctx, mockClient, mockSubscriptionsChannel)
+	channel := listResourceGroups(ctx, mockClient, panicChan(), mockSubscriptionsChannel)
 
 	go func() {
 		defer close(mockSubscriptionsChannel)

@@ -56,7 +56,7 @@ func TestListApps(t *testing.T) {
 		}
 	}()
 
-	channel := listApps(ctx, mockClient)
+	channel := listApps(ctx, mockClient, panicChan())
 	<-channel
 	if _, ok := <-channel; ok {
 		t.Error("expected channel to close from an error result but it did not")

@@ -49,7 +49,7 @@ func TestListServicePrincipalOwners(t *testing.T) {
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	mockClient.EXPECT().ListAzureADServicePrincipalOwners(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockServicePrincipalOwnerChannel).Times(1)
 	mockClient.EXPECT().ListAzureADServicePrincipalOwners(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockServicePrincipalOwnerChannel2).Times(1)
-	channel := listServicePrincipalOwners(ctx, mockClient, mockServicePrincipalsChannel)
+	channel := listServicePrincipalOwners(ctx, mockClient, panicChan(), mockServicePrincipalsChannel)
 
 	go func() {
 		defer close(mockServicePrincipalsChannel)
