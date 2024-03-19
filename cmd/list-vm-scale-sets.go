@@ -45,7 +45,6 @@ var listVMScaleSetsCmd = &cobra.Command{
 
 func listVMScaleSetsCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
-	panicChan := panicChan()
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
@@ -56,13 +55,14 @@ func listVMScaleSetsCmdImpl(cmd *cobra.Command, args []string) {
 	} else {
 		log.Info("collecting azure virtual machine scale sets...")
 		start := time.Now()
+		panicChan := panicChan()
 		stream := listVMScaleSets(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
+		handleBubbledPanic(ctx, panicChan, stop)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 
-	handleBubbledPanic(ctx, panicChan, stop)
 }
 
 func listVMScaleSets(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
