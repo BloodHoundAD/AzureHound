@@ -113,6 +113,7 @@ func start(ctx context.Context) {
 					}
 				} else if jobQueued.TryLock() {
 					go func() {
+						defer panicRecovery(panicChan)
 						defer jobQueued.Unlock()
 						defer bheClient.CloseIdleConnections()
 						defer azClient.CloseIdleConnections()
@@ -121,7 +122,6 @@ func start(ctx context.Context) {
 						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient); err != nil {
 							log.Error(err, "unable to fetch available jobs for azurehound")
 						} else {
-
 							// Get only the jobs that have reached their execution time
 							executableJobs := []models.ClientJob{}
 							now := time.Now()
