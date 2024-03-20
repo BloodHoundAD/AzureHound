@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -86,6 +87,7 @@ func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, filter, 
 	out := make(chan azure.ServicePrincipalResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
@@ -150,6 +152,7 @@ func (s *azureClient) ListAzureADServicePrincipalOwners(ctx context.Context, obj
 	out := make(chan azure.ServicePrincipalOwnerResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (

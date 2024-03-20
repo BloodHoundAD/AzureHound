@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -86,6 +87,7 @@ func (s *azureClient) ListAzureDevices(ctx context.Context, filter, search, orde
 	out := make(chan azure.DeviceResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
@@ -150,6 +152,7 @@ func (s *azureClient) ListAzureDeviceRegisteredOwners(ctx context.Context, objec
 	out := make(chan azure.DeviceRegisteredOwnerResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (

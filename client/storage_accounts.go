@@ -25,6 +25,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -64,6 +65,7 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 	out := make(chan azure.StorageAccountResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
@@ -169,6 +171,7 @@ func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscripti
 	out := make(chan azure.StorageContainerResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
