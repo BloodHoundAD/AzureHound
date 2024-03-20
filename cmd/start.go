@@ -280,7 +280,7 @@ func getAvailableJobs(ctx context.Context, bheUrl url.URL, bheClient *http.Clien
 		endpoint = bheUrl.ResolveReference(&url.URL{Path: "/api/v2/jobs/available"})
 		response basicResponse[[]models.ClientJob]
 	)
-	panic(" ANOTHER WAY OF PANIC ✅✅✅✅")
+
 	if req, err := rest.NewRequest(ctx, "GET", endpoint, nil, nil, nil); err != nil {
 		return nil, err
 	} else if res, err := do(bheClient, req); err != nil {
