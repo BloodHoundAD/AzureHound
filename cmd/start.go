@@ -118,6 +118,9 @@ func start(ctx context.Context) {
 						defer bheClient.CloseIdleConnections()
 						defer azClient.CloseIdleConnections()
 
+						ctx, stop := context.WithCancel(ctx)
+						panicrecovery.HandleBubbledPanic(ctx, stop, log)
+
 						log.V(2).Info("checking for available collection jobs")
 						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient); err != nil {
 							log.Error(err, "unable to fetch available jobs for azurehound")
@@ -149,9 +152,6 @@ func start(ctx context.Context) {
 								}
 
 								start := time.Now()
-
-								ctx, stop := context.WithCancel(ctx)
-								panicrecovery.HandleBubbledPanic(ctx, stop, log)
 
 								// Batch data out for ingestion
 								stream := listAll(ctx, azClient)
@@ -280,7 +280,7 @@ func getAvailableJobs(ctx context.Context, bheUrl url.URL, bheClient *http.Clien
 		endpoint = bheUrl.ResolveReference(&url.URL{Path: "/api/v2/jobs/available"})
 		response basicResponse[[]models.ClientJob]
 	)
-
+	panic(" ANOTHER WAY OF PANIC ✅✅✅✅")
 	if req, err := rest.NewRequest(ctx, "GET", endpoint, nil, nil, nil); err != nil {
 		return nil, err
 	} else if res, err := do(bheClient, req); err != nil {
