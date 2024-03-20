@@ -16,7 +16,6 @@ func HandleBubbledPanic(ctx context.Context, stop context.CancelFunc, log logr.L
 		for {
 			select {
 			case err := <-PanicChan:
-				fmt.Println(" THAT IS WHAT IM TALKING ABOUT  ✅✅✅✅")
 				log.V(0).Error(err, "")
 				stop()
 			case <-ctx.Done():
