@@ -56,7 +56,7 @@ func TestListRoles(t *testing.T) {
 		}
 	}()
 
-	channel := listRoles(ctx, mockClient, panicChan())
+	channel := listRoles(ctx, mockClient)
 	result := <-channel
 	if _, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})

@@ -42,6 +42,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -96,7 +97,6 @@ func start(ctx context.Context) {
 		log.Info("connected successfully! waiting for jobs...")
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
-		panicChan := panicChan()
 
 		var (
 			jobQueued    sync.Mutex
@@ -113,7 +113,7 @@ func start(ctx context.Context) {
 					}
 				} else if jobQueued.TryLock() {
 					go func() {
-						defer panicRecovery(panicChan)
+						defer panicrecovery.PanicRecovery()
 						defer jobQueued.Unlock()
 						defer bheClient.CloseIdleConnections()
 						defer azClient.CloseIdleConnections()
@@ -151,10 +151,10 @@ func start(ctx context.Context) {
 								start := time.Now()
 
 								ctx, stop := context.WithCancel(ctx)
-								handleBubbledPanic(ctx, panicChan, stop)
+								panicrecovery.HandleBubbledPanic(ctx, stop, log)
 
 								// Batch data out for ingestion
-								stream := listAll(ctx, azClient, panicChan)
+								stream := listAll(ctx, azClient)
 								batches := pipeline.Batch(ctx.Done(), stream, 256, 10*time.Second)
 								hasIngestErr := ingest(ctx, *bheInstance, bheClient, batches)
 

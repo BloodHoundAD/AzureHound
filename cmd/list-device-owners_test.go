@@ -49,7 +49,7 @@ func TestListDeviceOwners(t *testing.T) {
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	mockClient.EXPECT().ListAzureDeviceRegisteredOwners(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockDeviceOwnerChannel).Times(1)
 	mockClient.EXPECT().ListAzureDeviceRegisteredOwners(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockDeviceOwnerChannel2).Times(1)
-	channel := listDeviceOwners(ctx, mockClient, panicChan(), mockDevicesChannel)
+	channel := listDeviceOwners(ctx, mockClient, mockDevicesChannel)
 
 	go func() {
 		defer close(mockDevicesChannel)

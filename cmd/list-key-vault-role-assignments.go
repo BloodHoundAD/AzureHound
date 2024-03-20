@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -51,16 +52,15 @@ func listKeyVaultRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure key vault role assignments...")
 	start := time.Now()
-	panicChan := panicChan()
-	subscriptions := listSubscriptions(ctx, azClient, panicChan)
-	stream := listKeyVaultRoleAssignments(ctx, azClient, panicChan, listKeyVaults(ctx, azClient, panicChan, subscriptions))
-	handleBubbledPanic(ctx, panicChan, stop)
+	subscriptions := listSubscriptions(ctx, azClient)
+	stream := listKeyVaultRoleAssignments(ctx, azClient, listKeyVaults(ctx, azClient, subscriptions))
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, keyVaults <-chan interface{}) <-chan azureWrapper[models.KeyVaultRoleAssignments] {
+func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}) <-chan azureWrapper[models.KeyVaultRoleAssignments] {
 	var (
 		out     = make(chan azureWrapper[models.KeyVaultRoleAssignments])
 		ids     = make(chan string)
@@ -69,7 +69,7 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 	)
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), keyVaults) {
@@ -88,7 +88,7 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 	for i := range streams {
 		stream := streams[i]
 		go func() {
-			defer panicRecovery(panicChan)
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				var (

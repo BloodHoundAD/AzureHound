@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/internal"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -50,11 +51,10 @@ func listKeyVaultOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure key vault owners...")
 	start := time.Now()
-	panicChan := panicChan()
-	subscriptions := listSubscriptions(ctx, azClient, panicChan)
-	keyVaults := listKeyVaults(ctx, azClient, panicChan, subscriptions)
-	kvRoleAssignments := listKeyVaultRoleAssignments(ctx, azClient, panicChan, keyVaults)
-	handleBubbledPanic(ctx, panicChan, stop)
+	subscriptions := listSubscriptions(ctx, azClient)
+	keyVaults := listKeyVaults(ctx, azClient, subscriptions)
+	kvRoleAssignments := listKeyVaultRoleAssignments(ctx, azClient, keyVaults)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	stream := listKeyVaultOwners(ctx, kvRoleAssignments)
 	outputStream(ctx, stream)
 	duration := time.Since(start)

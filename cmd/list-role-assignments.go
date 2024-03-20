@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -51,16 +52,15 @@ func listRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory role assignments...")
 	start := time.Now()
-	panicChan := panicChan()
-	roles := listRoles(ctx, azClient, panicChan)
-	stream := listRoleAssignments(ctx, azClient, panicChan, roles)
-	handleBubbledPanic(ctx, panicChan, stop)
+	roles := listRoles(ctx, azClient)
+	stream := listRoleAssignments(ctx, azClient, roles)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listRoleAssignments(ctx context.Context, client client.AzureClient, panicChan chan error, roles <-chan interface{}) <-chan interface{} {
+func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -69,7 +69,7 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, panicCh
 	)
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), roles) {
@@ -88,7 +88,7 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, panicCh
 	for i := range streams {
 		stream := streams[i]
 		go func() {
-			defer panicRecovery(panicChan)
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				var (

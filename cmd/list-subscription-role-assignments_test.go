@@ -49,7 +49,7 @@ func TestListSubscriptionRoleAssignments(t *testing.T) {
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockSubscriptionRoleAssignmentChannel).Times(1)
 	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockSubscriptionRoleAssignmentChannel2).Times(1)
-	channel := listSubscriptionRoleAssignments(ctx, mockClient, panicChan(), mockSubscriptionsChannel)
+	channel := listSubscriptionRoleAssignments(ctx, mockClient, mockSubscriptionsChannel)
 
 	go func() {
 		defer close(mockSubscriptionsChannel)

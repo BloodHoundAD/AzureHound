@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -55,16 +56,15 @@ func listLogicAppsCmdImpl(cmd *cobra.Command, args []string) {
 	} else {
 		log.Info("collecting azure logic apps...")
 		start := time.Now()
-		panicChan := panicChan()
-		stream := listLogicApps(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
-		handleBubbledPanic(ctx, panicChan, stop)
+		stream := listLogicApps(ctx, azClient, listSubscriptions(ctx, azClient))
+		panicrecovery.HandleBubbledPanic(ctx, stop, log)
 		outputStream(ctx, stream)
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
 }
 
-func listLogicApps(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
+func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -73,7 +73,7 @@ func listLogicApps(ctx context.Context, client client.AzureClient, panicChan cha
 	)
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
@@ -91,7 +91,7 @@ func listLogicApps(ctx context.Context, client client.AzureClient, panicChan cha
 	for i := range streams {
 		stream := streams[i]
 		go func() {
-			defer panicRecovery(panicChan)
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				count := 0

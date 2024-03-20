@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -51,15 +52,14 @@ func listKeyVaultsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure key vaults...")
 	start := time.Now()
-	panicChan := panicChan()
-	stream := listKeyVaults(ctx, azClient, panicChan, listSubscriptions(ctx, azClient, panicChan))
-	handleBubbledPanic(ctx, panicChan, stop)
+	stream := listKeyVaults(ctx, azClient, listSubscriptions(ctx, azClient))
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listKeyVaults(ctx context.Context, client client.AzureClient, panicChan chan error, subscriptions <-chan interface{}) <-chan interface{} {
+func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -68,7 +68,7 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, panicChan cha
 	)
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
@@ -87,7 +87,7 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, panicChan cha
 	for i := range streams {
 		stream := streams[i]
 		go func() {
-			defer panicRecovery(panicChan)
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				count := 0

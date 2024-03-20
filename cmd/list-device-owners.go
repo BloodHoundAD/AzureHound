@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -51,15 +52,14 @@ func listDeviceOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure device owners...")
 	start := time.Now()
-	panicChan := panicChan()
-	stream := listDeviceOwners(ctx, azClient, panicChan, listDevices(ctx, azClient, panicChan))
-	handleBubbledPanic(ctx, panicChan, stop)
+	stream := listDeviceOwners(ctx, azClient, listDevices(ctx, azClient))
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listDeviceOwners(ctx context.Context, client client.AzureClient, panicChan chan error, devices <-chan interface{}) <-chan interface{} {
+func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -68,7 +68,7 @@ func listDeviceOwners(ctx context.Context, client client.AzureClient, panicChan 
 	)
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), devices) {
@@ -86,7 +86,7 @@ func listDeviceOwners(ctx context.Context, client client.AzureClient, panicChan 
 	for i := range streams {
 		stream := streams[i]
 		go func() {
-			defer panicRecovery(panicChan)
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				var (

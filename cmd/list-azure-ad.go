@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -53,15 +54,14 @@ func listAzureADCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure ad objects...")
 	start := time.Now()
-	panicChan := panicChan()
-	stream := listAllAD(ctx, azClient, panicChan)
-	handleBubbledPanic(ctx, panicChan, stop)
+	stream := listAllAD(ctx, azClient)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAllAD(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
+func listAllAD(ctx context.Context, client client.AzureClient) <-chan interface{} {
 	var (
 		devices  = make(chan interface{})
 		devices2 = make(chan interface{})
@@ -81,35 +81,35 @@ func listAllAD(ctx context.Context, client client.AzureClient, panicChan chan er
 	)
 
 	// Enumerate Apps, AppOwners and AppMembers
-	appChans := pipeline.TeeFixed(ctx.Done(), listApps(ctx, client, panicChan), 2)
+	appChans := pipeline.TeeFixed(ctx.Done(), listApps(ctx, client), 2)
 	apps := pipeline.ToAny(ctx.Done(), appChans[0])
-	appOwners := pipeline.ToAny(ctx.Done(), listAppOwners(ctx, client, panicChan, appChans[1]))
+	appOwners := pipeline.ToAny(ctx.Done(), listAppOwners(ctx, client, appChans[1]))
 
 	// Enumerate Devices and DeviceOwners
-	pipeline.Tee(ctx.Done(), listDevices(ctx, client, panicChan), devices, devices2)
-	deviceOwners := listDeviceOwners(ctx, client, panicChan, devices2)
+	pipeline.Tee(ctx.Done(), listDevices(ctx, client), devices, devices2)
+	deviceOwners := listDeviceOwners(ctx, client, devices2)
 
 	// Enumerate Groups, GroupOwners and GroupMembers
-	pipeline.Tee(ctx.Done(), listGroups(ctx, client, panicChan), groups, groups2, groups3)
-	groupOwners := listGroupOwners(ctx, client, panicChan, groups2)
-	groupMembers := listGroupMembers(ctx, client, panicChan, groups3)
+	pipeline.Tee(ctx.Done(), listGroups(ctx, client), groups, groups2, groups3)
+	groupOwners := listGroupOwners(ctx, client, groups2)
+	groupMembers := listGroupMembers(ctx, client, groups3)
 
 	// Enumerate ServicePrincipals and ServicePrincipalOwners
-	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client, panicChan), servicePrincipals, servicePrincipals2, servicePrincipals3)
-	servicePrincipalOwners := listServicePrincipalOwners(ctx, client, panicChan, servicePrincipals2)
+	pipeline.Tee(ctx.Done(), listServicePrincipals(ctx, client), servicePrincipals, servicePrincipals2, servicePrincipals3)
+	servicePrincipalOwners := listServicePrincipalOwners(ctx, client, servicePrincipals2)
 
 	// Enumerate Tenants
-	pipeline.Tee(ctx.Done(), listTenants(ctx, client, panicChan), tenants)
+	pipeline.Tee(ctx.Done(), listTenants(ctx, client), tenants)
 
 	// Enumerate Users
-	users := listUsers(ctx, client, panicChan)
+	users := listUsers(ctx, client)
 
 	// Enumerate Roles and RoleAssignments
-	pipeline.Tee(ctx.Done(), listRoles(ctx, client, panicChan), roles, roles2)
-	roleAssignments := listRoleAssignments(ctx, client, panicChan, roles2)
+	pipeline.Tee(ctx.Done(), listRoles(ctx, client), roles, roles2)
+	roleAssignments := listRoleAssignments(ctx, client, roles2)
 
 	// Enumerate AppRoleAssignments
-	appRoleAssignments := listAppRoleAssignments(ctx, client, panicChan, servicePrincipals3)
+	appRoleAssignments := listAppRoleAssignments(ctx, client, servicePrincipals3)
 
 	return pipeline.Mux(ctx.Done(),
 		appOwners,

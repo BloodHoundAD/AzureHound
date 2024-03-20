@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/internal"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -50,10 +51,9 @@ func listManagementGroupUserAccessAdminsCmdImpl(cmd *cobra.Command, args []strin
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure management group user access admins...")
 	start := time.Now()
-	panicChan := panicChan()
-	managementGroups := listManagementGroups(ctx, azClient, panicChan)
-	roleAssignments := listManagementGroupRoleAssignments(ctx, azClient, panicChan, managementGroups)
-	handleBubbledPanic(ctx, panicChan, stop)
+	managementGroups := listManagementGroups(ctx, azClient)
+	roleAssignments := listManagementGroupRoleAssignments(ctx, azClient, managementGroups)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	stream := listManagementGroupUserAccessAdmins(ctx, roleAssignments)
 	outputStream(ctx, stream)
 	duration := time.Since(start)

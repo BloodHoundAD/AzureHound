@@ -49,7 +49,7 @@ func TestListVirtualMachineRoleAssignments(t *testing.T) {
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineRoleAssignmentChannel).Times(1)
 	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineRoleAssignmentChannel2).Times(1)
-	channel := listVirtualMachineRoleAssignments(ctx, mockClient, panicChan(), mockVirtualMachinesChannel)
+	channel := listVirtualMachineRoleAssignments(ctx, mockClient, mockVirtualMachinesChannel)
 
 	go func() {
 		defer close(mockVirtualMachinesChannel)

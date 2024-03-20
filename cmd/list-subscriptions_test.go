@@ -56,7 +56,7 @@ func TestListSubscriptions(t *testing.T) {
 		}
 	}()
 
-	channel := listSubscriptions(ctx, mockClient, panicChan())
+	channel := listSubscriptions(ctx, mockClient)
 	result := <-channel
 	if _, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})

@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/internal"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -50,11 +51,10 @@ func listVirtualMachineAdminLoginsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure virtual machine admin logins...")
 	start := time.Now()
-	panicChan := panicChan()
-	subscriptions := listSubscriptions(ctx, azClient, panicChan)
-	vms := listVirtualMachines(ctx, azClient, panicChan, subscriptions)
-	vmRoleAssignments := listVirtualMachineRoleAssignments(ctx, azClient, panicChan, vms)
-	handleBubbledPanic(ctx, panicChan, stop)
+	subscriptions := listSubscriptions(ctx, azClient)
+	vms := listVirtualMachines(ctx, azClient, subscriptions)
+	vmRoleAssignments := listVirtualMachineRoleAssignments(ctx, azClient, vms)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	stream := listVirtualMachineAdminLogins(ctx, vmRoleAssignments)
 	outputStream(ctx, stream)
 	duration := time.Since(start)

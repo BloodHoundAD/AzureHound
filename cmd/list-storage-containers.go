@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -51,17 +52,16 @@ func listStorageContainersCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure storage containers...")
 	start := time.Now()
-	panicChan := panicChan()
-	subscriptions := listSubscriptions(ctx, azClient, panicChan)
-	storageAccounts := listStorageAccounts(ctx, azClient, panicChan, subscriptions)
-	stream := listStorageContainers(ctx, azClient, panicChan, storageAccounts)
-	handleBubbledPanic(ctx, panicChan, stop)
+	subscriptions := listSubscriptions(ctx, azClient)
+	storageAccounts := listStorageAccounts(ctx, azClient, subscriptions)
+	stream := listStorageContainers(ctx, azClient, storageAccounts)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listStorageContainers(ctx context.Context, client client.AzureClient, panicChan chan error, storageAccounts <-chan interface{}) <-chan interface{} {
+func listStorageContainers(ctx context.Context, client client.AzureClient, storageAccounts <-chan interface{}) <-chan interface{} {
 	var (
 		out = make(chan interface{})
 		ids = make(chan interface{})
@@ -75,7 +75,7 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, panic
 	)
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), storageAccounts) {
 			if storageAccount, ok := result.(AzureWrapper).Data.(models.StorageAccount); !ok {
@@ -93,7 +93,7 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, panic
 	for i := range streams {
 		stream := streams[i]
 		go func() {
-			defer panicRecovery(panicChan)
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for stAccount := range stream {
 				count := 0

@@ -26,6 +26,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -49,19 +50,18 @@ func listAppsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory applications...")
 	start := time.Now()
-	panicChan := panicChan()
-	stream := listApps(ctx, azClient, panicChan)
-	handleBubbledPanic(ctx, panicChan, stop)
+	stream := listApps(ctx, azClient)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listApps(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan azureWrapper[models.App] {
+func listApps(ctx context.Context, client client.AzureClient) <-chan azureWrapper[models.App] {
 	out := make(chan azureWrapper[models.App])
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		count := 0
 		for item := range client.ListAzureADApps(ctx, "", "", "", "", nil) {

@@ -26,6 +26,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -49,19 +50,18 @@ func listServicePrincipalsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory service principals...")
 	start := time.Now()
-	panicChan := panicChan()
-	stream := listServicePrincipals(ctx, azClient, panicChan)
-	handleBubbledPanic(ctx, panicChan, stop)
+	stream := listServicePrincipals(ctx, azClient)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listServicePrincipals(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
+func listServicePrincipals(ctx context.Context, client client.AzureClient) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		count := 0
 		for item := range client.ListAzureADServicePrincipals(ctx, "", "", "", "", nil) {

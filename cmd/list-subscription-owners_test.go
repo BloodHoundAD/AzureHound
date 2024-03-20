@@ -42,7 +42,7 @@ func TestListSubscriptionOwners(t *testing.T) {
 	mockRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listSubscriptionOwners(ctx, mockClient, panicChan(), mockRoleAssignmentsChannel)
+	channel := listSubscriptionOwners(ctx, mockClient, mockRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockRoleAssignmentsChannel)

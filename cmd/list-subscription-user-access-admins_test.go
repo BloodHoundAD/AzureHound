@@ -42,7 +42,7 @@ func TestListSubscriptionUserAccessAdmins(t *testing.T) {
 	mockRoleAssignmentsChannel := make(chan interface{})
 	mockTenant := azure.Tenant{}
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	channel := listSubscriptionUserAccessAdmins(ctx, mockClient, panicChan(), mockRoleAssignmentsChannel)
+	channel := listSubscriptionUserAccessAdmins(ctx, mockClient, mockRoleAssignmentsChannel)
 
 	go func() {
 		defer close(mockRoleAssignmentsChannel)

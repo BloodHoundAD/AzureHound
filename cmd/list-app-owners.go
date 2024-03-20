@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -44,21 +45,20 @@ var listAppOwnersCmd = &cobra.Command{
 
 func listAppOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
-	panicChan := panicChan()
 	defer gracefulShutdown(stop)
 
 	log.V(1).Info("testing connections")
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure app owners...")
 	start := time.Now()
-	stream := listAppOwners(ctx, azClient, panicChan, listApps(ctx, azClient, panicChan))
-	handleBubbledPanic(ctx, panicChan, stop)
+	stream := listAppOwners(ctx, azClient, listApps(ctx, azClient))
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listAppOwners(ctx context.Context, client client.AzureClient, panicChan chan error, apps <-chan azureWrapper[models.App]) <-chan azureWrapper[models.AppOwners] {
+func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan azureWrapper[models.App]) <-chan azureWrapper[models.AppOwners] {
 	var (
 		out     = make(chan azureWrapper[models.AppOwners])
 		streams = pipeline.Demux(ctx.Done(), apps, 25)
@@ -69,7 +69,7 @@ func listAppOwners(ctx context.Context, client client.AzureClient, panicChan cha
 	for i := range streams {
 		stream := streams[i]
 		go func() {
-			defer panicRecovery(panicChan)
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for app := range stream {
 				var (

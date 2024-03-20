@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/internal"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -50,11 +51,10 @@ func listResourceGroupOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure resource group owners...")
 	start := time.Now()
-	panicChan := panicChan()
-	subscriptions := listSubscriptions(ctx, azClient, panicChan)
-	resourceGroups := listResourceGroups(ctx, azClient, panicChan, subscriptions)
-	roleAssignments := listResourceGroupRoleAssignments(ctx, azClient, panicChan, resourceGroups)
-	handleBubbledPanic(ctx, panicChan, stop)
+	subscriptions := listSubscriptions(ctx, azClient)
+	resourceGroups := listResourceGroups(ctx, azClient, subscriptions)
+	roleAssignments := listResourceGroupRoleAssignments(ctx, azClient, resourceGroups)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	stream := listResourceGroupOwners(ctx, roleAssignments)
 	outputStream(ctx, stream)
 	duration := time.Since(start)

@@ -48,7 +48,7 @@ func TestListVirtualMachines(t *testing.T) {
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
 	mockClient.EXPECT().ListAzureVirtualMachines(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineChannel).Times(1)
 	mockClient.EXPECT().ListAzureVirtualMachines(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineChannel2).Times(1)
-	channel := listVirtualMachines(ctx, mockClient, panicChan(), mockSubscriptionsChannel)
+	channel := listVirtualMachines(ctx, mockClient, mockSubscriptionsChannel)
 
 	go func() {
 		defer close(mockSubscriptionsChannel)

@@ -34,7 +34,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"runtime/debug"
 	"runtime/pprof"
 	"time"
 
@@ -83,35 +82,6 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		return nil
-	}
-}
-
-// panicChan creates an error channel to be used for communicating errors between goroutines.
-func panicChan() chan error {
-	var panicChan = make(chan error)
-
-	return panicChan
-}
-
-// handleBubbledPanic receives errors from panicChan, then it will print them and stop() context.
-func handleBubbledPanic(ctx context.Context, panicChan chan error, stop context.CancelFunc) {
-	go func() {
-		for {
-			select {
-			case err := <-panicChan:
-				log.V(0).Error(err, "")
-				stop()
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
-}
-
-// panicRecovery recovers from panics and sends them to panicChan
-func panicRecovery(panicChan chan error) {
-	if recovery := recover(); recovery != nil {
-		panicChan <- fmt.Errorf("[panic recovery] %s - [stack trace] %s", recovery, debug.Stack())
 	}
 }
 

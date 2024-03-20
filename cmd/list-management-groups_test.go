@@ -56,7 +56,7 @@ func TestListManagementGroups(t *testing.T) {
 		}
 	}()
 
-	channel := listManagementGroups(ctx, mockClient, panicChan())
+	channel := listManagementGroups(ctx, mockClient)
 	result := <-channel
 	if _, ok := result.(AzureWrapper); !ok {
 		t.Errorf("failed type assertion: got %T, want %T", result, AzureWrapper{})

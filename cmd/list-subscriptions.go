@@ -26,6 +26,7 @@ import (
 
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
@@ -53,19 +54,18 @@ func listSubscriptionsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory subscriptions...")
 	start := time.Now()
-	panicChan := panicChan()
-	stream := listSubscriptions(ctx, azClient, panicChan)
-	handleBubbledPanic(ctx, panicChan, stop)
+	stream := listSubscriptions(ctx, azClient)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listSubscriptions(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
+func listSubscriptions(ctx context.Context, client client.AzureClient) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		var (
 			count                = 0
@@ -75,7 +75,7 @@ func listSubscriptions(ctx context.Context, client client.AzureClient, panicChan
 		)
 
 		if len(selectedMgmtGroupIds) != 0 {
-			descendantChannel := listManagementGroupDescendants(ctx, client, panicChan, listManagementGroups(ctx, client, panicChan))
+			descendantChannel := listManagementGroupDescendants(ctx, client, listManagementGroups(ctx, client))
 			for i := range descendantChannel {
 				if item, ok := i.(AzureWrapper).Data.(azure.DescendantInfo); !ok {
 					log.Error(fmt.Errorf("failed type assertion"), "unable to continue evaluating management group descendants", "result", i)

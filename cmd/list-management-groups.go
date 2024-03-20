@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -50,19 +51,19 @@ func listManagementGroupsCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure active directory management groups...")
 	start := time.Now()
-	panicChan := panicChan()
-	stream := listManagementGroups(ctx, azClient, panicChan)
-	handleBubbledPanic(ctx, panicChan, stop)
+
+	stream := listManagementGroups(ctx, azClient)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listManagementGroups(ctx context.Context, client client.AzureClient, panicChan chan error) <-chan interface{} {
+func listManagementGroups(ctx context.Context, client client.AzureClient) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		count := 0
 		for item := range client.ListAzureManagementGroups(ctx) {

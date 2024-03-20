@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -51,14 +52,13 @@ func listGroupMembersCmdImpl(cmd *cobra.Command, args []string) {
 	azClient := connectAndCreateClient()
 	log.Info("collecting azure group members...")
 	start := time.Now()
-	panicChan := panicChan()
-	stream := listGroupMembers(ctx, azClient, panicChan, listGroups(ctx, azClient, panicChan))
+	stream := listGroupMembers(ctx, azClient, listGroups(ctx, azClient))
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
 }
 
-func listGroupMembers(ctx context.Context, client client.AzureClient, panicChan chan error, groups <-chan interface{}) <-chan interface{} {
+func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-chan interface{}) <-chan interface{} {
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
@@ -67,7 +67,7 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, panicChan 
 	)
 
 	go func() {
-		defer panicRecovery(panicChan)
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), groups) {
@@ -86,7 +86,7 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, panicChan 
 	for i := range streams {
 		stream := streams[i]
 		go func() {
-			defer panicRecovery(panicChan)
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				var (
