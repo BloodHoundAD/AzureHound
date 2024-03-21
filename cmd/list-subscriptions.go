@@ -26,6 +26,7 @@ import (
 
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
@@ -54,6 +55,7 @@ func listSubscriptionsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collecting azure active directory subscriptions...")
 	start := time.Now()
 	stream := listSubscriptions(ctx, azClient)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -63,6 +65,7 @@ func listSubscriptions(ctx context.Context, client client.AzureClient) <-chan in
 	out := make(chan interface{})
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		var (
 			count                = 0

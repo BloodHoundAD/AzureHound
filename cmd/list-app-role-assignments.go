@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -53,6 +54,7 @@ func listAppRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string) {
 	start := time.Now()
 	servicePrincipals := listServicePrincipals(ctx, azClient)
 	stream := listAppRoleAssignments(ctx, azClient, servicePrincipals)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -67,6 +69,7 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 	)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(filteredSPs)
 
 		for result := range pipeline.OrDone(ctx.Done(), servicePrincipals) {
@@ -87,6 +90,7 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for servicePrincipal := range stream {
 				var (

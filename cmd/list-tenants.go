@@ -26,6 +26,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -50,6 +51,7 @@ func listTenantsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collecting azure active directory tenants...")
 	start := time.Now()
 	stream := listTenants(ctx, azClient)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -59,6 +61,7 @@ func listTenants(ctx context.Context, client client.AzureClient) <-chan interfac
 	out := make(chan interface{})
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		// Send the fully hydrated tenant that is being collected

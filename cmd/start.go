@@ -42,6 +42,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -112,15 +113,18 @@ func start(ctx context.Context) {
 					}
 				} else if jobQueued.TryLock() {
 					go func() {
+						defer panicrecovery.PanicRecovery()
 						defer jobQueued.Unlock()
 						defer bheClient.CloseIdleConnections()
 						defer azClient.CloseIdleConnections()
+
+						ctx, stop := context.WithCancel(ctx)
+						panicrecovery.HandleBubbledPanic(ctx, stop, log)
 
 						log.V(2).Info("checking for available collection jobs")
 						if jobs, err := getAvailableJobs(ctx, *bheInstance, bheClient); err != nil {
 							log.Error(err, "unable to fetch available jobs for azurehound")
 						} else {
-
 							// Get only the jobs that have reached their execution time
 							executableJobs := []models.ClientJob{}
 							now := time.Now()

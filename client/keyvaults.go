@@ -25,6 +25,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -65,6 +66,7 @@ func (s *azureClient) ListAzureKeyVaults(ctx context.Context, subscriptionId str
 	out := make(chan azure.KeyVaultResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (

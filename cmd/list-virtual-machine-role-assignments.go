@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -53,6 +54,7 @@ func listVirtualMachineRoleAssignmentsCmdImpl(cmd *cobra.Command, args []string)
 	start := time.Now()
 	subscriptions := listSubscriptions(ctx, azClient)
 	stream := listVirtualMachineRoleAssignments(ctx, azClient, listVirtualMachines(ctx, azClient, subscriptions))
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -67,6 +69,7 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 	)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), virtualMachines) {
@@ -85,6 +88,7 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				var (

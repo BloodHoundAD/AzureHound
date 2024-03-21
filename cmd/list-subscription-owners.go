@@ -29,6 +29,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -55,6 +56,7 @@ func listSubscriptionOwnersCmdImpl(cmd *cobra.Command, args []string) {
 	subscriptions := listSubscriptions(ctx, azClient)
 	roleAssignments := listSubscriptionRoleAssignments(ctx, azClient, subscriptions)
 	stream := listSubscriptionOwners(ctx, azClient, roleAssignments)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -64,6 +66,7 @@ func listSubscriptionOwners(ctx context.Context, client client.AzureClient, role
 	out := make(chan interface{})
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		for result := range pipeline.OrDone(ctx.Done(), roleAssignments) {

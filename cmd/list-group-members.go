@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -66,6 +67,7 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 	)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), groups) {
@@ -84,6 +86,7 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				var (

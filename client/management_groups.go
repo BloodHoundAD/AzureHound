@@ -25,6 +25,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -82,6 +83,7 @@ func (s *azureClient) ListAzureManagementGroups(ctx context.Context) <-chan azur
 	out := make(chan azure.ManagementGroupResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
@@ -146,6 +148,7 @@ func (s *azureClient) ListAzureManagementGroupDescendants(ctx context.Context, g
 	out := make(chan azure.DescendantInfoResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (

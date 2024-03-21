@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/internal"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -53,6 +54,7 @@ func listVirtualMachineAvereContributorsCmdImpl(cmd *cobra.Command, args []strin
 	subscriptions := listSubscriptions(ctx, azClient)
 	vms := listVirtualMachines(ctx, azClient, subscriptions)
 	vmRoleAssignments := listVirtualMachineRoleAssignments(ctx, azClient, vms)
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	stream := listVirtualMachineAvereContributors(ctx, vmRoleAssignments)
 	outputStream(ctx, stream)
 	duration := time.Since(start)

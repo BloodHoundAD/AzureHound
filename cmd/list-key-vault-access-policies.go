@@ -29,6 +29,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	kinds "github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -65,12 +66,14 @@ func listKeyVaultAccessPoliciesCmdImpl(cmd *cobra.Command, args []string) {
 		duration := time.Since(start)
 		log.Info("collection completed", "duration", duration.String())
 	}
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 }
 
 func listKeyVaultAccessPolicies(ctx context.Context, client client.AzureClient, keyVaults <-chan interface{}, filters []enums.KeyVaultAccessType) <-chan interface{} {
 	out := make(chan interface{})
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		for result := range pipeline.OrDone(ctx.Done(), keyVaults) {

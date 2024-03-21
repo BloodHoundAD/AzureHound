@@ -27,6 +27,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -71,6 +72,7 @@ func (s *azureClient) ListAzureADRoleAssignments(ctx context.Context, filter, se
 	out := make(chan azure.UnifiedRoleAssignmentResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
@@ -153,6 +155,7 @@ func (s *azureClient) ListRoleAssignmentsForResource(ctx context.Context, resour
 	out := make(chan azure.RoleAssignmentResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
@@ -240,6 +243,7 @@ func (s *azureClient) ListResourceRoleAssignments(ctx context.Context, subscript
 	out := make(chan azure.RoleAssignmentResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (

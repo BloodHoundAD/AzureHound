@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
@@ -105,6 +106,7 @@ func (s *azureClient) ListAzureADApps(ctx context.Context, filter, search, order
 	out := make(chan azure.ApplicationResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
@@ -169,6 +171,7 @@ func (s *azureClient) ListAzureADAppOwners(ctx context.Context, objectId string,
 	out := make(chan azure.AppOwnerResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (
@@ -239,6 +242,7 @@ func (s *azureClient) ListAzureADAppMemberObjects(ctx context.Context, objectId 
 	out := make(chan azure.MemberObjectResult)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(out)
 
 		var (

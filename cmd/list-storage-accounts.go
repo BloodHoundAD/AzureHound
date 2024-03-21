@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -52,6 +53,7 @@ func listStorageAccountsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collecting azure storage accounts...")
 	start := time.Now()
 	stream := listStorageAccounts(ctx, azClient, listSubscriptions(ctx, azClient))
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -66,6 +68,7 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, subscri
 	)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
 			if subscription, ok := result.(AzureWrapper).Data.(models.Subscription); !ok {
@@ -83,6 +86,7 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, subscri
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				count := 0

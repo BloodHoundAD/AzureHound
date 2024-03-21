@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -52,6 +53,7 @@ func listKeyVaultsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collecting azure key vaults...")
 	start := time.Now()
 	stream := listKeyVaults(ctx, azClient, listSubscriptions(ctx, azClient))
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -66,6 +68,7 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 	)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), subscriptions) {
@@ -84,6 +87,7 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				count := 0

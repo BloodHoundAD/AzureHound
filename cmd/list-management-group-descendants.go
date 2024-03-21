@@ -28,6 +28,7 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
+	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 	"github.com/spf13/cobra"
 )
@@ -52,6 +53,7 @@ func listManagementGroupDescendantsCmdImpl(cmd *cobra.Command, args []string) {
 	log.Info("collecting azure management group descendants...")
 	start := time.Now()
 	stream := listManagementGroupDescendants(ctx, azClient, listManagementGroups(ctx, azClient))
+	panicrecovery.HandleBubbledPanic(ctx, stop, log)
 	outputStream(ctx, stream)
 	duration := time.Since(start)
 	log.Info("collection completed", "duration", duration.String())
@@ -66,6 +68,7 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 	)
 
 	go func() {
+		defer panicrecovery.PanicRecovery()
 		defer close(ids)
 
 		for result := range pipeline.OrDone(ctx.Done(), managementGroups) {
@@ -84,6 +87,7 @@ func listManagementGroupDescendants(ctx context.Context, client client.AzureClie
 	for i := range streams {
 		stream := streams[i]
 		go func() {
+			defer panicrecovery.PanicRecovery()
 			defer wg.Done()
 			for id := range stream {
 				count := 0
