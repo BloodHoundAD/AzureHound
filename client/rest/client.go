@@ -254,8 +254,10 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 
 			// Try the request
 			if res, err = s.http.Do(req); err != nil {
-				// client error
-				return nil, err
+				fmt.Printf("ERR attempt=%d | req=%s | error=%v", retry+1, req.URL, err)
+				backoff := math.Pow(5, float64(retry+1))
+				time.Sleep(time.Second * time.Duration(backoff))
+				continue
 			} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 				// Error response code handling
 				// See official Retry guidance (https://learn.microsoft.com/en-us/azure/architecture/best-practices/retry-service-specific#retry-usage-guidance)

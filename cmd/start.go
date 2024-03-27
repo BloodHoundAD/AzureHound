@@ -256,19 +256,59 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 
 // TODO: create/use a proper bloodhound client
 func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
-	if res, err := bheClient.Do(req); err != nil {
-		return nil, fmt.Errorf("failed to request %v: %w", req.URL, err)
-	} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
-		var body json.RawMessage
-		defer res.Body.Close()
-		if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-			return nil, fmt.Errorf("received unexpected response code from %v: %s; failure reading response body", req.URL, res.Status)
-		} else {
-			return nil, fmt.Errorf("received unexpected response code from %v: %s %s", req.URL, res.Status, body)
+	var (
+		body       []byte
+		res        *http.Response
+		err        error
+		maxRetries = 3
+	)
+
+	// copy the bytes in case we need to retry the request
+	if req.Body != nil {
+		if body, err = io.ReadAll(req.Body); err != nil {
+			return nil, err
 		}
-	} else {
-		return res, nil
+		if body != nil {
+			req.Body = io.NopCloser(bytes.NewBuffer(body))
+		}
 	}
+
+	for retry := 0; retry < maxRetries; retry++ {
+		// Reusing http.Request requires rewinding the request body
+		// back to a working state
+		if body != nil && retry > 0 {
+			req.Body = io.NopCloser(bytes.NewBuffer(body))
+		}
+
+		if res, err = bheClient.Do(req); err != nil {
+			// should we only be checking for a failed connection??
+			// Client error, try again to attempt avoiding transient errors
+			fmt.Printf("ERR attempt=%d | req=%s | ERR=%v\n", retry+1, req.URL, err)
+			backoff := math.Pow(5, float64(retry+1))
+			time.Sleep(time.Second * time.Duration(backoff))
+			continue
+		} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
+			if res.StatusCode >= http.StatusInternalServerError {
+				// Internal server error, backoff and try again.
+				fmt.Printf("ERR attempt=%d | req=%s | ERR=%v\n", retry+1, req.URL, err)
+				backoff := math.Pow(5, float64(retry+1))
+				time.Sleep(time.Second * time.Duration(backoff))
+				continue
+			}
+			// bad request we do not need to retry
+			var body json.RawMessage
+			defer res.Body.Close()
+			if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
+				return nil, fmt.Errorf("received unexpected response code from %v: %s; failure reading response body", req.URL, res.Status)
+			} else {
+				return nil, fmt.Errorf("received unexpected response code from %v: %s %s", req.URL, res.Status, body)
+			}
+		} else {
+			return res, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unable to complete request | url=%s | attempts=%d | ERR=%w", req.URL, maxRetries, err)
 }
 
 type basicResponse[T any] struct {
