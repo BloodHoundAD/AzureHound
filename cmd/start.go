@@ -288,7 +288,7 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 		if res, err = bheClient.Do(req); err != nil {
 			if strings.Contains(err.Error(), "An existing connection was forcibly closed by the remote host.") {
 				// try again on force closed connections
-				log.Error(err, "server error while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries)
+				log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries)
 				backoff := math.Pow(5, float64(retry+1))
 				time.Sleep(time.Second * time.Duration(backoff))
 				continue
