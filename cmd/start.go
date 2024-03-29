@@ -32,6 +32,7 @@ import (
 	"os/signal"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -222,9 +223,13 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 				if response, err := bheClient.Do(req); err != nil {
 					log.Error(err, unrecoverableErrMsg)
 					return true
-				} else if response.StatusCode == http.StatusGatewayTimeout || response.StatusCode == http.StatusServiceUnavailable {
+				} else if response.StatusCode == http.StatusGatewayTimeout || response.StatusCode == http.StatusServiceUnavailable || response.StatusCode == http.StatusBadGateway {
+					serverError := fmt.Errorf("received server error %d while requesting %v", response.StatusCode, endpoint)
+					log.Error(serverError, "attempt %d/%d", retry+1, maxRetries)
+
 					backoff := math.Pow(5, float64(retry+1))
 					time.Sleep(time.Second * time.Duration(backoff))
+
 					if retry == maxRetries-1 {
 						log.Error(ErrExceededRetryLimit, "")
 						hasErrors = true
@@ -281,16 +286,21 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 		}
 
 		if res, err = bheClient.Do(req); err != nil {
-			// should we only be checking for a failed connection??
-			// Client error, try again to attempt avoiding transient errors
-			fmt.Printf("ERR attempt=%d | req=%s | ERR=%v\n", retry+1, req.URL, err)
-			backoff := math.Pow(5, float64(retry+1))
-			time.Sleep(time.Second * time.Duration(backoff))
-			continue
+			if strings.Contains(err.Error(), "An existing connection was forcibly closed by the remote host.") {
+				// try again on force closed connections
+				log.Error(err, "server error while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries)
+				backoff := math.Pow(5, float64(retry+1))
+				time.Sleep(time.Second * time.Duration(backoff))
+				continue
+			}
+			// normal client error, dont attempt again
+			return nil, err
 		} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 			if res.StatusCode >= http.StatusInternalServerError {
 				// Internal server error, backoff and try again.
-				fmt.Printf("ERR attempt=%d | req=%s | ERR=%v\n", retry+1, req.URL, err)
+				serverError := fmt.Errorf("received server error %d while requesting %v", res.StatusCode, req.URL)
+				log.Error(serverError, "attempt %d/%d", retry+1, maxRetries)
+
 				backoff := math.Pow(5, float64(retry+1))
 				time.Sleep(time.Second * time.Duration(backoff))
 				continue
