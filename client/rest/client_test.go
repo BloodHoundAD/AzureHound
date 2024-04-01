@@ -18,22 +18,59 @@
 package rest
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+
 	"testing"
+
+	"github.com/bloodhoundad/azurehound/v2/client/config"
 )
 
 func TestClosedConnection(t *testing.T) {
-	// var s *httptest.Server
-	// var h http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-	// 	fmt.Println("closing client connections")
-	// 	s.CloseClientConnections()
-	// }
-	// s = httptest.NewServer(h)
-	// defer s.Close()
+	attempt := 0
+	var testServer *httptest.Server
+	var mockHandler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		attempt++
+		testServer.CloseClientConnections()
+	}
 
-	// res, err := RestClient.Get(gomock.Any(), s.URL)
-	// if err == nil {
-	// 	t.Fatalf("Something aint right, err should be nil %v", err)
-	// }
+	testServer = httptest.NewServer(mockHandler)
+	defer testServer.Close()
 
-	// fmt.Printf("res:%v,err:%v", res, err)
+	defaultConfig := config.Config{
+		Username:  "azurehound",
+		Password:  "we_collect",
+		Authority: testServer.URL,
+	}
+
+	if client, err := NewRestClient(testServer.URL, defaultConfig); err != nil {
+		t.Fatalf("error initializing rest client %v", err)
+	} else {
+		if req, err := http.NewRequest(http.MethodGet, testServer.URL, nil); err != nil {
+			t.Fatalf("error creating request %v", err)
+		} else {
+			didSucceed := false
+
+			// make request in separate goroutine so we can end it early after the first retry
+			go func() {
+				// end request on the second attempt after a closed connection
+				if res, err := client.Send(req); err != nil {
+					fmt.Println(err)
+				} else if res.Status == "200" {
+					didSucceed = true
+				}
+			}()
+
+			for attempt < 3 {
+				if attempt > 1 {
+					return
+				}
+			}
+
+			if didSucceed {
+				t.Fatalf("expected an attempted retry but the request succeeded")
+			}
+		}
+	}
 }

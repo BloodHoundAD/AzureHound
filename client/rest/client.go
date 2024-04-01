@@ -255,10 +255,9 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 
 			// Try the request
 			if res, err = s.http.Do(req); err != nil {
-				// TODO: maybe add a test case for this?
-				if strings.Contains(err.Error(), "An existing connection was forcibly closed by the remote host.") {
-
-					fmt.Printf("remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries)
+				closedConnectionMsg := "An existing connection was forcibly closed by the remote host."
+				if strings.Contains(err.Error(), closedConnectionMsg) || strings.HasSuffix(err.Error(), ": EOF") {
+					fmt.Printf("remote host force closed connection while requesting %s; attempt %d/%d; trying again\n", req.URL, retry+1, maxRetries)
 					backoff := math.Pow(5, float64(retry+1))
 					time.Sleep(time.Second * time.Duration(backoff))
 					continue
