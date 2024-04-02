@@ -18,7 +18,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 
@@ -50,26 +49,23 @@ func TestClosedConnection(t *testing.T) {
 		if req, err := http.NewRequest(http.MethodGet, testServer.URL, nil); err != nil {
 			t.Fatalf("error creating request %v", err)
 		} else {
-			didSucceed := false
+			requestCompleted := false
 
-			// make request in separate goroutine so we can end it early after the first retry
+			// make request in separate goroutine so its not blocking after we validated the retry
 			go func() {
-				// end request on the second attempt after a closed connection
-				if res, err := client.Send(req); err != nil {
-					fmt.Println(err)
-				} else if res.Status == "200" {
-					didSucceed = true
-				}
+				client.Send(req)
+				requestCompleted = true
 			}()
 
-			for attempt < 3 {
-				if attempt > 1 {
-					return
+			// block until attempt is > 2 or request succeeds
+			for attempt <= 2 {
+				if attempt > 1 || requestCompleted {
+					break
 				}
 			}
 
-			if didSucceed {
-				t.Fatalf("expected an attempted retry but the request succeeded")
+			if requestCompleted {
+				t.Fatalf("expected an attempted retry but the request completed")
 			}
 		}
 	}

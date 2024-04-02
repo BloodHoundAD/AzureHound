@@ -126,6 +126,8 @@ var ClosedConnectionMsg = "An existing connection was forcibly closed by the rem
 
 func IsClosedConnectionErr(err error) bool {
 	closedFromClient := strings.Contains(err.Error(), ClosedConnectionMsg)
+	// Mocking http.Do would require a larger refactor,
+	// so closedFromTestCase is used for testing only.
 	closedFromTestCase := strings.HasSuffix(err.Error(), ": EOF")
 	return closedFromClient || closedFromTestCase
 }
