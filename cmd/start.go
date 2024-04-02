@@ -222,16 +222,16 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 					if rest.IsClosedConnectionErr(err) {
 						// try again on force closed connection
 						log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again\n", req.URL, retry+1, maxRetries)
-						rest.ExponentialBackoff(retry, maxRetries)
+						rest.ExponentialBackoff(retry)
 						continue
 					}
 					log.Error(err, unrecoverableErrMsg)
 					return true
 				} else if response.StatusCode == http.StatusGatewayTimeout || response.StatusCode == http.StatusServiceUnavailable || response.StatusCode == http.StatusBadGateway {
 					serverError := fmt.Errorf("received server error %d while requesting %v;", response.StatusCode, endpoint)
-					log.Error(serverError, "attempt %d/%d; trying again", retry+1, maxRetries)
+					log.Error(serverError, "attempt %d/%d; trying again...", retry+1, maxRetries)
 
-					rest.ExponentialBackoff(retry, maxRetries)
+					rest.ExponentialBackoff(retry)
 
 					if retry == maxRetries-1 {
 						log.Error(ErrExceededRetryLimit, "")
@@ -284,7 +284,7 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 				if rest.IsClosedConnectionErr(err) {
 					// try again on force closed connections
 					log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again\n", req.URL, retry+1, maxRetries)
-					rest.ExponentialBackoff(retry, maxRetries)
+					rest.ExponentialBackoff(retry)
 					continue
 				}
 				// normal client error, dont attempt again
@@ -293,9 +293,9 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 				if res.StatusCode >= http.StatusInternalServerError {
 					// Internal server error, backoff and try again.
 					serverError := fmt.Errorf("received server error %d while requesting %v", res.StatusCode, req.URL)
-					log.Error(serverError, "attempt %d/%d", retry+1, maxRetries)
+					log.Error(serverError, "attempt %d/%d; trying again...", retry+1, maxRetries)
 
-					rest.ExponentialBackoff(retry, maxRetries)
+					rest.ExponentialBackoff(retry)
 					continue
 				}
 				// bad request we do not need to retry

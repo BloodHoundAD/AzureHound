@@ -133,7 +133,7 @@ func IsClosedConnectionErr(err error) bool {
 	return closedFromClient || closedFromTestCase
 }
 
-func ExponentialBackoff(retry int, maxRetries int) {
+func ExponentialBackoff(retry int) {
 	backoff := math.Pow(5, float64(retry+1))
 	time.Sleep(time.Second * time.Duration(backoff))
 }
