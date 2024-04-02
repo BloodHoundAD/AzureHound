@@ -27,8 +27,8 @@ import (
 )
 
 func TestClosedConnection(t *testing.T) {
-	attempt := 0
 	var testServer *httptest.Server
+	attempt := 0
 	var mockHandler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		attempt++
 		testServer.CloseClientConnections()
@@ -46,27 +46,24 @@ func TestClosedConnection(t *testing.T) {
 	if client, err := NewRestClient(testServer.URL, defaultConfig); err != nil {
 		t.Fatalf("error initializing rest client %v", err)
 	} else {
-		if req, err := http.NewRequest(http.MethodGet, testServer.URL, nil); err != nil {
-			t.Fatalf("error creating request %v", err)
-		} else {
-			requestCompleted := false
+		requestCompleted := false
 
-			// make request in separate goroutine so its not blocking after we validated the retry
-			go func() {
-				client.Send(req)
-				requestCompleted = true
-			}()
+		// make request in separate goroutine so its not blocking after we validated the retry
+		go func() {
+			client.Authenticate() // Authenticate()because it uses the internal client.send method.
+			// the above request should block this from running, however if it does then the test fails.
+			requestCompleted = true
+		}()
 
-			// block until attempt is > 2 or request succeeds
-			for attempt <= 2 {
-				if attempt > 1 || requestCompleted {
-					break
-				}
+		// block until attempt is > 2 or request succeeds
+		for attempt <= 2 {
+			if attempt > 1 || requestCompleted {
+				break
 			}
+		}
 
-			if requestCompleted {
-				t.Fatalf("expected an attempted retry but the request completed")
-			}
+		if requestCompleted {
+			t.Fatalf("expected an attempted retry but the request completed")
 		}
 	}
 }
