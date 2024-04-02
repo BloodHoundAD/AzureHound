@@ -218,23 +218,9 @@ func (s *restClient) Send(req *http.Request) (*http.Response, error) {
 	return s.send(req)
 }
 
-func copyBody(req *http.Request) ([]byte, error) {
-	var (
-		body []byte
-		err  error
-	)
-	if req.Body != nil {
-		body, err = io.ReadAll(req.Body)
-		if body != nil {
-			req.Body = io.NopCloser(bytes.NewBuffer(body))
-		}
-	}
-	return body, err
-}
-
 func (s *restClient) send(req *http.Request) (*http.Response, error) {
 	// copy the bytes in case we need to retry the request
-	if body, err := copyBody(req); err != nil {
+	if body, err := CopyBody(req); err != nil {
 		return nil, err
 	} else {
 		var (
