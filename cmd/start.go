@@ -222,6 +222,12 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 						// try again on force closed connection
 						log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again...\n", req.URL, retry+1, maxRetries)
 						rest.ExponentialBackoff(retry)
+
+						if retry == maxRetries-1 {
+							log.Error(ErrExceededRetryLimit, "")
+							hasErrors = true
+						}
+
 						continue
 					}
 					log.Error(err, unrecoverableErrMsg)
