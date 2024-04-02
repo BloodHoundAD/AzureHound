@@ -25,6 +25,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"math"
 	"strings"
 	"time"
 
@@ -119,4 +120,17 @@ func x5t(certificate string) (string, error) {
 		checksum := sha1.Sum(cert.Raw)
 		return base64.StdEncoding.EncodeToString(checksum[:]), nil
 	}
+}
+
+var ClosedConnectionMsg = "An existing connection was forcibly closed by the remote host."
+
+func IsClosedConnectionErr(err error) bool {
+	closedFromClient := strings.Contains(err.Error(), ClosedConnectionMsg)
+	closedFromTestCase := strings.HasSuffix(err.Error(), ": EOF")
+	return closedFromClient || closedFromTestCase
+}
+
+func ExponentialBackoff(retry int, maxRetries int) {
+	backoff := math.Pow(5, float64(retry+1))
+	time.Sleep(time.Second * time.Duration(backoff))
 }

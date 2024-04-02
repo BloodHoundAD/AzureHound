@@ -221,6 +221,12 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 			for retry := 0; retry < maxRetries; retry++ {
 				// No retries on regular err cases, only on HTTP 504 Gateway Timeout and HTTP 503 Service Unavailable
 				if response, err := bheClient.Do(req); err != nil {
+					if rest.IsClosedConnectionErr(err) {
+						// try again on force closed connection
+						log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again\n", req.URL, retry+1, maxRetries)
+						rest.ExponentialBackoff(retry, maxRetries)
+						continue
+					}
 					log.Error(err, unrecoverableErrMsg)
 					return true
 				} else if response.StatusCode == http.StatusGatewayTimeout || response.StatusCode == http.StatusServiceUnavailable || response.StatusCode == http.StatusBadGateway {
@@ -286,11 +292,10 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 		}
 
 		if res, err = bheClient.Do(req); err != nil {
-			if strings.Contains(err.Error(), "An existing connection was forcibly closed by the remote host.") {
+			if strings.Contains(err.Error(), rest.ClosedConnectionMsg) || strings.HasSuffix(err.Error(), ": EOF") {
 				// try again on force closed connections
-				log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries)
-				backoff := math.Pow(5, float64(retry+1))
-				time.Sleep(time.Second * time.Duration(backoff))
+				log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again\n", req.URL, retry+1, maxRetries)
+				rest.ExponentialBackoff(retry, maxRetries)
 				continue
 			}
 			// normal client error, dont attempt again
