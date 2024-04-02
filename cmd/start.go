@@ -214,7 +214,6 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 		} else {
 			req.Header.Set("User-Agent", constants.UserAgent())
 			req.Header.Set("Accept", "application/json")
-			req.Header.Set("Prefer", "wait=60")
 			req.Header.Set("Content-Encoding", "gzip")
 			for retry := 0; retry < maxRetries; retry++ {
 				// No retries on regular err cases, only on HTTP 504 Gateway Timeout and HTTP 503 Service Unavailable
