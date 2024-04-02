@@ -266,7 +266,6 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 	var (
 		res        *http.Response
-		err        error
 		maxRetries = 3
 	)
 
@@ -313,7 +312,7 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("unable to complete request to url=%s; attempts=%d; ERR=%w", req.URL, maxRetries, err)
+	return nil, fmt.Errorf("unable to complete request to url=%s; attempts=%d;", req.URL, maxRetries)
 }
 
 type basicResponse[T any] struct {
