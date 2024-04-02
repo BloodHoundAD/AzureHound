@@ -127,8 +127,7 @@ func x5t(certificate string) (string, error) {
 func IsClosedConnectionErr(err error) bool {
 	var closedConnectionMsg = "An existing connection was forcibly closed by the remote host."
 	closedFromClient := strings.Contains(err.Error(), closedConnectionMsg)
-	// Mocking http.Do would require a larger refactor,
-	// so closedFromTestCase is used for testing only.
+	// Mocking http.Do would require a larger refactor, so closedFromTestCase is used to cover testing only.
 	closedFromTestCase := strings.HasSuffix(err.Error(), ": EOF")
 	return closedFromClient || closedFromTestCase
 }
