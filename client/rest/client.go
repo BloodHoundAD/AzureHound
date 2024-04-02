@@ -240,7 +240,7 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 			// Try the request
 			if res, err = s.http.Do(req); err != nil {
 				if IsClosedConnectionErr(err) {
-					fmt.Printf("remote host force closed connection while requesting %s; attempt %d/%d; trying again\n", req.URL, retry+1, maxRetries)
+					fmt.Printf("remote host force closed connection while requesting %s; attempt %d/%d; trying again...\n", req.URL, retry+1, maxRetries)
 					ExponentialBackoff(retry)
 					continue
 				}
