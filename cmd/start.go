@@ -25,7 +25,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -233,8 +232,7 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 					serverError := fmt.Errorf("received server error %d while requesting %v", response.StatusCode, endpoint)
 					log.Error(serverError, "attempt %d/%d", retry+1, maxRetries)
 
-					backoff := math.Pow(5, float64(retry+1))
-					time.Sleep(time.Second * time.Duration(backoff))
+					rest.ExponentialBackoff(retry, maxRetries)
 
 					if retry == maxRetries-1 {
 						log.Error(ErrExceededRetryLimit, "")
@@ -306,8 +304,7 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 				serverError := fmt.Errorf("received server error %d while requesting %v", res.StatusCode, req.URL)
 				log.Error(serverError, "attempt %d/%d", retry+1, maxRetries)
 
-				backoff := math.Pow(5, float64(retry+1))
-				time.Sleep(time.Second * time.Duration(backoff))
+				rest.ExponentialBackoff(retry, maxRetries)
 				continue
 			}
 			// bad request we do not need to retry

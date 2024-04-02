@@ -25,7 +25,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -274,8 +273,7 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 					}
 				} else if res.StatusCode >= http.StatusInternalServerError {
 					// Wait the time calculated by the 5 second exponential backoff
-					backoff := math.Pow(5, float64(retry+1))
-					time.Sleep(time.Second * time.Duration(backoff))
+					ExponentialBackoff(retry, maxRetries)
 					continue
 				} else {
 					// Not a status code that warrants a retry
