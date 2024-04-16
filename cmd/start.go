@@ -220,7 +220,7 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 				if response, err := bheClient.Do(req); err != nil {
 					if rest.IsClosedConnectionErr(err) {
 						// try again on force closed connection
-						log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries)
+						log.Error(err, fmt.Sprintf("remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries))
 						rest.ExponentialBackoff(retry)
 
 						if retry == maxRetries-1 {
@@ -288,7 +288,7 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 			if res, err = bheClient.Do(req); err != nil {
 				if rest.IsClosedConnectionErr(err) {
 					// try again on force closed connections
-					log.Error(err, "remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries)
+					log.Error(err, fmt.Sprintf("remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries))
 					rest.ExponentialBackoff(retry)
 					continue
 				}
@@ -298,7 +298,7 @@ func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
 				if res.StatusCode >= http.StatusInternalServerError {
 					// Internal server error, backoff and try again.
 					serverError := fmt.Errorf("received server error %d while requesting %v", res.StatusCode, req.URL)
-					log.Error(serverError, "attempt %d/%d; trying again", retry+1, maxRetries)
+					log.Error(serverError, fmt.Sprintf("attempt %d/%d; trying again", retry+1, maxRetries))
 
 					rest.ExponentialBackoff(retry)
 					continue
