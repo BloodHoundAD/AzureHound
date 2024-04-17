@@ -18,6 +18,7 @@
 package rest
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"crypto/x509"
 	"encoding/base64"
@@ -25,6 +26,8 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"math"
+	"net/http"
 	"strings"
 	"time"
 
@@ -119,4 +122,31 @@ func x5t(certificate string) (string, error) {
 		checksum := sha1.Sum(cert.Raw)
 		return base64.StdEncoding.EncodeToString(checksum[:]), nil
 	}
+}
+
+func IsClosedConnectionErr(err error) bool {
+	var closedConnectionMsg = "An existing connection was forcibly closed by the remote host."
+	closedFromClient := strings.Contains(err.Error(), closedConnectionMsg)
+	// Mocking http.Do would require a larger refactor, so closedFromTestCase is used to cover testing only.
+	closedFromTestCase := strings.HasSuffix(err.Error(), ": EOF")
+	return closedFromClient || closedFromTestCase
+}
+
+func ExponentialBackoff(retry int) {
+	backoff := math.Pow(5, float64(retry+1))
+	time.Sleep(time.Second * time.Duration(backoff))
+}
+
+func CopyBody(req *http.Request) ([]byte, error) {
+	var (
+		body []byte
+		err  error
+	)
+	if req.Body != nil {
+		body, err = io.ReadAll(req.Body)
+		if body != nil {
+			req.Body = io.NopCloser(bytes.NewBuffer(body))
+		}
+	}
+	return body, err
 }

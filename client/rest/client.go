@@ -25,7 +25,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -219,23 +218,9 @@ func (s *restClient) Send(req *http.Request) (*http.Response, error) {
 	return s.send(req)
 }
 
-func copyBody(req *http.Request) ([]byte, error) {
-	var (
-		body []byte
-		err  error
-	)
-	if req.Body != nil {
-		body, err = io.ReadAll(req.Body)
-		if body != nil {
-			req.Body = io.NopCloser(bytes.NewBuffer(body))
-		}
-	}
-	return body, err
-}
-
 func (s *restClient) send(req *http.Request) (*http.Response, error) {
 	// copy the bytes in case we need to retry the request
-	if body, err := copyBody(req); err != nil {
+	if body, err := CopyBody(req); err != nil {
 		return nil, err
 	} else {
 		var (
@@ -254,7 +239,11 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 
 			// Try the request
 			if res, err = s.http.Do(req); err != nil {
-				// client error
+				if IsClosedConnectionErr(err) {
+					fmt.Printf("remote host force closed connection while requesting %s; attempt %d/%d; trying again\n", req.URL, retry+1, maxRetries)
+					ExponentialBackoff(retry)
+					continue
+				}
 				return nil, err
 			} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 				// Error response code handling
@@ -270,8 +259,7 @@ func (s *restClient) send(req *http.Request) (*http.Response, error) {
 					}
 				} else if res.StatusCode >= http.StatusInternalServerError {
 					// Wait the time calculated by the 5 second exponential backoff
-					backoff := math.Pow(5, float64(retry+1))
-					time.Sleep(time.Second * time.Duration(backoff))
+					ExponentialBackoff(retry)
 					continue
 				} else {
 					// Not a status code that warrants a retry

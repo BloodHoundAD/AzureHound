@@ -25,7 +25,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -215,16 +214,30 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 		} else {
 			req.Header.Set("User-Agent", constants.UserAgent())
 			req.Header.Set("Accept", "application/json")
-			req.Header.Set("Prefer", "wait=60")
 			req.Header.Set("Content-Encoding", "gzip")
 			for retry := 0; retry < maxRetries; retry++ {
 				// No retries on regular err cases, only on HTTP 504 Gateway Timeout and HTTP 503 Service Unavailable
 				if response, err := bheClient.Do(req); err != nil {
+					if rest.IsClosedConnectionErr(err) {
+						// try again on force closed connection
+						log.Error(err, fmt.Sprintf("remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries))
+						rest.ExponentialBackoff(retry)
+
+						if retry == maxRetries-1 {
+							log.Error(ErrExceededRetryLimit, "")
+							hasErrors = true
+						}
+
+						continue
+					}
 					log.Error(err, unrecoverableErrMsg)
 					return true
-				} else if response.StatusCode == http.StatusGatewayTimeout || response.StatusCode == http.StatusServiceUnavailable {
-					backoff := math.Pow(5, float64(retry+1))
-					time.Sleep(time.Second * time.Duration(backoff))
+				} else if response.StatusCode == http.StatusGatewayTimeout || response.StatusCode == http.StatusServiceUnavailable || response.StatusCode == http.StatusBadGateway {
+					serverError := fmt.Errorf("received server error %d while requesting %v; attempt %d/%d; trying again", response.StatusCode, endpoint, retry+1, maxRetries)
+					log.Error(serverError, "")
+
+					rest.ExponentialBackoff(retry)
+
 					if retry == maxRetries-1 {
 						log.Error(ErrExceededRetryLimit, "")
 						hasErrors = true
@@ -256,19 +269,55 @@ func ingest(ctx context.Context, bheUrl url.URL, bheClient *http.Client, in <-ch
 
 // TODO: create/use a proper bloodhound client
 func do(bheClient *http.Client, req *http.Request) (*http.Response, error) {
-	if res, err := bheClient.Do(req); err != nil {
-		return nil, fmt.Errorf("failed to request %v: %w", req.URL, err)
-	} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
-		var body json.RawMessage
-		defer res.Body.Close()
-		if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-			return nil, fmt.Errorf("received unexpected response code from %v: %s; failure reading response body", req.URL, res.Status)
-		} else {
-			return nil, fmt.Errorf("received unexpected response code from %v: %s %s", req.URL, res.Status, body)
-		}
+	var (
+		res        *http.Response
+		maxRetries = 3
+	)
+
+	// copy the bytes in case we need to retry the request
+	if body, err := rest.CopyBody(req); err != nil {
+		return nil, err
 	} else {
-		return res, nil
+		for retry := 0; retry < maxRetries; retry++ {
+			// Reusing http.Request requires rewinding the request body
+			// back to a working state
+			if body != nil && retry > 0 {
+				req.Body = io.NopCloser(bytes.NewBuffer(body))
+			}
+
+			if res, err = bheClient.Do(req); err != nil {
+				if rest.IsClosedConnectionErr(err) {
+					// try again on force closed connections
+					log.Error(err, fmt.Sprintf("remote host force closed connection while requesting %s; attempt %d/%d; trying again", req.URL, retry+1, maxRetries))
+					rest.ExponentialBackoff(retry)
+					continue
+				}
+				// normal client error, dont attempt again
+				return nil, err
+			} else if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
+				if res.StatusCode >= http.StatusInternalServerError {
+					// Internal server error, backoff and try again.
+					serverError := fmt.Errorf("received server error %d while requesting %v", res.StatusCode, req.URL)
+					log.Error(serverError, fmt.Sprintf("attempt %d/%d; trying again", retry+1, maxRetries))
+
+					rest.ExponentialBackoff(retry)
+					continue
+				}
+				// bad request we do not need to retry
+				var body json.RawMessage
+				defer res.Body.Close()
+				if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
+					return nil, fmt.Errorf("received unexpected response code from %v: %s; failure reading response body", req.URL, res.Status)
+				} else {
+					return nil, fmt.Errorf("received unexpected response code from %v: %s %s", req.URL, res.Status, body)
+				}
+			} else {
+				return res, nil
+			}
+		}
 	}
+
+	return nil, fmt.Errorf("unable to complete request to url=%s; attempts=%d;", req.URL, maxRetries)
 }
 
 type basicResponse[T any] struct {
