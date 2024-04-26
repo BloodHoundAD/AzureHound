@@ -67,7 +67,7 @@ type UnifiedRoleAssignment struct {
 	// The directory object that is the scope of the assignment.
 	// Read-only.
 	// Supports $expand.
-	DirectoryScope json.RawMessage
+	DirectoryScope Application `json:"directoryScope,omitempty"`
 
 	// Read-only property with details of the app specific scope when the assignment scope is app specific.
 	// Containment entity.

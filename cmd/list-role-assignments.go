@@ -99,12 +99,17 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 					count  = 0
 					filter = fmt.Sprintf("roleDefinitionId eq '%s'", id)
 				)
-				for item := range client.ListAzureADRoleAssignments(ctx, filter, "", "", "", nil) {
+				// We expand directoryScope in order to obtain the appId from app specific scoped role assignments
+				for item := range client.ListAzureADRoleAssignments(ctx, filter, "", "", "directoryScope", nil) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this role", "roleDefinitionId", id)
 					} else {
 						log.V(2).Info("found role assignment", "roleAssignments", item)
 						count++
+						// To ensure proper linking to AZApp nodes we want to supply the AppId instead when role assignments are app specific scoped
+						if item.Ok.DirectoryScopeId != "/" {
+							item.Ok.DirectoryScopeId = fmt.Sprintf("/%s", item.Ok.DirectoryScope.AppId)
+						}
 						roleAssignments.RoleAssignments = append(roleAssignments.RoleAssignments, item.Ok)
 					}
 				}
