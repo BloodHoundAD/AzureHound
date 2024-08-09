@@ -46,6 +46,7 @@ func (s *azurehoundSvc) Init(env svc.Environment) error {
 		return err
 	} else {
 		log = *logr
+		config.CheckCollectionConfigSanity(log)
 
 		if config.ConfigFileUsed() != "" {
 			log.V(1).Info(fmt.Sprintf("Config File: %v", config.ConfigFileUsed()))

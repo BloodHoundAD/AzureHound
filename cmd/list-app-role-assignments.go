@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -64,7 +65,7 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 	var (
 		out         = make(chan interface{})
 		filteredSPs = make(chan models.ServicePrincipal)
-		streams     = pipeline.Demux(ctx.Done(), filteredSPs, 25)
+		streams     = pipeline.Demux(ctx.Done(), filteredSPs, config.ColStreamCount.Value().(int))
 		wg          sync.WaitGroup
 	)
 

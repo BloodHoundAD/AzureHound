@@ -264,6 +264,50 @@ var (
 		Default:    "",
 	}
 
+	ColBatchSize = Config{
+		Name:       "batchSize",
+		Shorthand:  "",
+		Usage:      "The number of resources to send in a single batch sent to the server.",
+		Persistent: true,
+		Required:   false,
+		Default:    100,
+		MinValue:   1,
+		MaxValue:   256,
+	}
+
+	ColMaxConnsPerHost = Config{
+		Name:       "maxConnsPerHost",
+		Shorthand:  "",
+		Usage:      "The maximum number of connections made during collection.",
+		Persistent: true,
+		Required:   false,
+		Default:    20,
+		MinValue:   1,
+		MaxValue:   200,
+	}
+
+	ColMaxIdleConnsPerHost = Config{
+		Name:       "maxIdleConnsPerHost",
+		Shorthand:  "",
+		Usage:      "The maximum number of idle connections allowed during collection.",
+		Persistent: true,
+		Required:   false,
+		Default:    20,
+		MinValue:   1,
+		MaxValue:   200,
+	}
+
+	ColStreamCount = Config{
+		Name:       "streamCount",
+		Shorthand:  "",
+		Usage:      "The number of threads to use when collecting various resources.",
+		Persistent: true,
+		Required:   true,
+		Default:    2,
+		MinValue:   1,
+		MaxValue:   25,
+	}
+
 	// Command specific configurations
 	KeyVaultAccessTypes = Config{
 		Name:       "access-types",
@@ -313,6 +357,13 @@ var (
 		BHEUrl,
 		BHETokenId,
 		BHEToken,
+	}
+
+	CollectionConfig = []Config{
+		ColBatchSize,
+		ColMaxConnsPerHost,
+		ColMaxIdleConnsPerHost,
+		ColStreamCount,
 	}
 )
 

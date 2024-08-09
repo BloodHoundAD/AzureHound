@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -61,7 +62,7 @@ func listAppOwnersCmdImpl(cmd *cobra.Command, args []string) {
 func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan azureWrapper[models.App]) <-chan azureWrapper[models.AppOwners] {
 	var (
 		out     = make(chan azureWrapper[models.AppOwners])
-		streams = pipeline.Demux(ctx.Done(), apps, 25)
+		streams = pipeline.Demux(ctx.Done(), apps, config.ColStreamCount.Value().(int))
 		wg      sync.WaitGroup
 	)
 

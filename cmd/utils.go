@@ -72,6 +72,7 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 		return err
 	} else {
 		log = *logr
+		config.CheckCollectionConfigSanity(log)
 
 		if config.ConfigFileUsed() != "" {
 			log.V(1).Info(fmt.Sprintf("Config File: %v", config.ConfigFileUsed()))
