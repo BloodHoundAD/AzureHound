@@ -302,7 +302,7 @@ var (
 		Shorthand:  "",
 		Usage:      "The number of threads to use when collecting various resources.",
 		Persistent: true,
-		Required:   true,
+		Required:   false,
 		Default:    2,
 		MinValue:   1,
 		MaxValue:   25,
