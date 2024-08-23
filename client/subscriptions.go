@@ -19,7 +19,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
@@ -29,31 +28,14 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureSubscription(ctx context.Context, objectId string) (*azure.Subscription, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s", objectId)
-		params   = query.Params{ApiVersion: "2020-01-01"}.AsMap()
-		headers  map[string]string
-		response azure.Subscription
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
 func (s *azureClient) GetAzureSubscriptions(ctx context.Context) (azure.SubscriptionList, error) {
 	var (
 		path     = "/subscriptions"
-		params   = query.Params{ApiVersion: "2020-01-01"}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2020-01-01"}
 		response azure.SubscriptionList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err

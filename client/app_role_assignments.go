@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
@@ -31,20 +30,17 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.AppRoleAssignmentList, error) {
+func (s *azureClient) GetAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, params query.GraphParams) (azure.AppRoleAssignmentList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/servicePrincipals/%s/appRoleAssignedTo", constants.GraphApiVersion, servicePrincipalId)
-		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count, Expand: expand}
-		headers  map[string]string
 		response azure.AppRoleAssignmentList
 	)
 
-	count = count || search != "" || (filter != "" && orderBy != "") || strings.Contains(filter, "endsWith")
-	if count {
-		headers = make(map[string]string)
-		headers["ConsistencyLevel"] = "eventual"
+	if params.Top == 0 {
+		params.Top = 999
 	}
-	if res, err := s.msgraph.Get(ctx, path, params.AsMap(), headers); err != nil {
+
+	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -53,7 +49,7 @@ func (s *azureClient) GetAzureADAppRoleAssignments(ctx context.Context, serviceP
 	}
 }
 
-func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipal, filter, search, orderBy, expand string, selectCols []string) <-chan azure.AppRoleAssignmentResult {
+func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipal string,  params query.GraphParams) <-chan azure.AppRoleAssignmentResult {
 	out := make(chan azure.AppRoleAssignmentResult)
 
 	go func() {
@@ -65,7 +61,7 @@ func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, service
 			nextLink  string
 		)
 
-		if list, err := s.GetAzureADAppRoleAssignments(ctx, servicePrincipal, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
+		if list, err := s.GetAzureADAppRoleAssignments(ctx, servicePrincipal, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

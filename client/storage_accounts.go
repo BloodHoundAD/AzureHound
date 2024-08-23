@@ -29,30 +29,13 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureStorageAccount(ctx context.Context, subscriptionId, groupName, saName, expand string) (*azure.StorageAccount, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s", subscriptionId, groupName, saName)
-		params   = query.Params{ApiVersion: "2021-07-01", Expand: expand}.AsMap()
-		headers  map[string]string
-		response azure.StorageAccount
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
 func (s *azureClient) GetAzureStorageAccounts(ctx context.Context, subscriptionId string) (azure.StorageAccountList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Storage/storageAccounts", subscriptionId)
-		params   = query.Params{ApiVersion: "2022-05-01"}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2022-05-01"}
 		response azure.StorageAccountList
 	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -135,30 +118,13 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 // Storage containers
 // ==
 
-func (s *azureClient) GetAzureStorageContainer(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, scName string, filter string, includeDeleted string, maxPageSize string) (*azure.StorageContainer, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers/%s", subscriptionId, resourceGroupName, saName, scName)
-		params   = query.Params{ApiVersion: "2022-05-01", Filter: filter, IncludeDeleted: includeDeleted, MaxPageSize: maxPageSize}.AsMap()
-		headers  map[string]string
-		response azure.StorageContainer
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
 func (s *azureClient) GetAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) (azure.StorageContainerList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers", subscriptionId, resourceGroupName, saName)
-		params   = query.Params{ApiVersion: "2022-05-01", Filter: filter, IncludeDeleted: includeDeleted, MaxPageSize: maxPageSize}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2022-05-01", Filter: filter, IncludeDeleted: includeDeleted, MaxPageSize: maxPageSize}
 		response azure.StorageContainerList
 	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err

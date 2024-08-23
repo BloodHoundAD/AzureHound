@@ -47,8 +47,8 @@ func TestListVirtualMachineRoleAssignments(t *testing.T) {
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineRoleAssignmentChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineRoleAssignmentChannel2).Times(1)
+	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineRoleAssignmentChannel).Times(1)
+	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockVirtualMachineRoleAssignmentChannel2).Times(1)
 	channel := listVirtualMachineRoleAssignments(ctx, mockClient, mockVirtualMachinesChannel)
 
 	go func() {

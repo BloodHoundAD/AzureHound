@@ -47,8 +47,8 @@ func TestListGroupMembers(t *testing.T) {
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListAzureADGroupMembers(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupMemberChannel).Times(1)
-	mockClient.EXPECT().ListAzureADGroupMembers(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupMemberChannel2).Times(1)
+	mockClient.EXPECT().ListAzureADGroupMembers(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupMemberChannel).Times(1)
+	mockClient.EXPECT().ListAzureADGroupMembers(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupMemberChannel2).Times(1)
 	channel := listGroupMembers(ctx, mockClient, mockGroupsChannel)
 
 	go func() {

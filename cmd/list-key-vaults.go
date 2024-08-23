@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -91,7 +92,7 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureKeyVaults(ctx, id, 999) {
+				for item := range client.ListAzureKeyVaults(ctx, id, query.RMParams{Top: 999}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing key vaults for this subscription", "subscriptionId", id)
 					} else {

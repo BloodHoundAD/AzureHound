@@ -46,8 +46,8 @@ func TestListManagementGroupDescendants(t *testing.T) {
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListAzureManagementGroupDescendants(gomock.Any(), gomock.Any()).Return(mockManagementGroupDescendantChannel).Times(1)
-	mockClient.EXPECT().ListAzureManagementGroupDescendants(gomock.Any(), gomock.Any()).Return(mockManagementGroupDescendantChannel2).Times(1)
+	mockClient.EXPECT().ListAzureManagementGroupDescendants(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockManagementGroupDescendantChannel).Times(1)
+	mockClient.EXPECT().ListAzureManagementGroupDescendants(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockManagementGroupDescendantChannel2).Times(1)
 	channel := listManagementGroupDescendants(ctx, mockClient, mockManagementGroupsChannel)
 
 	go func() {

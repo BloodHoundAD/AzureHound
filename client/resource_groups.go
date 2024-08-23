@@ -29,31 +29,17 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureResourceGroup(ctx context.Context, subscriptionId, groupName string) (*azure.ResourceGroup, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourcegroups/%s", subscriptionId, groupName)
-		params   = query.Params{ApiVersion: "2021-04-01"}.AsMap()
-		headers  map[string]string
-		response azure.ResourceGroup
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
-func (s *azureClient) GetAzureResourceGroups(ctx context.Context, subscriptionId string, filter string, top int32) (azure.ResourceGroupList, error) {
+func (s *azureClient) GetAzureResourceGroups(ctx context.Context, subscriptionId string, params query.RMParams) (azure.ResourceGroupList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/resourcegroups", subscriptionId)
-		params   = query.Params{ApiVersion: "2021-04-01", Filter: filter, Top: top}.AsMap()
-		headers  map[string]string
 		response azure.ResourceGroupList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if params.ApiVersion == "" {
+		params.ApiVersion = "2021-04-01"
+	}
+
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -62,7 +48,7 @@ func (s *azureClient) GetAzureResourceGroups(ctx context.Context, subscriptionId
 	}
 }
 
-func (s *azureClient) ListAzureResourceGroups(ctx context.Context, subscriptionId, filter string) <-chan azure.ResourceGroupResult {
+func (s *azureClient) ListAzureResourceGroups(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azure.ResourceGroupResult {
 	out := make(chan azure.ResourceGroupResult)
 
 	go func() {
@@ -75,7 +61,7 @@ func (s *azureClient) ListAzureResourceGroups(ctx context.Context, subscriptionI
 			nextLink  string
 		)
 
-		if result, err := s.GetAzureResourceGroups(ctx, subscriptionId, filter, 1000); err != nil {
+		if result, err := s.GetAzureResourceGroups(ctx, subscriptionId, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

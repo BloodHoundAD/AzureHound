@@ -42,7 +42,7 @@ func TestListUsers(t *testing.T) {
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListAzureADUsers(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockChannel)
+	mockClient.EXPECT().ListAzureADUsers(gomock.Any(), gomock.Any()).Return(mockChannel)
 
 	go func() {
 		defer close(mockChannel)

@@ -98,7 +98,7 @@ func listResourceGroupRoleAssignments(ctx context.Context, client client.AzureCl
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this resourceGroup", "resourceGroupId", id)
 					} else {

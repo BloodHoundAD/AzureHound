@@ -96,7 +96,7 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureVMScaleSets(ctx, id, false) {
+				for item := range client.ListAzureVMScaleSets(ctx, id) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing virtual machine scale sets for this subscription", "subscriptionId", id)
 					} else {

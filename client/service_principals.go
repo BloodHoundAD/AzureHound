@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
@@ -31,27 +30,16 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADServicePrincipal(ctx context.Context, objectId string, selectCols []string) (*azure.ServicePrincipal, error) {
-	var (
-		path     = fmt.Sprintf("/%s/servicePrincipals/%s", constants.GraphApiVersion, objectId)
-		params   = query.Params{Select: selectCols}.AsMap()
-		response azure.ServicePrincipalList
-	)
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response.Value[0], nil
-	}
-}
-
-func (s *azureClient) GetAzureADServicePrincipalOwners(ctx context.Context, objectId string, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.DirectoryObjectList, error) {
+func (s *azureClient) GetAzureADServicePrincipalOwners(ctx context.Context, objectId string, params query.GraphParams) (azure.DirectoryObjectList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/servicePrincipals/%s/owners", constants.GraphApiBetaVersion, objectId)
-		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count}.AsMap()
 		response azure.DirectoryObjectList
 	)
+
+	if params.Top == 0 {
+		params.Top = 999
+	}
+
 	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
@@ -61,20 +49,17 @@ func (s *azureClient) GetAzureADServicePrincipalOwners(ctx context.Context, obje
 	}
 }
 
-func (s *azureClient) GetAzureADServicePrincipals(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.ServicePrincipalList, error) {
+func (s *azureClient) GetAzureADServicePrincipals(ctx context.Context, params query.GraphParams) (azure.ServicePrincipalList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/servicePrincipals", constants.GraphApiVersion)
-		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count, Expand: expand}
-		headers  map[string]string
 		response azure.ServicePrincipalList
 	)
 
-	count = count || search != "" || (filter != "" && orderBy != "") || strings.Contains(filter, "endsWith")
-	if count {
-		headers = make(map[string]string)
-		headers["ConsistencyLevel"] = "eventual"
+	if params.Top == 0 {
+		params.Top = 999
 	}
-	if res, err := s.msgraph.Get(ctx, path, params.AsMap(), headers); err != nil {
+
+	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -83,7 +68,7 @@ func (s *azureClient) GetAzureADServicePrincipals(ctx context.Context, filter, s
 	}
 }
 
-func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.ServicePrincipalResult {
+func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, params query.GraphParams) <-chan azure.ServicePrincipalResult {
 	out := make(chan azure.ServicePrincipalResult)
 
 	go func() {
@@ -95,7 +80,7 @@ func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, filter, 
 			nextLink  string
 		)
 
-		if list, err := s.GetAzureADServicePrincipals(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
+		if list, err := s.GetAzureADServicePrincipals(ctx, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return
@@ -148,7 +133,7 @@ func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, filter, 
 	return out
 }
 
-func (s *azureClient) ListAzureADServicePrincipalOwners(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.ServicePrincipalOwnerResult {
+func (s *azureClient) ListAzureADServicePrincipalOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.ServicePrincipalOwnerResult {
 	out := make(chan azure.ServicePrincipalOwnerResult)
 
 	go func() {
@@ -162,7 +147,7 @@ func (s *azureClient) ListAzureADServicePrincipalOwners(ctx context.Context, obj
 			nextLink string
 		)
 
-		if list, err := s.GetAzureADServicePrincipalOwners(ctx, objectId, filter, search, orderBy, selectCols, 999, false); err != nil {
+		if list, err := s.GetAzureADServicePrincipalOwners(ctx, objectId, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

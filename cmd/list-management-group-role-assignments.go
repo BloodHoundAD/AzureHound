@@ -97,7 +97,7 @@ func listManagementGroupRoleAssignments(ctx context.Context, client client.Azure
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "atScope()") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "atScope()", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this managementGroup", "managementGroupId", id)
 					} else {

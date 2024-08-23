@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
@@ -32,27 +31,17 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADGroup(ctx context.Context, objectId string, selectCols []string) (*azure.Group, error) {
-	var (
-		path     = fmt.Sprintf("/%s/groups/%s", constants.GraphApiVersion, objectId)
-		params   = query.Params{Select: selectCols}.AsMap()
-		response azure.GroupList
-	)
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response.Value[0], nil
-	}
-}
 
-func (s *azureClient) GetAzureADGroupOwners(ctx context.Context, objectId string, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.DirectoryObjectList, error) {
+func (s *azureClient) GetAzureADGroupOwners(ctx context.Context, objectId string, params query.GraphParams) (azure.DirectoryObjectList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/groups/%s/owners", constants.GraphApiBetaVersion, objectId)
-		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count}.AsMap()
 		response azure.DirectoryObjectList
 	)
+
+	if params.Top == 0 {
+		params.Top = 99
+	}
+
 	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
@@ -62,10 +51,9 @@ func (s *azureClient) GetAzureADGroupOwners(ctx context.Context, objectId string
 	}
 }
 
-func (s *azureClient) GetAzureADGroupMembers(ctx context.Context, objectId string, filter string, search string, count bool) (azure.MemberObjectList, error) {
+func (s *azureClient) GetAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) (azure.MemberObjectList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/groups/%s/members", constants.GraphApiBetaVersion, objectId)
-		params   = query.Params{Filter: filter, Search: search, Count: count}.AsMap()
 		response azure.MemberObjectList
 	)
 	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
@@ -77,20 +65,18 @@ func (s *azureClient) GetAzureADGroupMembers(ctx context.Context, objectId strin
 	}
 }
 
-func (s *azureClient) GetAzureADGroups(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.GroupList, error) {
+func (s *azureClient) GetAzureADGroups(ctx context.Context, params query.GraphParams) (azure.GroupList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/groups", constants.GraphApiVersion)
-		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count, Expand: expand}
 		headers  map[string]string
 		response azure.GroupList
 	)
 
-	count = count || search != "" || (filter != "" && orderBy != "") || strings.Contains(filter, "endsWith")
-	if count {
-		headers = make(map[string]string)
-		headers["ConsistencyLevel"] = "eventual"
+	if params.Top == 0 {
+		params.Top = 99
 	}
-	if res, err := s.msgraph.Get(ctx, path, params.AsMap(), headers); err != nil {
+
+	if res, err := s.msgraph.Get(ctx, path, params, headers); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -99,7 +85,7 @@ func (s *azureClient) GetAzureADGroups(ctx context.Context, filter, search, orde
 	}
 }
 
-func (s *azureClient) ListAzureADGroups(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.GroupResult {
+func (s *azureClient) ListAzureADGroups(ctx context.Context, params query.GraphParams) <-chan azure.GroupResult {
 	out := make(chan azure.GroupResult)
 
 	go func() {
@@ -111,7 +97,7 @@ func (s *azureClient) ListAzureADGroups(ctx context.Context, filter, search, ord
 			nextLink  string
 		)
 
-		if list, err := s.GetAzureADGroups(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
+		if list, err := s.GetAzureADGroups(ctx, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return
@@ -164,7 +150,7 @@ func (s *azureClient) ListAzureADGroups(ctx context.Context, filter, search, ord
 	return out
 }
 
-func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.GroupOwnerResult {
+func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.GroupOwnerResult {
 	out := make(chan azure.GroupOwnerResult)
 
 	go func() {
@@ -176,7 +162,7 @@ func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId strin
 			nextLink  string
 		)
 
-		if list, err := s.GetAzureADGroupOwners(ctx, objectId, filter, search, orderBy, selectCols, 999, false); err != nil {
+		if list, err := s.GetAzureADGroupOwners(ctx, objectId, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return
@@ -235,7 +221,7 @@ func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId strin
 	return out
 }
 
-func (s *azureClient) ListAzureADGroupMembers(ctx context.Context, objectId string, filter, search, orderBy string, selectCols []string) <-chan azure.MemberObjectResult {
+func (s *azureClient) ListAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.MemberObjectResult {
 	out := make(chan azure.MemberObjectResult)
 
 	go func() {
@@ -245,12 +231,12 @@ func (s *azureClient) ListAzureADGroupMembers(ctx context.Context, objectId stri
 		var (
 			errResult = azure.MemberObjectResult{
 				ParentId:   objectId,
-				ParentType: string(enums.EntityGroup),
+				ParentType: enums.EntityGroup,
 			}
 			nextLink string
 		)
 
-		if list, err := s.GetAzureADGroupMembers(ctx, objectId, filter, search, false); err != nil {
+		if list, err := s.GetAzureADGroupMembers(ctx, objectId, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

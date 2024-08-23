@@ -29,31 +29,14 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureAutomationAccount(ctx context.Context, subscriptionId, groupName, aaName, expand string) (*azure.AutomationAccount, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Automation/automationAccounts/%s", subscriptionId, groupName, aaName)
-		params   = query.Params{ApiVersion: "2021-07-01", Expand: expand}.AsMap()
-		headers  map[string]string
-		response azure.AutomationAccount
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
 func (s *azureClient) GetAzureAutomationAccounts(ctx context.Context, subscriptionId string) (azure.AutomationAccountList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Automation/automationAccounts", subscriptionId)
-		params   = query.Params{ApiVersion: "2021-06-22"}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2021-06-22"}
 		response azure.AutomationAccountList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err

@@ -29,31 +29,14 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureContainerRegistry(ctx context.Context, subscriptionId, groupName, crName, expand string) (*azure.ContainerRegistry, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ContainerRegistry/registries/%s", subscriptionId, groupName, crName)
-		params   = query.Params{ApiVersion: "2023-01-01-preview", Expand: expand}.AsMap()
-		headers  map[string]string
-		response azure.ContainerRegistry
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
 func (s *azureClient) GetAzureContainerRegistries(ctx context.Context, subscriptionId string) (azure.ContainerRegistryList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.ContainerRegistry/registries", subscriptionId)
-		params   = query.Params{ApiVersion: "2023-01-01-preview"}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2023-01-01-preview"}
 		response azure.ContainerRegistryList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err

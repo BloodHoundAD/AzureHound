@@ -47,8 +47,8 @@ func TestListKeyVaultRoleAssignments(t *testing.T) {
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockKeyVaultRoleAssignmentChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockKeyVaultRoleAssignmentChannel2).Times(1)
+	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockKeyVaultRoleAssignmentChannel).Times(1)
+	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockKeyVaultRoleAssignmentChannel2).Times(1)
 	channel := listKeyVaultRoleAssignments(ctx, mockClient, mockKeyVaultsChannel)
 
 	go func() {

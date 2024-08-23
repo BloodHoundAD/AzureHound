@@ -29,31 +29,14 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureFunctionApp(ctx context.Context, subscriptionId, groupName, functionAppName, expand string) (*azure.FunctionApp, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Web/sites/%s", subscriptionId, groupName, functionAppName)
-		params   = query.Params{ApiVersion: "2022-03-01", Expand: expand}.AsMap()
-		headers  map[string]string
-		response azure.FunctionApp
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
 func (s *azureClient) GetAzureFunctionApps(ctx context.Context, subscriptionId string) (azure.FunctionAppList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Web/sites", subscriptionId)
-		params   = query.Params{ApiVersion: "2022-03-01"}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2022-03-01"}
 		response azure.FunctionAppList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err

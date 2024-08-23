@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -90,7 +91,7 @@ func listVirtualMachines(ctx context.Context, client client.AzureClient, subscri
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureVirtualMachines(ctx, id, false) {
+				for item := range client.ListAzureVirtualMachines(ctx, id, query.RMParams{}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing virtual machines for this subscription", "subscriptionId", id)
 					} else {

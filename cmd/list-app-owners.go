@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -78,7 +79,7 @@ func listAppOwners(ctx context.Context, client client.AzureClient, apps <-chan a
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADAppOwners(ctx, app.Data.Id, "", "", "", nil) {
+				for item := range client.ListAzureADAppOwners(ctx, app.Data.Id, query.GraphParams{}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this app", "appId", app.Data.AppId)
 					} else {

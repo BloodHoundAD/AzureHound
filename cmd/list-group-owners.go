@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -95,7 +96,7 @@ func listGroupOwners(ctx context.Context, client client.AzureClient, groups <-ch
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADGroupOwners(ctx, id, "", "", "", nil) {
+				for item := range client.ListAzureADGroupOwners(ctx, id, query.GraphParams{}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this group", "groupId", id)
 					} else {

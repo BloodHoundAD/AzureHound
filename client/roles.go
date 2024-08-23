@@ -30,30 +30,13 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADRole(ctx context.Context, roleId string, selectCols []string) (*azure.Role, error) {
-	var (
-		path     = fmt.Sprintf("/%s/roleManagement/directory/roleDefinitions/%s", constants.GraphApiVersion, roleId)
-		params   = query.Params{Select: selectCols}.AsMap()
-		response azure.RoleList
-	)
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response.Value[0], nil
-	}
-}
-
-func (s *azureClient) GetAzureADRoles(ctx context.Context, filter, expand string) (azure.RoleList, error) {
+func (s *azureClient) GetAzureADRoles(ctx context.Context, filter string) (azure.RoleList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/roleManagement/directory/roleDefinitions", constants.GraphApiVersion)
-		params   = query.Params{Filter: filter, Expand: expand}
-		headers  map[string]string
 		response azure.RoleList
 	)
 
-	if res, err := s.msgraph.Get(ctx, path, params.AsMap(), headers); err != nil {
+	if res, err := s.msgraph.Get(ctx, path, query.GraphParams{Filter: filter}, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -62,7 +45,7 @@ func (s *azureClient) GetAzureADRoles(ctx context.Context, filter, expand string
 	}
 }
 
-func (s *azureClient) ListAzureADRoles(ctx context.Context, filter, expand string) <-chan azure.RoleResult {
+func (s *azureClient) ListAzureADRoles(ctx context.Context, filter string) <-chan azure.RoleResult {
 	out := make(chan azure.RoleResult)
 
 	go func() {
@@ -74,7 +57,7 @@ func (s *azureClient) ListAzureADRoles(ctx context.Context, filter, expand strin
 			nextLink  string
 		)
 
-		if users, err := s.GetAzureADRoles(ctx, filter, expand); err != nil {
+		if users, err := s.GetAzureADRoles(ctx, filter); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

@@ -29,31 +29,17 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureVirtualMachine(ctx context.Context, subscriptionId, groupName, vmName, expand string) (*azure.VirtualMachine, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s", subscriptionId, groupName, vmName)
-		params   = query.Params{ApiVersion: "2021-07-01", Expand: expand}.AsMap()
-		headers  map[string]string
-		response azure.VirtualMachine
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
-func (s *azureClient) GetAzureVirtualMachines(ctx context.Context, subscriptionId string, statusOnly bool) (azure.VirtualMachineList, error) {
+func (s *azureClient) GetAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) (azure.VirtualMachineList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Compute/virtualMachines", subscriptionId)
-		params   = query.Params{ApiVersion: "2021-07-01", StatusOnly: statusOnly}.AsMap()
-		headers  map[string]string
 		response azure.VirtualMachineList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if params.ApiVersion == "" {
+		params.ApiVersion = "2021-07-01"
+	}
+
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -62,7 +48,7 @@ func (s *azureClient) GetAzureVirtualMachines(ctx context.Context, subscriptionI
 	}
 }
 
-func (s *azureClient) ListAzureVirtualMachines(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.VirtualMachineResult {
+func (s *azureClient) ListAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azure.VirtualMachineResult {
 	out := make(chan azure.VirtualMachineResult)
 
 	go func() {
@@ -76,7 +62,7 @@ func (s *azureClient) ListAzureVirtualMachines(ctx context.Context, subscription
 			nextLink string
 		)
 
-		if result, err := s.GetAzureVirtualMachines(ctx, subscriptionId, statusOnly); err != nil {
+		if result, err := s.GetAzureVirtualMachines(ctx, subscriptionId, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

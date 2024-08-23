@@ -103,7 +103,7 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this container registry", "containerRegistryId", id)
 					} else {

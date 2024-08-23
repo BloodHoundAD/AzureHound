@@ -29,31 +29,17 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureKeyVault(ctx context.Context, subscriptionId, groupName, vaultName string) (*azure.KeyVault, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.KeyVault/vaults/%s", subscriptionId, groupName, vaultName)
-		params   = query.Params{ApiVersion: "2019-09-01"}.AsMap()
-		headers  map[string]string
-		response azure.KeyVault
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
-func (s *azureClient) GetAzureKeyVaults(ctx context.Context, subscriptionId string, top int32) (azure.KeyVaultList, error) {
+func (s *azureClient) GetAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) (azure.KeyVaultList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.KeyVault/vaults", subscriptionId)
-		params   = query.Params{ApiVersion: "2019-09-01", Top: top}.AsMap()
-		headers  map[string]string
 		response azure.KeyVaultList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if params.ApiVersion == "" {
+		params.ApiVersion = "2019-09-01"
+	}
+
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -62,7 +48,7 @@ func (s *azureClient) GetAzureKeyVaults(ctx context.Context, subscriptionId stri
 	}
 }
 
-func (s *azureClient) ListAzureKeyVaults(ctx context.Context, subscriptionId string, top int32) <-chan azure.KeyVaultResult {
+func (s *azureClient) ListAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azure.KeyVaultResult {
 	out := make(chan azure.KeyVaultResult)
 
 	go func() {
@@ -76,7 +62,7 @@ func (s *azureClient) ListAzureKeyVaults(ctx context.Context, subscriptionId str
 			nextLink string
 		)
 
-		if result, err := s.GetAzureKeyVaults(ctx, subscriptionId, top); err != nil {
+		if result, err := s.GetAzureKeyVaults(ctx, subscriptionId, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

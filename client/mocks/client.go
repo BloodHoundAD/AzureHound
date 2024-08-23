@@ -6,9 +6,9 @@ package mocks
 
 import (
 	context "context"
-	json "encoding/json"
 	reflect "reflect"
 
+	query "github.com/bloodhoundad/azurehound/v2/client/query"
 	azure "github.com/bloodhoundad/azurehound/v2/models/azure"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -48,94 +48,79 @@ func (mr *MockAzureClientMockRecorder) CloseIdleConnections() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseIdleConnections", reflect.TypeOf((*MockAzureClient)(nil).CloseIdleConnections))
 }
 
-// GetAzureADApp mocks base method.
-func (m *MockAzureClient) GetAzureADApp(arg0 context.Context, arg1 string, arg2 []string) (*azure.Application, error) {
+// GetAzureADAppRoleAssignments mocks base method.
+func (m *MockAzureClient) GetAzureADAppRoleAssignments(arg0 context.Context, arg1 string, arg2 query.GraphParams) (azure.AppRoleAssignmentList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADApp", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*azure.Application)
+	ret := m.ctrl.Call(m, "GetAzureADAppRoleAssignments", arg0, arg1, arg2)
+	ret0, _ := ret[0].(azure.AppRoleAssignmentList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAzureADApp indicates an expected call of GetAzureADApp.
-func (mr *MockAzureClientMockRecorder) GetAzureADApp(arg0, arg1, arg2 interface{}) *gomock.Call {
+// GetAzureADAppRoleAssignments indicates an expected call of GetAzureADAppRoleAssignments.
+func (mr *MockAzureClientMockRecorder) GetAzureADAppRoleAssignments(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADApp", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADApp), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADAppRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADAppRoleAssignments), arg0, arg1, arg2)
 }
 
 // GetAzureADApps mocks base method.
-func (m *MockAzureClient) GetAzureADApps(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string, arg6 int32, arg7 bool) (azure.ApplicationList, error) {
+func (m *MockAzureClient) GetAzureADApps(arg0 context.Context, arg1 query.GraphParams) (azure.ApplicationList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADApps", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "GetAzureADApps", arg0, arg1)
 	ret0, _ := ret[0].(azure.ApplicationList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureADApps indicates an expected call of GetAzureADApps.
-func (mr *MockAzureClientMockRecorder) GetAzureADApps(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureADApps(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADApps", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADApps), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADApps", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADApps), arg0, arg1)
 }
 
-// GetAzureADDirectoryObject mocks base method.
-func (m *MockAzureClient) GetAzureADDirectoryObject(arg0 context.Context, arg1 string) (json.RawMessage, error) {
+// GetAzureADGroupMembers mocks base method.
+func (m *MockAzureClient) GetAzureADGroupMembers(arg0 context.Context, arg1 string, arg2 query.GraphParams) (azure.MemberObjectList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADDirectoryObject", arg0, arg1)
-	ret0, _ := ret[0].(json.RawMessage)
+	ret := m.ctrl.Call(m, "GetAzureADGroupMembers", arg0, arg1, arg2)
+	ret0, _ := ret[0].(azure.MemberObjectList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAzureADDirectoryObject indicates an expected call of GetAzureADDirectoryObject.
-func (mr *MockAzureClientMockRecorder) GetAzureADDirectoryObject(arg0, arg1 interface{}) *gomock.Call {
+// GetAzureADGroupMembers indicates an expected call of GetAzureADGroupMembers.
+func (mr *MockAzureClientMockRecorder) GetAzureADGroupMembers(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADDirectoryObject", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADDirectoryObject), arg0, arg1)
-}
-
-// GetAzureADGroup mocks base method.
-func (m *MockAzureClient) GetAzureADGroup(arg0 context.Context, arg1 string, arg2 []string) (*azure.Group, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADGroup", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*azure.Group)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAzureADGroup indicates an expected call of GetAzureADGroup.
-func (mr *MockAzureClientMockRecorder) GetAzureADGroup(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADGroup", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADGroup), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADGroupMembers", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADGroupMembers), arg0, arg1, arg2)
 }
 
 // GetAzureADGroupOwners mocks base method.
-func (m *MockAzureClient) GetAzureADGroupOwners(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string, arg6 int32, arg7 bool) (azure.DirectoryObjectList, error) {
+func (m *MockAzureClient) GetAzureADGroupOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) (azure.DirectoryObjectList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADGroupOwners", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "GetAzureADGroupOwners", arg0, arg1, arg2)
 	ret0, _ := ret[0].(azure.DirectoryObjectList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureADGroupOwners indicates an expected call of GetAzureADGroupOwners.
-func (mr *MockAzureClientMockRecorder) GetAzureADGroupOwners(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureADGroupOwners(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADGroupOwners", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADGroupOwners), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADGroupOwners", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADGroupOwners), arg0, arg1, arg2)
 }
 
 // GetAzureADGroups mocks base method.
-func (m *MockAzureClient) GetAzureADGroups(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string, arg6 int32, arg7 bool) (azure.GroupList, error) {
+func (m *MockAzureClient) GetAzureADGroups(arg0 context.Context, arg1 query.GraphParams) (azure.GroupList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADGroups", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "GetAzureADGroups", arg0, arg1)
 	ret0, _ := ret[0].(azure.GroupList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureADGroups indicates an expected call of GetAzureADGroups.
-func (mr *MockAzureClientMockRecorder) GetAzureADGroups(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureADGroups(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADGroups", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADGroups), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADGroups", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADGroups), arg0, arg1)
 }
 
 // GetAzureADOrganization mocks base method.
@@ -153,109 +138,64 @@ func (mr *MockAzureClientMockRecorder) GetAzureADOrganization(arg0, arg1 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADOrganization", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADOrganization), arg0, arg1)
 }
 
-// GetAzureADRole mocks base method.
-func (m *MockAzureClient) GetAzureADRole(arg0 context.Context, arg1 string, arg2 []string) (*azure.Role, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADRole", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*azure.Role)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAzureADRole indicates an expected call of GetAzureADRole.
-func (mr *MockAzureClientMockRecorder) GetAzureADRole(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRole", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRole), arg0, arg1, arg2)
-}
-
-// GetAzureADRoleAssignment mocks base method.
-func (m *MockAzureClient) GetAzureADRoleAssignment(arg0 context.Context, arg1 string, arg2 []string) (*azure.UnifiedRoleAssignment, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADRoleAssignment", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*azure.UnifiedRoleAssignment)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAzureADRoleAssignment indicates an expected call of GetAzureADRoleAssignment.
-func (mr *MockAzureClientMockRecorder) GetAzureADRoleAssignment(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRoleAssignment", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRoleAssignment), arg0, arg1, arg2)
-}
-
 // GetAzureADRoleAssignments mocks base method.
-func (m *MockAzureClient) GetAzureADRoleAssignments(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string, arg6 int32, arg7 bool) (azure.UnifiedRoleAssignmentList, error) {
+func (m *MockAzureClient) GetAzureADRoleAssignments(arg0 context.Context, arg1 query.GraphParams) (azure.UnifiedRoleAssignmentList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADRoleAssignments", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "GetAzureADRoleAssignments", arg0, arg1)
 	ret0, _ := ret[0].(azure.UnifiedRoleAssignmentList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureADRoleAssignments indicates an expected call of GetAzureADRoleAssignments.
-func (mr *MockAzureClientMockRecorder) GetAzureADRoleAssignments(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureADRoleAssignments(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRoleAssignments), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRoleAssignments), arg0, arg1)
 }
 
 // GetAzureADRoles mocks base method.
-func (m *MockAzureClient) GetAzureADRoles(arg0 context.Context, arg1, arg2 string) (azure.RoleList, error) {
+func (m *MockAzureClient) GetAzureADRoles(arg0 context.Context, arg1 string) (azure.RoleList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADRoles", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetAzureADRoles", arg0, arg1)
 	ret0, _ := ret[0].(azure.RoleList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureADRoles indicates an expected call of GetAzureADRoles.
-func (mr *MockAzureClientMockRecorder) GetAzureADRoles(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureADRoles(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRoles", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRoles), arg0, arg1, arg2)
-}
-
-// GetAzureADServicePrincipal mocks base method.
-func (m *MockAzureClient) GetAzureADServicePrincipal(arg0 context.Context, arg1 string, arg2 []string) (*azure.ServicePrincipal, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADServicePrincipal", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*azure.ServicePrincipal)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAzureADServicePrincipal indicates an expected call of GetAzureADServicePrincipal.
-func (mr *MockAzureClientMockRecorder) GetAzureADServicePrincipal(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADServicePrincipal", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADServicePrincipal), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADRoles", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADRoles), arg0, arg1)
 }
 
 // GetAzureADServicePrincipalOwners mocks base method.
-func (m *MockAzureClient) GetAzureADServicePrincipalOwners(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string, arg6 int32, arg7 bool) (azure.DirectoryObjectList, error) {
+func (m *MockAzureClient) GetAzureADServicePrincipalOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) (azure.DirectoryObjectList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADServicePrincipalOwners", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "GetAzureADServicePrincipalOwners", arg0, arg1, arg2)
 	ret0, _ := ret[0].(azure.DirectoryObjectList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureADServicePrincipalOwners indicates an expected call of GetAzureADServicePrincipalOwners.
-func (mr *MockAzureClientMockRecorder) GetAzureADServicePrincipalOwners(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureADServicePrincipalOwners(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADServicePrincipalOwners", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADServicePrincipalOwners), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADServicePrincipalOwners", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADServicePrincipalOwners), arg0, arg1, arg2)
 }
 
 // GetAzureADServicePrincipals mocks base method.
-func (m *MockAzureClient) GetAzureADServicePrincipals(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string, arg6 int32, arg7 bool) (azure.ServicePrincipalList, error) {
+func (m *MockAzureClient) GetAzureADServicePrincipals(arg0 context.Context, arg1 query.GraphParams) (azure.ServicePrincipalList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADServicePrincipals", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "GetAzureADServicePrincipals", arg0, arg1)
 	ret0, _ := ret[0].(azure.ServicePrincipalList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureADServicePrincipals indicates an expected call of GetAzureADServicePrincipals.
-func (mr *MockAzureClientMockRecorder) GetAzureADServicePrincipals(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureADServicePrincipals(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADServicePrincipals", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADServicePrincipals), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADServicePrincipals", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADServicePrincipals), arg0, arg1)
 }
 
 // GetAzureADTenants mocks base method.
@@ -273,83 +213,98 @@ func (mr *MockAzureClientMockRecorder) GetAzureADTenants(arg0, arg1 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADTenants", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADTenants), arg0, arg1)
 }
 
-// GetAzureADUser mocks base method.
-func (m *MockAzureClient) GetAzureADUser(arg0 context.Context, arg1 string, arg2 []string) (*azure.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADUser", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*azure.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAzureADUser indicates an expected call of GetAzureADUser.
-func (mr *MockAzureClientMockRecorder) GetAzureADUser(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADUser", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADUser), arg0, arg1, arg2)
-}
-
 // GetAzureADUsers mocks base method.
-func (m *MockAzureClient) GetAzureADUsers(arg0 context.Context, arg1, arg2, arg3 string, arg4 []string, arg5 int32, arg6 bool) (azure.UserList, error) {
+func (m *MockAzureClient) GetAzureADUsers(arg0 context.Context, arg1 query.GraphParams) (azure.UserList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureADUsers", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret := m.ctrl.Call(m, "GetAzureADUsers", arg0, arg1)
 	ret0, _ := ret[0].(azure.UserList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureADUsers indicates an expected call of GetAzureADUsers.
-func (mr *MockAzureClientMockRecorder) GetAzureADUsers(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureADUsers(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADUsers", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADUsers), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureADUsers", reflect.TypeOf((*MockAzureClient)(nil).GetAzureADUsers), arg0, arg1)
 }
 
-// GetAzureDevice mocks base method.
-func (m *MockAzureClient) GetAzureDevice(arg0 context.Context, arg1 string, arg2 []string) (*azure.Device, error) {
+// GetAzureAutomationAccounts mocks base method.
+func (m *MockAzureClient) GetAzureAutomationAccounts(arg0 context.Context, arg1 string) (azure.AutomationAccountList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureDevice", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*azure.Device)
+	ret := m.ctrl.Call(m, "GetAzureAutomationAccounts", arg0, arg1)
+	ret0, _ := ret[0].(azure.AutomationAccountList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAzureDevice indicates an expected call of GetAzureDevice.
-func (mr *MockAzureClientMockRecorder) GetAzureDevice(arg0, arg1, arg2 interface{}) *gomock.Call {
+// GetAzureAutomationAccounts indicates an expected call of GetAzureAutomationAccounts.
+func (mr *MockAzureClientMockRecorder) GetAzureAutomationAccounts(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureDevice", reflect.TypeOf((*MockAzureClient)(nil).GetAzureDevice), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureAutomationAccounts", reflect.TypeOf((*MockAzureClient)(nil).GetAzureAutomationAccounts), arg0, arg1)
+}
+
+// GetAzureContainerRegistries mocks base method.
+func (m *MockAzureClient) GetAzureContainerRegistries(arg0 context.Context, arg1 string) (azure.ContainerRegistryList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAzureContainerRegistries", arg0, arg1)
+	ret0, _ := ret[0].(azure.ContainerRegistryList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAzureContainerRegistries indicates an expected call of GetAzureContainerRegistries.
+func (mr *MockAzureClientMockRecorder) GetAzureContainerRegistries(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureContainerRegistries", reflect.TypeOf((*MockAzureClient)(nil).GetAzureContainerRegistries), arg0, arg1)
+}
+
+// GetAzureDeviceRegisteredOwners mocks base method.
+func (m *MockAzureClient) GetAzureDeviceRegisteredOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) (azure.DirectoryObjectList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAzureDeviceRegisteredOwners", arg0, arg1, arg2)
+	ret0, _ := ret[0].(azure.DirectoryObjectList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAzureDeviceRegisteredOwners indicates an expected call of GetAzureDeviceRegisteredOwners.
+func (mr *MockAzureClientMockRecorder) GetAzureDeviceRegisteredOwners(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureDeviceRegisteredOwners", reflect.TypeOf((*MockAzureClient)(nil).GetAzureDeviceRegisteredOwners), arg0, arg1, arg2)
 }
 
 // GetAzureDevices mocks base method.
-func (m *MockAzureClient) GetAzureDevices(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string, arg6 int32, arg7 bool) (azure.DeviceList, error) {
+func (m *MockAzureClient) GetAzureDevices(arg0 context.Context, arg1 query.GraphParams) (azure.DeviceList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureDevices", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "GetAzureDevices", arg0, arg1)
 	ret0, _ := ret[0].(azure.DeviceList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureDevices indicates an expected call of GetAzureDevices.
-func (mr *MockAzureClientMockRecorder) GetAzureDevices(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureDevices(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureDevices", reflect.TypeOf((*MockAzureClient)(nil).GetAzureDevices), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureDevices", reflect.TypeOf((*MockAzureClient)(nil).GetAzureDevices), arg0, arg1)
 }
 
-// GetAzureKeyVault mocks base method.
-func (m *MockAzureClient) GetAzureKeyVault(arg0 context.Context, arg1, arg2, arg3 string) (*azure.KeyVault, error) {
+// GetAzureFunctionApps mocks base method.
+func (m *MockAzureClient) GetAzureFunctionApps(arg0 context.Context, arg1 string) (azure.FunctionAppList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureKeyVault", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(*azure.KeyVault)
+	ret := m.ctrl.Call(m, "GetAzureFunctionApps", arg0, arg1)
+	ret0, _ := ret[0].(azure.FunctionAppList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAzureKeyVault indicates an expected call of GetAzureKeyVault.
-func (mr *MockAzureClientMockRecorder) GetAzureKeyVault(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+// GetAzureFunctionApps indicates an expected call of GetAzureFunctionApps.
+func (mr *MockAzureClientMockRecorder) GetAzureFunctionApps(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureKeyVault", reflect.TypeOf((*MockAzureClient)(nil).GetAzureKeyVault), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureFunctionApps", reflect.TypeOf((*MockAzureClient)(nil).GetAzureFunctionApps), arg0, arg1)
 }
 
 // GetAzureKeyVaults mocks base method.
-func (m *MockAzureClient) GetAzureKeyVaults(arg0 context.Context, arg1 string, arg2 int32) (azure.KeyVaultList, error) {
+func (m *MockAzureClient) GetAzureKeyVaults(arg0 context.Context, arg1 string, arg2 query.RMParams) (azure.KeyVaultList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAzureKeyVaults", arg0, arg1, arg2)
 	ret0, _ := ret[0].(azure.KeyVaultList)
@@ -363,79 +318,64 @@ func (mr *MockAzureClientMockRecorder) GetAzureKeyVaults(arg0, arg1, arg2 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureKeyVaults", reflect.TypeOf((*MockAzureClient)(nil).GetAzureKeyVaults), arg0, arg1, arg2)
 }
 
-// GetAzureManagementGroup mocks base method.
-func (m *MockAzureClient) GetAzureManagementGroup(arg0 context.Context, arg1, arg2, arg3 string, arg4 bool) (*azure.ManagementGroup, error) {
+// GetAzureLogicApps mocks base method.
+func (m *MockAzureClient) GetAzureLogicApps(arg0 context.Context, arg1, arg2 string, arg3 int32) (azure.LogicAppList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureManagementGroup", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(*azure.ManagementGroup)
+	ret := m.ctrl.Call(m, "GetAzureLogicApps", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(azure.LogicAppList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAzureManagementGroup indicates an expected call of GetAzureManagementGroup.
-func (mr *MockAzureClientMockRecorder) GetAzureManagementGroup(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+// GetAzureLogicApps indicates an expected call of GetAzureLogicApps.
+func (mr *MockAzureClientMockRecorder) GetAzureLogicApps(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureManagementGroup", reflect.TypeOf((*MockAzureClient)(nil).GetAzureManagementGroup), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureLogicApps", reflect.TypeOf((*MockAzureClient)(nil).GetAzureLogicApps), arg0, arg1, arg2, arg3)
+}
+
+// GetAzureManagementGroupDescendants mocks base method.
+func (m *MockAzureClient) GetAzureManagementGroupDescendants(arg0 context.Context, arg1 string, arg2 int32) (azure.DescendantInfoList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAzureManagementGroupDescendants", arg0, arg1, arg2)
+	ret0, _ := ret[0].(azure.DescendantInfoList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAzureManagementGroupDescendants indicates an expected call of GetAzureManagementGroupDescendants.
+func (mr *MockAzureClientMockRecorder) GetAzureManagementGroupDescendants(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureManagementGroupDescendants", reflect.TypeOf((*MockAzureClient)(nil).GetAzureManagementGroupDescendants), arg0, arg1, arg2)
 }
 
 // GetAzureManagementGroups mocks base method.
-func (m *MockAzureClient) GetAzureManagementGroups(arg0 context.Context) (azure.ManagementGroupList, error) {
+func (m *MockAzureClient) GetAzureManagementGroups(arg0 context.Context, arg1 string) (azure.ManagementGroupList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureManagementGroups", arg0)
+	ret := m.ctrl.Call(m, "GetAzureManagementGroups", arg0, arg1)
 	ret0, _ := ret[0].(azure.ManagementGroupList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureManagementGroups indicates an expected call of GetAzureManagementGroups.
-func (mr *MockAzureClientMockRecorder) GetAzureManagementGroups(arg0 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureManagementGroups(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureManagementGroups", reflect.TypeOf((*MockAzureClient)(nil).GetAzureManagementGroups), arg0)
-}
-
-// GetAzureResourceGroup mocks base method.
-func (m *MockAzureClient) GetAzureResourceGroup(arg0 context.Context, arg1, arg2 string) (*azure.ResourceGroup, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureResourceGroup", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*azure.ResourceGroup)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAzureResourceGroup indicates an expected call of GetAzureResourceGroup.
-func (mr *MockAzureClientMockRecorder) GetAzureResourceGroup(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureResourceGroup", reflect.TypeOf((*MockAzureClient)(nil).GetAzureResourceGroup), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureManagementGroups", reflect.TypeOf((*MockAzureClient)(nil).GetAzureManagementGroups), arg0, arg1)
 }
 
 // GetAzureResourceGroups mocks base method.
-func (m *MockAzureClient) GetAzureResourceGroups(arg0 context.Context, arg1, arg2 string, arg3 int32) (azure.ResourceGroupList, error) {
+func (m *MockAzureClient) GetAzureResourceGroups(arg0 context.Context, arg1 string, arg2 query.RMParams) (azure.ResourceGroupList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureResourceGroups", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "GetAzureResourceGroups", arg0, arg1, arg2)
 	ret0, _ := ret[0].(azure.ResourceGroupList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAzureResourceGroups indicates an expected call of GetAzureResourceGroups.
-func (mr *MockAzureClientMockRecorder) GetAzureResourceGroups(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetAzureResourceGroups(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureResourceGroups", reflect.TypeOf((*MockAzureClient)(nil).GetAzureResourceGroups), arg0, arg1, arg2, arg3)
-}
-
-// GetAzureStorageAccount mocks base method.
-func (m *MockAzureClient) GetAzureStorageAccount(arg0 context.Context, arg1, arg2, arg3, arg4 string) (*azure.StorageAccount, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureStorageAccount", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(*azure.StorageAccount)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAzureStorageAccount indicates an expected call of GetAzureStorageAccount.
-func (mr *MockAzureClientMockRecorder) GetAzureStorageAccount(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureStorageAccount", reflect.TypeOf((*MockAzureClient)(nil).GetAzureStorageAccount), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureResourceGroups", reflect.TypeOf((*MockAzureClient)(nil).GetAzureResourceGroups), arg0, arg1, arg2)
 }
 
 // GetAzureStorageAccounts mocks base method.
@@ -453,19 +393,19 @@ func (mr *MockAzureClientMockRecorder) GetAzureStorageAccounts(arg0, arg1 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureStorageAccounts", reflect.TypeOf((*MockAzureClient)(nil).GetAzureStorageAccounts), arg0, arg1)
 }
 
-// GetAzureSubscription mocks base method.
-func (m *MockAzureClient) GetAzureSubscription(arg0 context.Context, arg1 string) (*azure.Subscription, error) {
+// GetAzureStorageContainers mocks base method.
+func (m *MockAzureClient) GetAzureStorageContainers(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6 string) (azure.StorageContainerList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureSubscription", arg0, arg1)
-	ret0, _ := ret[0].(*azure.Subscription)
+	ret := m.ctrl.Call(m, "GetAzureStorageContainers", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret0, _ := ret[0].(azure.StorageContainerList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAzureSubscription indicates an expected call of GetAzureSubscription.
-func (mr *MockAzureClientMockRecorder) GetAzureSubscription(arg0, arg1 interface{}) *gomock.Call {
+// GetAzureStorageContainers indicates an expected call of GetAzureStorageContainers.
+func (mr *MockAzureClientMockRecorder) GetAzureStorageContainers(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureSubscription", reflect.TypeOf((*MockAzureClient)(nil).GetAzureSubscription), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureStorageContainers", reflect.TypeOf((*MockAzureClient)(nil).GetAzureStorageContainers), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
 // GetAzureSubscriptions mocks base method.
@@ -483,23 +423,23 @@ func (mr *MockAzureClientMockRecorder) GetAzureSubscriptions(arg0 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureSubscriptions", reflect.TypeOf((*MockAzureClient)(nil).GetAzureSubscriptions), arg0)
 }
 
-// GetAzureVirtualMachine mocks base method.
-func (m *MockAzureClient) GetAzureVirtualMachine(arg0 context.Context, arg1, arg2, arg3, arg4 string) (*azure.VirtualMachine, error) {
+// GetAzureVMScaleSets mocks base method.
+func (m *MockAzureClient) GetAzureVMScaleSets(arg0 context.Context, arg1 string) (azure.VMScaleSetList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAzureVirtualMachine", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(*azure.VirtualMachine)
+	ret := m.ctrl.Call(m, "GetAzureVMScaleSets", arg0, arg1)
+	ret0, _ := ret[0].(azure.VMScaleSetList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAzureVirtualMachine indicates an expected call of GetAzureVirtualMachine.
-func (mr *MockAzureClientMockRecorder) GetAzureVirtualMachine(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+// GetAzureVMScaleSets indicates an expected call of GetAzureVMScaleSets.
+func (mr *MockAzureClientMockRecorder) GetAzureVMScaleSets(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureVirtualMachine", reflect.TypeOf((*MockAzureClient)(nil).GetAzureVirtualMachine), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureVMScaleSets", reflect.TypeOf((*MockAzureClient)(nil).GetAzureVMScaleSets), arg0, arg1)
 }
 
 // GetAzureVirtualMachines mocks base method.
-func (m *MockAzureClient) GetAzureVirtualMachines(arg0 context.Context, arg1 string, arg2 bool) (azure.VirtualMachineList, error) {
+func (m *MockAzureClient) GetAzureVirtualMachines(arg0 context.Context, arg1 string, arg2 query.RMParams) (azure.VirtualMachineList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAzureVirtualMachines", arg0, arg1, arg2)
 	ret0, _ := ret[0].(azure.VirtualMachineList)
@@ -513,188 +453,174 @@ func (mr *MockAzureClientMockRecorder) GetAzureVirtualMachines(arg0, arg1, arg2 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureVirtualMachines", reflect.TypeOf((*MockAzureClient)(nil).GetAzureVirtualMachines), arg0, arg1, arg2)
 }
 
-// GetResourceRoleAssignments mocks base method.
-func (m *MockAzureClient) GetResourceRoleAssignments(arg0 context.Context, arg1, arg2, arg3 string) (azure.RoleAssignmentList, error) {
+// GetAzureWebApps mocks base method.
+func (m *MockAzureClient) GetAzureWebApps(arg0 context.Context, arg1 string) (azure.WebAppList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetResourceRoleAssignments", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(azure.RoleAssignmentList)
+	ret := m.ctrl.Call(m, "GetAzureWebApps", arg0, arg1)
+	ret0, _ := ret[0].(azure.WebAppList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetResourceRoleAssignments indicates an expected call of GetResourceRoleAssignments.
-func (mr *MockAzureClientMockRecorder) GetResourceRoleAssignments(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+// GetAzureWebApps indicates an expected call of GetAzureWebApps.
+func (mr *MockAzureClientMockRecorder) GetAzureWebApps(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).GetResourceRoleAssignments), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAzureWebApps", reflect.TypeOf((*MockAzureClient)(nil).GetAzureWebApps), arg0, arg1)
 }
 
 // GetRoleAssignmentsForResource mocks base method.
-func (m *MockAzureClient) GetRoleAssignmentsForResource(arg0 context.Context, arg1, arg2 string) (azure.RoleAssignmentList, error) {
+func (m *MockAzureClient) GetRoleAssignmentsForResource(arg0 context.Context, arg1, arg2, arg3 string) (azure.RoleAssignmentList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRoleAssignmentsForResource", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetRoleAssignmentsForResource", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(azure.RoleAssignmentList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetRoleAssignmentsForResource indicates an expected call of GetRoleAssignmentsForResource.
-func (mr *MockAzureClientMockRecorder) GetRoleAssignmentsForResource(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) GetRoleAssignmentsForResource(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoleAssignmentsForResource", reflect.TypeOf((*MockAzureClient)(nil).GetRoleAssignmentsForResource), arg0, arg1, arg2)
-}
-
-// ListAzureADAppMemberObjects mocks base method.
-func (m *MockAzureClient) ListAzureADAppMemberObjects(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.MemberObjectResult {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADAppMemberObjects", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.MemberObjectResult)
-	return ret0
-}
-
-// ListAzureADAppMemberObjects indicates an expected call of ListAzureADAppMemberObjects.
-func (mr *MockAzureClientMockRecorder) ListAzureADAppMemberObjects(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADAppMemberObjects", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADAppMemberObjects), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoleAssignmentsForResource", reflect.TypeOf((*MockAzureClient)(nil).GetRoleAssignmentsForResource), arg0, arg1, arg2, arg3)
 }
 
 // ListAzureADAppOwners mocks base method.
-func (m *MockAzureClient) ListAzureADAppOwners(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.AppOwnerResult {
+func (m *MockAzureClient) ListAzureADAppOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.AppOwnerResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADAppOwners", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureADAppOwners", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.AppOwnerResult)
 	return ret0
 }
 
 // ListAzureADAppOwners indicates an expected call of ListAzureADAppOwners.
-func (mr *MockAzureClientMockRecorder) ListAzureADAppOwners(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADAppOwners(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADAppOwners", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADAppOwners), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADAppOwners", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADAppOwners), arg0, arg1, arg2)
 }
 
 // ListAzureADAppRoleAssignments mocks base method.
-func (m *MockAzureClient) ListAzureADAppRoleAssignments(arg0 context.Context, arg1, arg2, arg3, arg4, arg5 string, arg6 []string) <-chan azure.AppRoleAssignmentResult {
+func (m *MockAzureClient) ListAzureADAppRoleAssignments(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.AppRoleAssignmentResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADAppRoleAssignments", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret := m.ctrl.Call(m, "ListAzureADAppRoleAssignments", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.AppRoleAssignmentResult)
 	return ret0
 }
 
 // ListAzureADAppRoleAssignments indicates an expected call of ListAzureADAppRoleAssignments.
-func (mr *MockAzureClientMockRecorder) ListAzureADAppRoleAssignments(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADAppRoleAssignments(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADAppRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADAppRoleAssignments), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADAppRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADAppRoleAssignments), arg0, arg1, arg2)
 }
 
 // ListAzureADApps mocks base method.
-func (m *MockAzureClient) ListAzureADApps(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.ApplicationResult {
+func (m *MockAzureClient) ListAzureADApps(arg0 context.Context, arg1 query.GraphParams) <-chan azure.ApplicationResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADApps", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureADApps", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.ApplicationResult)
 	return ret0
 }
 
 // ListAzureADApps indicates an expected call of ListAzureADApps.
-func (mr *MockAzureClientMockRecorder) ListAzureADApps(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADApps(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADApps), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADApps), arg0, arg1)
 }
 
 // ListAzureADGroupMembers mocks base method.
-func (m *MockAzureClient) ListAzureADGroupMembers(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.MemberObjectResult {
+func (m *MockAzureClient) ListAzureADGroupMembers(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.MemberObjectResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADGroupMembers", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureADGroupMembers", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.MemberObjectResult)
 	return ret0
 }
 
 // ListAzureADGroupMembers indicates an expected call of ListAzureADGroupMembers.
-func (mr *MockAzureClientMockRecorder) ListAzureADGroupMembers(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADGroupMembers(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADGroupMembers", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADGroupMembers), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADGroupMembers", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADGroupMembers), arg0, arg1, arg2)
 }
 
 // ListAzureADGroupOwners mocks base method.
-func (m *MockAzureClient) ListAzureADGroupOwners(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.GroupOwnerResult {
+func (m *MockAzureClient) ListAzureADGroupOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.GroupOwnerResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADGroupOwners", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureADGroupOwners", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.GroupOwnerResult)
 	return ret0
 }
 
 // ListAzureADGroupOwners indicates an expected call of ListAzureADGroupOwners.
-func (mr *MockAzureClientMockRecorder) ListAzureADGroupOwners(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADGroupOwners(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADGroupOwners", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADGroupOwners), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADGroupOwners", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADGroupOwners), arg0, arg1, arg2)
 }
 
 // ListAzureADGroups mocks base method.
-func (m *MockAzureClient) ListAzureADGroups(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.GroupResult {
+func (m *MockAzureClient) ListAzureADGroups(arg0 context.Context, arg1 query.GraphParams) <-chan azure.GroupResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADGroups", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureADGroups", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.GroupResult)
 	return ret0
 }
 
 // ListAzureADGroups indicates an expected call of ListAzureADGroups.
-func (mr *MockAzureClientMockRecorder) ListAzureADGroups(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADGroups(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADGroups", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADGroups), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADGroups", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADGroups), arg0, arg1)
 }
 
 // ListAzureADRoleAssignments mocks base method.
-func (m *MockAzureClient) ListAzureADRoleAssignments(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.UnifiedRoleAssignmentResult {
+func (m *MockAzureClient) ListAzureADRoleAssignments(arg0 context.Context, arg1 query.GraphParams) <-chan azure.UnifiedRoleAssignmentResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADRoleAssignments", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureADRoleAssignments", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.UnifiedRoleAssignmentResult)
 	return ret0
 }
 
 // ListAzureADRoleAssignments indicates an expected call of ListAzureADRoleAssignments.
-func (mr *MockAzureClientMockRecorder) ListAzureADRoleAssignments(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADRoleAssignments(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADRoleAssignments), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADRoleAssignments), arg0, arg1)
 }
 
 // ListAzureADRoles mocks base method.
-func (m *MockAzureClient) ListAzureADRoles(arg0 context.Context, arg1, arg2 string) <-chan azure.RoleResult {
+func (m *MockAzureClient) ListAzureADRoles(arg0 context.Context, arg1 string) <-chan azure.RoleResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADRoles", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListAzureADRoles", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.RoleResult)
 	return ret0
 }
 
 // ListAzureADRoles indicates an expected call of ListAzureADRoles.
-func (mr *MockAzureClientMockRecorder) ListAzureADRoles(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADRoles(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADRoles", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADRoles), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADRoles", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADRoles), arg0, arg1)
 }
 
 // ListAzureADServicePrincipalOwners mocks base method.
-func (m *MockAzureClient) ListAzureADServicePrincipalOwners(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.ServicePrincipalOwnerResult {
+func (m *MockAzureClient) ListAzureADServicePrincipalOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.ServicePrincipalOwnerResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADServicePrincipalOwners", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureADServicePrincipalOwners", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.ServicePrincipalOwnerResult)
 	return ret0
 }
 
 // ListAzureADServicePrincipalOwners indicates an expected call of ListAzureADServicePrincipalOwners.
-func (mr *MockAzureClientMockRecorder) ListAzureADServicePrincipalOwners(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADServicePrincipalOwners(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADServicePrincipalOwners", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADServicePrincipalOwners), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADServicePrincipalOwners", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADServicePrincipalOwners), arg0, arg1, arg2)
 }
 
 // ListAzureADServicePrincipals mocks base method.
-func (m *MockAzureClient) ListAzureADServicePrincipals(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.ServicePrincipalResult {
+func (m *MockAzureClient) ListAzureADServicePrincipals(arg0 context.Context, arg1 query.GraphParams) <-chan azure.ServicePrincipalResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADServicePrincipals", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureADServicePrincipals", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.ServicePrincipalResult)
 	return ret0
 }
 
 // ListAzureADServicePrincipals indicates an expected call of ListAzureADServicePrincipals.
-func (mr *MockAzureClientMockRecorder) ListAzureADServicePrincipals(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADServicePrincipals(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADServicePrincipals", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADServicePrincipals), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADServicePrincipals", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADServicePrincipals), arg0, arg1)
 }
 
 // ListAzureADTenants mocks base method.
@@ -712,17 +638,17 @@ func (mr *MockAzureClientMockRecorder) ListAzureADTenants(arg0, arg1 interface{}
 }
 
 // ListAzureADUsers mocks base method.
-func (m *MockAzureClient) ListAzureADUsers(arg0 context.Context, arg1, arg2, arg3 string, arg4 []string) <-chan azure.UserResult {
+func (m *MockAzureClient) ListAzureADUsers(arg0 context.Context, arg1 query.GraphParams) <-chan azure.UserResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureADUsers", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "ListAzureADUsers", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.UserResult)
 	return ret0
 }
 
 // ListAzureADUsers indicates an expected call of ListAzureADUsers.
-func (mr *MockAzureClientMockRecorder) ListAzureADUsers(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureADUsers(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADUsers", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADUsers), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureADUsers", reflect.TypeOf((*MockAzureClient)(nil).ListAzureADUsers), arg0, arg1)
 }
 
 // ListAzureAutomationAccounts mocks base method.
@@ -754,7 +680,7 @@ func (mr *MockAzureClientMockRecorder) ListAzureContainerRegistries(arg0, arg1 i
 }
 
 // ListAzureDeviceRegisteredOwners mocks base method.
-func (m *MockAzureClient) ListAzureDeviceRegisteredOwners(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.DeviceRegisteredOwnerResult {
+func (m *MockAzureClient) ListAzureDeviceRegisteredOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.DeviceRegisteredOwnerResult {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureDeviceRegisteredOwners", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.DeviceRegisteredOwnerResult)
@@ -768,17 +694,17 @@ func (mr *MockAzureClientMockRecorder) ListAzureDeviceRegisteredOwners(arg0, arg
 }
 
 // ListAzureDevices mocks base method.
-func (m *MockAzureClient) ListAzureDevices(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) <-chan azure.DeviceResult {
+func (m *MockAzureClient) ListAzureDevices(arg0 context.Context, arg1 query.GraphParams) <-chan azure.DeviceResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureDevices", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ListAzureDevices", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.DeviceResult)
 	return ret0
 }
 
 // ListAzureDevices indicates an expected call of ListAzureDevices.
-func (mr *MockAzureClientMockRecorder) ListAzureDevices(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureDevices(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureDevices", reflect.TypeOf((*MockAzureClient)(nil).ListAzureDevices), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureDevices", reflect.TypeOf((*MockAzureClient)(nil).ListAzureDevices), arg0, arg1)
 }
 
 // ListAzureFunctionApps mocks base method.
@@ -796,7 +722,7 @@ func (mr *MockAzureClientMockRecorder) ListAzureFunctionApps(arg0, arg1 interfac
 }
 
 // ListAzureKeyVaults mocks base method.
-func (m *MockAzureClient) ListAzureKeyVaults(arg0 context.Context, arg1 string, arg2 int32) <-chan azure.KeyVaultResult {
+func (m *MockAzureClient) ListAzureKeyVaults(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan azure.KeyVaultResult {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureKeyVaults", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.KeyVaultResult)
@@ -824,49 +750,49 @@ func (mr *MockAzureClientMockRecorder) ListAzureLogicApps(arg0, arg1, arg2, arg3
 }
 
 // ListAzureManagedClusters mocks base method.
-func (m *MockAzureClient) ListAzureManagedClusters(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.ManagedClusterResult {
+func (m *MockAzureClient) ListAzureManagedClusters(arg0 context.Context, arg1 string) <-chan azure.ManagedClusterResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureManagedClusters", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListAzureManagedClusters", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.ManagedClusterResult)
 	return ret0
 }
 
 // ListAzureManagedClusters indicates an expected call of ListAzureManagedClusters.
-func (mr *MockAzureClientMockRecorder) ListAzureManagedClusters(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureManagedClusters(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureManagedClusters", reflect.TypeOf((*MockAzureClient)(nil).ListAzureManagedClusters), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureManagedClusters", reflect.TypeOf((*MockAzureClient)(nil).ListAzureManagedClusters), arg0, arg1)
 }
 
 // ListAzureManagementGroupDescendants mocks base method.
-func (m *MockAzureClient) ListAzureManagementGroupDescendants(arg0 context.Context, arg1 string) <-chan azure.DescendantInfoResult {
+func (m *MockAzureClient) ListAzureManagementGroupDescendants(arg0 context.Context, arg1 string, arg2 int32) <-chan azure.DescendantInfoResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureManagementGroupDescendants", arg0, arg1)
+	ret := m.ctrl.Call(m, "ListAzureManagementGroupDescendants", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.DescendantInfoResult)
 	return ret0
 }
 
 // ListAzureManagementGroupDescendants indicates an expected call of ListAzureManagementGroupDescendants.
-func (mr *MockAzureClientMockRecorder) ListAzureManagementGroupDescendants(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureManagementGroupDescendants(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureManagementGroupDescendants", reflect.TypeOf((*MockAzureClient)(nil).ListAzureManagementGroupDescendants), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureManagementGroupDescendants", reflect.TypeOf((*MockAzureClient)(nil).ListAzureManagementGroupDescendants), arg0, arg1, arg2)
 }
 
 // ListAzureManagementGroups mocks base method.
-func (m *MockAzureClient) ListAzureManagementGroups(arg0 context.Context) <-chan azure.ManagementGroupResult {
+func (m *MockAzureClient) ListAzureManagementGroups(arg0 context.Context, arg1 string) <-chan azure.ManagementGroupResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureManagementGroups", arg0)
+	ret := m.ctrl.Call(m, "ListAzureManagementGroups", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.ManagementGroupResult)
 	return ret0
 }
 
 // ListAzureManagementGroups indicates an expected call of ListAzureManagementGroups.
-func (mr *MockAzureClientMockRecorder) ListAzureManagementGroups(arg0 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureManagementGroups(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureManagementGroups", reflect.TypeOf((*MockAzureClient)(nil).ListAzureManagementGroups), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureManagementGroups", reflect.TypeOf((*MockAzureClient)(nil).ListAzureManagementGroups), arg0, arg1)
 }
 
 // ListAzureResourceGroups mocks base method.
-func (m *MockAzureClient) ListAzureResourceGroups(arg0 context.Context, arg1, arg2 string) <-chan azure.ResourceGroupResult {
+func (m *MockAzureClient) ListAzureResourceGroups(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan azure.ResourceGroupResult {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureResourceGroups", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.ResourceGroupResult)
@@ -922,21 +848,21 @@ func (mr *MockAzureClientMockRecorder) ListAzureSubscriptions(arg0 interface{}) 
 }
 
 // ListAzureVMScaleSets mocks base method.
-func (m *MockAzureClient) ListAzureVMScaleSets(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.VMScaleSetResult {
+func (m *MockAzureClient) ListAzureVMScaleSets(arg0 context.Context, arg1 string) <-chan azure.VMScaleSetResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAzureVMScaleSets", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListAzureVMScaleSets", arg0, arg1)
 	ret0, _ := ret[0].(<-chan azure.VMScaleSetResult)
 	return ret0
 }
 
 // ListAzureVMScaleSets indicates an expected call of ListAzureVMScaleSets.
-func (mr *MockAzureClientMockRecorder) ListAzureVMScaleSets(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListAzureVMScaleSets(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureVMScaleSets", reflect.TypeOf((*MockAzureClient)(nil).ListAzureVMScaleSets), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureVMScaleSets", reflect.TypeOf((*MockAzureClient)(nil).ListAzureVMScaleSets), arg0, arg1)
 }
 
 // ListAzureVirtualMachines mocks base method.
-func (m *MockAzureClient) ListAzureVirtualMachines(arg0 context.Context, arg1 string, arg2 bool) <-chan azure.VirtualMachineResult {
+func (m *MockAzureClient) ListAzureVirtualMachines(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan azure.VirtualMachineResult {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureVirtualMachines", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan azure.VirtualMachineResult)
@@ -963,32 +889,18 @@ func (mr *MockAzureClientMockRecorder) ListAzureWebApps(arg0, arg1 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAzureWebApps", reflect.TypeOf((*MockAzureClient)(nil).ListAzureWebApps), arg0, arg1)
 }
 
-// ListResourceRoleAssignments mocks base method.
-func (m *MockAzureClient) ListResourceRoleAssignments(arg0 context.Context, arg1, arg2, arg3 string) <-chan azure.RoleAssignmentResult {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListResourceRoleAssignments", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(<-chan azure.RoleAssignmentResult)
-	return ret0
-}
-
-// ListResourceRoleAssignments indicates an expected call of ListResourceRoleAssignments.
-func (mr *MockAzureClientMockRecorder) ListResourceRoleAssignments(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListResourceRoleAssignments", reflect.TypeOf((*MockAzureClient)(nil).ListResourceRoleAssignments), arg0, arg1, arg2, arg3)
-}
-
 // ListRoleAssignmentsForResource mocks base method.
-func (m *MockAzureClient) ListRoleAssignmentsForResource(arg0 context.Context, arg1, arg2 string) <-chan azure.RoleAssignmentResult {
+func (m *MockAzureClient) ListRoleAssignmentsForResource(arg0 context.Context, arg1, arg2, arg3 string) <-chan azure.RoleAssignmentResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListRoleAssignmentsForResource", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListRoleAssignmentsForResource", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(<-chan azure.RoleAssignmentResult)
 	return ret0
 }
 
 // ListRoleAssignmentsForResource indicates an expected call of ListRoleAssignmentsForResource.
-func (mr *MockAzureClientMockRecorder) ListRoleAssignmentsForResource(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureClientMockRecorder) ListRoleAssignmentsForResource(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRoleAssignmentsForResource", reflect.TypeOf((*MockAzureClient)(nil).ListRoleAssignmentsForResource), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRoleAssignmentsForResource", reflect.TypeOf((*MockAzureClient)(nil).ListRoleAssignmentsForResource), arg0, arg1, arg2, arg3)
 }
 
 // TenantInfo mocks base method.

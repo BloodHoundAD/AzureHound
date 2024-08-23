@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
@@ -31,25 +30,9 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureDevice(ctx context.Context, objectId string, selectCols []string) (*azure.Device, error) {
-	var (
-		path     = fmt.Sprintf("/%s/devices/%s", constants.GraphApiVersion, objectId)
-		params   = query.Params{Select: selectCols}.AsMap()
-		response azure.DeviceList
-	)
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response.Value[0], nil
-	}
-}
-
-func (s *azureClient) GetAzureDeviceRegisteredOwners(ctx context.Context, objectId string, filter, search string, count bool) (azure.DirectoryObjectList, error) {
+func (s *azureClient) GetAzureDeviceRegisteredOwners(ctx context.Context, objectId string, params query.GraphParams) (azure.DirectoryObjectList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/devices/%s/registeredOwners", constants.GraphApiBetaVersion, objectId)
-		params   = query.Params{Filter: filter, Search: search, Count: count}.AsMap()
 		response azure.DirectoryObjectList
 	)
 	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
@@ -61,20 +44,16 @@ func (s *azureClient) GetAzureDeviceRegisteredOwners(ctx context.Context, object
 	}
 }
 
-func (s *azureClient) GetAzureDevices(ctx context.Context, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.DeviceList, error) {
+func (s *azureClient) GetAzureDevices(ctx context.Context, params query.GraphParams) (azure.DeviceList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/devices", constants.GraphApiVersion)
-		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count, Expand: expand}
-		headers  map[string]string
 		response azure.DeviceList
 	)
 
-	count = count || search != "" || (filter != "" && orderBy != "") || strings.Contains(filter, "endsWith")
-	if count {
-		headers = make(map[string]string)
-		headers["ConsistencyLevel"] = "eventual"
+	if params.Top == 0 {
+		params.Top = 999
 	}
-	if res, err := s.msgraph.Get(ctx, path, params.AsMap(), headers); err != nil {
+	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -83,7 +62,7 @@ func (s *azureClient) GetAzureDevices(ctx context.Context, filter, search, order
 	}
 }
 
-func (s *azureClient) ListAzureDevices(ctx context.Context, filter, search, orderBy, expand string, selectCols []string) <-chan azure.DeviceResult {
+func (s *azureClient) ListAzureDevices(ctx context.Context, params query.GraphParams) <-chan azure.DeviceResult {
 	out := make(chan azure.DeviceResult)
 
 	go func() {
@@ -95,7 +74,7 @@ func (s *azureClient) ListAzureDevices(ctx context.Context, filter, search, orde
 			nextLink  string
 		)
 
-		if list, err := s.GetAzureDevices(ctx, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
+		if list, err := s.GetAzureDevices(ctx, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return
@@ -148,7 +127,7 @@ func (s *azureClient) ListAzureDevices(ctx context.Context, filter, search, orde
 	return out
 }
 
-func (s *azureClient) ListAzureDeviceRegisteredOwners(ctx context.Context, objectId string, securityEnabledOnly bool) <-chan azure.DeviceRegisteredOwnerResult {
+func (s *azureClient) ListAzureDeviceRegisteredOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.DeviceRegisteredOwnerResult {
 	out := make(chan azure.DeviceRegisteredOwnerResult)
 
 	go func() {
@@ -162,7 +141,7 @@ func (s *azureClient) ListAzureDeviceRegisteredOwners(ctx context.Context, objec
 			nextLink string
 		)
 
-		if list, err := s.GetAzureDeviceRegisteredOwners(ctx, objectId, "", "", false); err != nil {
+		if list, err := s.GetAzureDeviceRegisteredOwners(ctx, objectId, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

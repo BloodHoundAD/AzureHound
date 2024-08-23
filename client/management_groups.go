@@ -29,31 +29,14 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureManagementGroup(ctx context.Context, groupId, filter, expand string, recurse bool) (*azure.ManagementGroup, error) {
-	var (
-		path     = fmt.Sprintf("/providers/Microsoft.Management/managementGroups/%s", groupId)
-		params   = query.Params{ApiVersion: "2020-05-01", Filter: filter, Expand: expand, Recurse: recurse}.AsMap()
-		headers  map[string]string
-		response azure.ManagementGroup
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
-func (s *azureClient) GetAzureManagementGroups(ctx context.Context) (azure.ManagementGroupList, error) {
+func (s *azureClient) GetAzureManagementGroups(ctx context.Context, skipToken string) (azure.ManagementGroupList, error) {
 	var (
 		path     = "/providers/Microsoft.Management/managementGroups"
-		params   = query.Params{ApiVersion: "2020-05-01"}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2020-05-01", SkipToken: skipToken}
 		response azure.ManagementGroupList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -65,12 +48,11 @@ func (s *azureClient) GetAzureManagementGroups(ctx context.Context) (azure.Manag
 func (s *azureClient) GetAzureManagementGroupDescendants(ctx context.Context, groupId string, top int32) (azure.DescendantInfoList, error) {
 	var (
 		path     = fmt.Sprintf("/providers/Microsoft.Management/managementGroups/%s/descendants", groupId)
-		params   = query.Params{ApiVersion: "2020-05-01", Top: top}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2020-05-01", Top: top}
 		response azure.DescendantInfoList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -79,7 +61,7 @@ func (s *azureClient) GetAzureManagementGroupDescendants(ctx context.Context, gr
 	}
 }
 
-func (s *azureClient) ListAzureManagementGroups(ctx context.Context) <-chan azure.ManagementGroupResult {
+func (s *azureClient) ListAzureManagementGroups(ctx context.Context, skipToken string) <-chan azure.ManagementGroupResult {
 	out := make(chan azure.ManagementGroupResult)
 
 	go func() {
@@ -91,7 +73,7 @@ func (s *azureClient) ListAzureManagementGroups(ctx context.Context) <-chan azur
 			nextLink  string
 		)
 
-		if result, err := s.GetAzureManagementGroups(ctx); err != nil {
+		if result, err := s.GetAzureManagementGroups(ctx, skipToken); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return
@@ -144,7 +126,7 @@ func (s *azureClient) ListAzureManagementGroups(ctx context.Context) <-chan azur
 	return out
 }
 
-func (s *azureClient) ListAzureManagementGroupDescendants(ctx context.Context, groupId string) <-chan azure.DescendantInfoResult {
+func (s *azureClient) ListAzureManagementGroupDescendants(ctx context.Context, groupId string, top int32) <-chan azure.DescendantInfoResult {
 	out := make(chan azure.DescendantInfoResult)
 
 	go func() {
@@ -156,7 +138,7 @@ func (s *azureClient) ListAzureManagementGroupDescendants(ctx context.Context, g
 			nextLink  string
 		)
 
-		if result, err := s.GetAzureManagementGroupDescendants(ctx, groupId, 3000); err != nil {
+		if result, err := s.GetAzureManagementGroupDescendants(ctx, groupId, top); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

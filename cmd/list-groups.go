@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -64,7 +65,7 @@ func listGroups(ctx context.Context, client client.AzureClient) <-chan interface
 		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		count := 0
-		for item := range client.ListAzureADGroups(ctx, "securityEnabled eq true", "", "", "", nil) {
+		for item := range client.ListAzureADGroups(ctx, query.GraphParams{Filter: "securityEnabled eq true"}) {
 			if item.Error != nil {
 				log.Error(item.Error, "unable to continue processing groups")
 				return

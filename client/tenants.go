@@ -33,10 +33,9 @@ import (
 func (s *azureClient) GetAzureADOrganization(ctx context.Context, selectCols []string) (*azure.Organization, error) {
 	var (
 		path     = fmt.Sprintf("/%s/organization", constants.GraphApiVersion)
-		params   = query.Params{Select: selectCols}.AsMap()
 		response azure.OrganizationList
 	)
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
+	if res, err := s.msgraph.Get(ctx, path, query.GraphParams{Select: selectCols}, nil); err != nil {
 		return nil, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return nil, err
@@ -48,7 +47,7 @@ func (s *azureClient) GetAzureADOrganization(ctx context.Context, selectCols []s
 func (s *azureClient) GetAzureADTenants(ctx context.Context, includeAllTenantCategories bool) (azure.TenantList, error) {
 	var (
 		path     = "/tenants"
-		params   = query.Params{ApiVersion: "2020-01-01", IncludeAllTenantCategories: includeAllTenantCategories}.AsMap()
+		params   = query.RMParams{ApiVersion: "2020-01-01", IncludeAllTenantCategories: includeAllTenantCategories}
 		headers  map[string]string
 		response azure.TenantList
 	)

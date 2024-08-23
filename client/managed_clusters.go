@@ -29,31 +29,14 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureManagedCluster(ctx context.Context, subscriptionId, groupName, mcName, expand string) (*azure.ManagedCluster, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ContainerService/managedClusters/%s", subscriptionId, groupName, mcName)
-		params   = query.Params{ApiVersion: "2021-07-01", Expand: expand}.AsMap()
-		headers  map[string]string
-		response azure.ManagedCluster
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
-func (s *azureClient) GetAzureManagedClusters(ctx context.Context, subscriptionId string, statusOnly bool) (azure.ManagedClusterList, error) {
+func (s *azureClient) GetAzureManagedClusters(ctx context.Context, subscriptionId string) (azure.ManagedClusterList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.ContainerService/managedClusters", subscriptionId)
-		params   = query.Params{ApiVersion: "2021-07-01", StatusOnly: statusOnly}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2021-07-01"}
 		response azure.ManagedClusterList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -62,7 +45,7 @@ func (s *azureClient) GetAzureManagedClusters(ctx context.Context, subscriptionI
 	}
 }
 
-func (s *azureClient) ListAzureManagedClusters(ctx context.Context, subscriptionId string, statusOnly bool) <-chan azure.ManagedClusterResult {
+func (s *azureClient) ListAzureManagedClusters(ctx context.Context, subscriptionId string) <-chan azure.ManagedClusterResult {
 	out := make(chan azure.ManagedClusterResult)
 
 	go func() {
@@ -76,7 +59,7 @@ func (s *azureClient) ListAzureManagedClusters(ctx context.Context, subscription
 			nextLink string
 		)
 
-		if result, err := s.GetAzureManagedClusters(ctx, subscriptionId, statusOnly); err != nil {
+		if result, err := s.GetAzureManagedClusters(ctx, subscriptionId); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

@@ -29,31 +29,14 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureLogicApp(ctx context.Context, subscriptionId, groupName, logicappName, expand string) (*azure.LogicApp, error) {
-	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Logic/workflows/%s", subscriptionId, groupName, logicappName)
-		params   = query.Params{ApiVersion: "2016-06-01", Expand: expand}.AsMap()
-		headers  map[string]string
-		response azure.LogicApp
-	)
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response, nil
-	}
-}
-
 func (s *azureClient) GetAzureLogicApps(ctx context.Context, subscriptionId string, filter string, top int32) (azure.LogicAppList, error) {
 	var (
 		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Logic/workflows", subscriptionId)
-		params   = query.Params{ApiVersion: "2016-06-01", Filter: filter, Top: top}.AsMap()
-		headers  map[string]string
+		params   = query.RMParams{ApiVersion: "2016-06-01", Filter: filter, Top: top}
 		response azure.LogicAppList
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err

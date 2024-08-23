@@ -64,7 +64,7 @@ func listRoles(ctx context.Context, client client.AzureClient) <-chan interface{
 		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		count := 0
-		for item := range client.ListAzureADRoles(ctx, "", "") {
+		for item := range client.ListAzureADRoles(ctx, "") {
 			if item.Error != nil {
 				log.Error(item.Error, "unable to continue processing roles")
 				return

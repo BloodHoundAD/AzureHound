@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/client/rest"
@@ -31,35 +30,16 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADUser(ctx context.Context, objectId string, selectCols []string) (*azure.User, error) {
-	var (
-		path     = fmt.Sprintf("/%s/users/%s", constants.GraphApiVersion, objectId)
-		params   = query.Params{Select: selectCols}.AsMap()
-		response azure.UserList
-	)
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return nil, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return nil, err
-	} else {
-		return &response.Value[0], nil
-	}
-}
-
-func (s *azureClient) GetAzureADUsers(ctx context.Context, filter string, search string, orderBy string, selectCols []string, top int32, count bool) (azure.UserList, error) {
+func (s *azureClient) GetAzureADUsers(ctx context.Context, params query.GraphParams) (azure.UserList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/users", constants.GraphApiVersion)
-		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count}
-		headers  map[string]string
 		response azure.UserList
 	)
 
-	count = count || search != "" || (filter != "" && orderBy != "") || strings.Contains(filter, "endsWith")
-	if count {
-		headers = make(map[string]string)
-		headers["ConsistencyLevel"] = "eventual"
+	if params.Top == 0 {
+		params.Top = 999
 	}
-	if res, err := s.msgraph.Get(ctx, path, params.AsMap(), headers); err != nil {
+	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err
@@ -68,7 +48,7 @@ func (s *azureClient) GetAzureADUsers(ctx context.Context, filter string, search
 	}
 }
 
-func (s *azureClient) ListAzureADUsers(ctx context.Context, filter string, search string, orderBy string, selectCols []string) <-chan azure.UserResult {
+func (s *azureClient) ListAzureADUsers(ctx context.Context, params query.GraphParams) <-chan azure.UserResult {
 	out := make(chan azure.UserResult)
 
 	go func() {
@@ -79,7 +59,7 @@ func (s *azureClient) ListAzureADUsers(ctx context.Context, filter string, searc
 			errResult = azure.UserResult{}
 			nextLink  string
 		)
-		if users, err := s.GetAzureADUsers(ctx, filter, search, orderBy, selectCols, 999, false); err != nil {
+		if users, err := s.GetAzureADUsers(ctx, params); err != nil {
 			errResult.Error = err
 			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
 				return

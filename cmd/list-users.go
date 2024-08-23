@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -64,7 +65,7 @@ func listUsers(ctx context.Context, client client.AzureClient) <-chan interface{
 		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		count := 0
-		for item := range client.ListAzureADUsers(ctx, "", "", "", []string{
+		for item := range client.ListAzureADUsers(ctx, query.GraphParams{Select: []string{
 			"accountEnabled",
 			"createdDateTime",
 			"displayName",
@@ -76,7 +77,7 @@ func listUsers(ctx context.Context, client client.AzureClient) <-chan interface{
 			"userPrincipalName",
 			"userType",
 			"id",
-		}) {
+		}}) {
 			if item.Error != nil {
 				log.Error(item.Error, "unable to continue processing users")
 				return
