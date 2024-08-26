@@ -68,7 +68,6 @@ func (s *azureClient) GetAzureADGroupMembers(ctx context.Context, objectId strin
 func (s *azureClient) GetAzureADGroups(ctx context.Context, params query.GraphParams) (azure.GroupList, error) {
 	var (
 		path     = fmt.Sprintf("/%s/groups", constants.GraphApiVersion)
-		headers  map[string]string
 		response azure.GroupList
 	)
 
@@ -76,7 +75,7 @@ func (s *azureClient) GetAzureADGroups(ctx context.Context, params query.GraphPa
 		params.Top = 99
 	}
 
-	if res, err := s.msgraph.Get(ctx, path, params, headers); err != nil {
+	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
 		return response, err
 	} else if err := rest.Decode(res.Body, &response); err != nil {
 		return response, err

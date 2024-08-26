@@ -92,17 +92,7 @@ type azureClient struct {
 	tenant          azure.Tenant
 }
 
-func (s azureClient) TenantInfo() azure.Tenant {
-	return s.tenant
-}
-
-func (s azureClient) CloseIdleConnections() {
-	s.msgraph.CloseIdleConnections()
-	s.resourceManager.CloseIdleConnections()
-}
-
-type AzureClient interface {
-	// Graph
+type AzureGraphClient interface {
 	GetAzureADApps(ctx context.Context, params query.GraphParams) (azure.ApplicationList, error)
 	GetAzureADGroupOwners(ctx context.Context, objectId string, params query.GraphParams) (azure.DirectoryObjectList, error)
 	GetAzureADGroups(ctx context.Context, params query.GraphParams) (azure.GroupList, error)
@@ -115,13 +105,15 @@ type AzureClient interface {
 	GetAzureDevices(ctx context.Context, params query.GraphParams) (azure.DeviceList, error)
 	GetAzureDeviceRegisteredOwners(ctx context.Context, objectId string, params query.GraphParams) (azure.DirectoryObjectList, error)
 	GetAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, params query.GraphParams) (azure.AppRoleAssignmentList, error)
+
+	// https://learn.microsoft.com/en-us/graph/api/group-list-members?view=graph-rest-beta
 	GetAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) (azure.MemberObjectList, error)
+	ListAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.MemberObjectResult
 
 	ListAzureADUsers(ctx context.Context, params query.GraphParams) <-chan azure.UserResult
 	ListAzureADApps(ctx context.Context, params query.GraphParams) <-chan azure.ApplicationResult
 	ListAzureADAppOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.AppOwnerResult
 	ListAzureADGroups(ctx context.Context, params query.GraphParams) <-chan azure.GroupResult
-	ListAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.MemberObjectResult
 	ListAzureADRoleAssignments(ctx context.Context, params query.GraphParams) <-chan azure.UnifiedRoleAssignmentResult
 	ListAzureADGroupOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.GroupOwnerResult
 	ListAzureADRoles(ctx context.Context, filter string) <-chan azure.RoleResult
@@ -130,8 +122,9 @@ type AzureClient interface {
 	ListAzureDeviceRegisteredOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.DeviceRegisteredOwnerResult
 	ListAzureDevices(ctx context.Context, params query.GraphParams) <-chan azure.DeviceResult
 	ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipal string, params query.GraphParams) <-chan azure.AppRoleAssignmentResult
+}
 
-	// RM
+type AzureResourceManagerClient interface {
 	GetAzureADTenants(ctx context.Context, includeAllTenantCategories bool) (azure.TenantList, error)
 	GetAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) (azure.KeyVaultList, error)
 	GetAzureManagementGroups(ctx context.Context, skipToken string) (azure.ManagementGroupList, error)
@@ -166,7 +159,21 @@ type AzureClient interface {
 	ListAzureFunctionApps(ctx context.Context, subscriptionId string) <-chan azure.FunctionAppResult
 	ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter, tenantId string) <-chan azure.RoleAssignmentResult
 	ListAzureManagementGroupDescendants(ctx context.Context, groupId string, top int32) <-chan azure.DescendantInfoResult
+}
+
+type AzureClient interface {
+	AzureGraphClient
+	AzureResourceManagerClient
 
 	TenantInfo() azure.Tenant
 	CloseIdleConnections()
+}
+
+func (s azureClient) TenantInfo() azure.Tenant {
+	return s.tenant
+}
+
+func (s azureClient) CloseIdleConnections() {
+	s.msgraph.CloseIdleConnections()
+	s.resourceManager.CloseIdleConnections()
 }
