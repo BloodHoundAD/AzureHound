@@ -102,7 +102,7 @@ func listDeviceOwners(ctx context.Context, client client.AzureClient, devices <-
 					} else {
 						deviceOwner := models.DeviceOwner{
 							Owner:    item.Ok,
-							DeviceId: item.DeviceId,
+							DeviceId: id,
 						}
 						log.V(2).Info("found device owner", "deviceOwner", deviceOwner)
 						count++

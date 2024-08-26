@@ -111,7 +111,7 @@ func listManagedClusterRoleAssignments(ctx context.Context, client client.AzureC
 
 						managedClusterRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found managed cluster role assignment", "managedClusterRoleAssignment", managedClusterRoleAssignment)

@@ -103,7 +103,7 @@ func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, 
 					} else {
 						servicePrincipalOwner := models.ServicePrincipalOwner{
 							Owner:              item.Ok,
-							ServicePrincipalId: item.ServicePrincipalId,
+							ServicePrincipalId: id,
 						}
 						log.V(2).Info("found service principal owner", "servicePrincipalOwner", servicePrincipalOwner)
 						count++

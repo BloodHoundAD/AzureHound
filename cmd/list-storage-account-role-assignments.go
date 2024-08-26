@@ -106,7 +106,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 
 						storageAccountRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found storage account role assignment", "storageAccountRoleAssignment", storageAccountRoleAssignment)

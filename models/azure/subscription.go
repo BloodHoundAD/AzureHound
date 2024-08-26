@@ -49,13 +49,3 @@ type Subscription struct {
 	// The subscription tenant ID.
 	TenantId string `json:"tenantId,omitempty"`
 }
-
-type SubscriptionList struct {
-	NextLink string         `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []Subscription `json:"value"`              // A list of subscriptions.
-}
-
-type SubscriptionResult struct {
-	Error error
-	Ok    Subscription
-}

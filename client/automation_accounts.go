@@ -20,97 +20,20 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureAutomationAccounts(ctx context.Context, subscriptionId string) (azure.AutomationAccountList, error) {
+// ListAzureAutomationAccounts https://learn.microsoft.com/en-us/rest/api/automation/automation-account/list?view=rest-automation-2021-06-22
+func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscriptionId string) <-chan azureResult[azure.AutomationAccount] {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Automation/automationAccounts", subscriptionId)
-		params   = query.RMParams{ApiVersion: "2021-06-22"}
-		response azure.AutomationAccountList
+		out = make(chan azureResult[azure.AutomationAccount])
+		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Automation/automationAccounts", subscriptionId)
+		params = query.RMParams{ApiVersion: "2021-06-22"}
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
+	go getAzureObjectList[azure.AutomationAccount](s.resourceManager, ctx, path, params, out)
 
-func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscriptionId string) <-chan azure.AutomationAccountResult {
-	out := make(chan azure.AutomationAccountResult)
-
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.AutomationAccountResult{
-				SubscriptionId: subscriptionId,
-			}
-			nextLink string
-		)
-
-		if result, err := s.GetAzureAutomationAccounts(ctx, subscriptionId); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range result.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.AutomationAccountResult{SubscriptionId: subscriptionId, Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = result.NextLink
-			for nextLink != "" {
-				var list azure.AutomationAccountList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.resourceManager.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.AutomationAccountResult{
-							SubscriptionId: "/subscriptions/" + subscriptionId,
-							Ok:             u,
-						}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

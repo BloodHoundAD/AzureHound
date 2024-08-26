@@ -19,187 +19,44 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADAppOwners(ctx context.Context, objectId string, params query.GraphParams) (azure.DirectoryObjectList, error) {
+// ListAzureADApps https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-beta
+func (s *azureClient) ListAzureADApps(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Application] {
 	var (
-		path     = fmt.Sprintf("/%s/applications/%s/owners", constants.GraphApiBetaVersion, objectId)
-		response azure.DirectoryObjectList
+		out = make(chan azureResult[azure.Application])
+		path      = fmt.Sprintf("/%s/applications", constants.GraphApiVersion)
+
 	)
 
 	if params.Top == 0 {
 		params.Top = 99
 	}
 
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
+	go getAzureObjectList[azure.Application](s.msgraph, ctx, path, params, out)
 
-func (s *azureClient) GetAzureADApps(ctx context.Context, params query.GraphParams) (azure.ApplicationList, error) {
-	var (
-		path     = fmt.Sprintf("/%s/applications", constants.GraphApiVersion)
-		response azure.ApplicationList
-	)
-
-	if params.Top == 0 {
-		params.Top = 99
-	}
-
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
-
-func (s *azureClient) ListAzureADApps(ctx context.Context, params query.GraphParams) <-chan azure.ApplicationResult {
-	out := make(chan azure.ApplicationResult)
-
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.ApplicationResult{}
-			nextLink  string
-		)
-
-		if list, err := s.GetAzureADApps(ctx, params); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range list.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.ApplicationResult{Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = list.NextLink
-			for nextLink != "" {
-				var list azure.ApplicationList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					return
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					return
-				} else if res, err := s.msgraph.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					return
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					return
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.ApplicationResult{Ok: u}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }
 
-func (s *azureClient) ListAzureADAppOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azure.AppOwnerResult {
-	out := make(chan azure.AppOwnerResult)
+// ListAzureADAppOwners https://learn.microsoft.com/en-us/graph/api/application-list-owners?view=graph-rest-beta
+func (s *azureClient) ListAzureADAppOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage] {
 
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
+	var (
+		out  = make(chan azureResult[json.RawMessage])
+		path = fmt.Sprintf("/%s/applications/%s/owners", constants.GraphApiBetaVersion, objectId)
+	)
 
-		var (
-			errResult = azure.AppOwnerResult{}
-			nextLink  string
-		)
+	if params.Top == 0 {
+		params.Top = 99
+	}
 
-		if list, err := s.GetAzureADAppOwners(ctx, objectId, params); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range list.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.AppOwnerResult{
-					AppId: objectId,
-					Ok:    u,
-				}); !ok {
-					return
-				}
-			}
+	go getAzureObjectList[json.RawMessage](s.msgraph, ctx, path, params, out)
 
-			nextLink = list.NextLink
-			for nextLink != "" {
-				var list azure.DirectoryObjectList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					return
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					return
-				} else if res, err := s.msgraph.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					return
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					return
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.AppOwnerResult{
-							AppId: objectId,
-							Ok:    u,
-						}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

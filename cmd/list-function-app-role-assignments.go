@@ -106,7 +106,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 
 						functionAppRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("Found function app role asignment", "functionAppRoleAssignment", functionAppRoleAssignment)

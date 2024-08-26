@@ -98,7 +98,7 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 					} else {
 						resourceGroup := models.ResourceGroup{
 							ResourceGroup:  item.Ok,
-							SubscriptionId: item.SubscriptionId,
+							SubscriptionId: "/subscriptions/"+id,
 							TenantId:       client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found resource group", "resourceGroup", resourceGroup)

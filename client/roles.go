@@ -20,92 +20,20 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADRoles(ctx context.Context, filter string) (azure.RoleList, error) {
+// ListAzureADRoles https://learn.microsoft.com/en-us/graph/api/rbacapplication-list-roledefinitions?view=graph-rest-beta
+func (s *azureClient) ListAzureADRoles(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Role] {
 	var (
-		path     = fmt.Sprintf("/%s/roleManagement/directory/roleDefinitions", constants.GraphApiVersion)
-		response azure.RoleList
+		out = make(chan azureResult[azure.Role])
+		path = fmt.Sprintf("/%s/roleManagement/directory/roleDefinitions", constants.GraphApiVersion)
 	)
 
-	if res, err := s.msgraph.Get(ctx, path, query.GraphParams{Filter: filter}, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
+	go getAzureObjectList[azure.Role](s.msgraph, ctx, path, params, out)
 
-func (s *azureClient) ListAzureADRoles(ctx context.Context, filter string) <-chan azure.RoleResult {
-	out := make(chan azure.RoleResult)
-
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.RoleResult{}
-			nextLink  string
-		)
-
-		if users, err := s.GetAzureADRoles(ctx, filter); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range users.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.RoleResult{Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = users.NextLink
-			for nextLink != "" {
-				var users azure.RoleList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.msgraph.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &users); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range users.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.RoleResult{Ok: u}); !ok {
-							return
-						}
-					}
-					nextLink = users.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

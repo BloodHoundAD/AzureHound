@@ -103,7 +103,7 @@ func listResourceGroupRoleAssignments(ctx context.Context, client client.AzureCl
 						log.Error(item.Error, "unable to continue processing role assignments for this resourceGroup", "resourceGroupId", id)
 					} else {
 						resourceGroupRoleAssignment := models.ResourceGroupRoleAssignment{
-							ResourceGroupId: item.ParentId,
+							ResourceGroupId: id,
 							RoleAssignment:  item.Ok,
 						}
 						log.V(2).Info("found resourceGroup role assignment", "resourceGroupRoleAssignment", resourceGroupRoleAssignment)

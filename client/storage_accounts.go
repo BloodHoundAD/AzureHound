@@ -20,97 +20,21 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureStorageAccounts(ctx context.Context, subscriptionId string) (azure.StorageAccountList, error) {
+// ListAzureStorageAccounts https://learn.microsoft.com/en-us/rest/api/storagerp/storage-accounts/list?view=rest-storagerp-2022-05-01
+func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscriptionId string) <-chan azureResult[azure.StorageAccount] {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Storage/storageAccounts", subscriptionId)
-		params   = query.RMParams{ApiVersion: "2022-05-01"}
-		response azure.StorageAccountList
+	out = make(chan azureResult[azure.StorageAccount])
+		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Storage/storageAccounts", subscriptionId)
+		params = query.RMParams{ApiVersion: "2022-05-01"}
 	)
-	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
 
-func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscriptionId string) <-chan azure.StorageAccountResult {
-	out := make(chan azure.StorageAccountResult)
+	go getAzureObjectList[azure.StorageAccount](s.resourceManager, ctx, path, params, out)
 
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.StorageAccountResult{
-				SubscriptionId: subscriptionId,
-			}
-			nextLink string
-		)
-
-		if result, err := s.GetAzureStorageAccounts(ctx, subscriptionId); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range result.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.StorageAccountResult{SubscriptionId: subscriptionId, Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = result.NextLink
-			for nextLink != "" {
-				var list azure.StorageAccountList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.resourceManager.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.StorageAccountResult{
-							SubscriptionId: "/subscriptions/" + subscriptionId,
-							Ok:             u,
-						}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }
 
@@ -118,87 +42,15 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 // Storage containers
 // ==
 
-func (s *azureClient) GetAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) (azure.StorageContainerList, error) {
+// ListAzureStorageContainers https://learn.microsoft.com/en-us/rest/api/storagerp/blob-containers/list?view=rest-storagerp-2022-05-01
+func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) <-chan azureResult[azure.StorageContainer] {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers", subscriptionId, resourceGroupName, saName)
-		params   = query.RMParams{ApiVersion: "2022-05-01", Filter: filter, IncludeDeleted: includeDeleted, MaxPageSize: maxPageSize}
-		response azure.StorageContainerList
+	out = make(chan azureResult[azure.StorageContainer])
+		path   = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers", subscriptionId, resourceGroupName, saName)
+		params = query.RMParams{ApiVersion: "2022-05-01", Filter: filter, IncludeDeleted: includeDeleted, MaxPageSize: maxPageSize}
 	)
-	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
 
-func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) <-chan azure.StorageContainerResult {
-	out := make(chan azure.StorageContainerResult)
+	go getAzureObjectList[azure.StorageContainer](s.resourceManager, ctx, path, params, out)
 
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.StorageContainerResult{
-				SubscriptionId: subscriptionId,
-			}
-			nextLink string
-		)
-
-		if result, err := s.GetAzureStorageContainers(ctx, subscriptionId, resourceGroupName, saName, filter, includeDeleted, maxPageSize); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range result.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.StorageContainerResult{SubscriptionId: subscriptionId, Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = result.NextLink
-			for nextLink != "" {
-				var list azure.StorageContainerList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.resourceManager.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.StorageContainerResult{
-							SubscriptionId: "/subscriptions/" + subscriptionId,
-							Ok:             u,
-						}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

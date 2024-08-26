@@ -102,7 +102,7 @@ func listKeyVaultRoleAssignments(ctx context.Context, client client.AzureClient,
 						log.Error(item.Error, "unable to continue processing role assignments for this key vault", "keyVaultId", id)
 					} else {
 						keyVaultRoleAssignment := models.KeyVaultRoleAssignment{
-							KeyVaultId:     item.ParentId,
+							KeyVaultId:     id,
 							RoleAssignment: item.Ok,
 						}
 						log.V(2).Info("found key vault role assignment", "keyVaultRoleAssignment", keyVaultRoleAssignment)

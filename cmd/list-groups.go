@@ -43,7 +43,7 @@ var listGroupsCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
-func listGroupsCmdImpl(cmd *cobra.Command, args []string) {
+func listGroupsCmdImpl(cmd *cobra.Command, _ []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 

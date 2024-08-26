@@ -104,11 +104,10 @@ func listLogicApps(ctx context.Context, client client.AzureClient, subscriptions
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing logic apps for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
 						logicapp := models.LogicApp{
 							LogicApp:        item.Ok,
-							SubscriptionId:  item.SubscriptionId,
-							ResourceGroupId: resourceGroupId,
+							SubscriptionId:  "/subscriptions/" + id,
+							ResourceGroupId: item.Ok.ResourceGroupId(),
 							TenantId:        client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found logicapp", "logicapp", logicapp)

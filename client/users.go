@@ -20,94 +20,26 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADUsers(ctx context.Context, params query.GraphParams) (azure.UserList, error) {
+
+// ListAzureADUsers https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-beta
+func (s *azureClient) ListAzureADUsers(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.User]{
 	var (
+		out = make(chan azureResult[azure.User])
 		path     = fmt.Sprintf("/%s/users", constants.GraphApiVersion)
-		response azure.UserList
+
 	)
 
 	if params.Top == 0 {
 		params.Top = 999
 	}
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
 
-func (s *azureClient) ListAzureADUsers(ctx context.Context, params query.GraphParams) <-chan azure.UserResult {
-	out := make(chan azure.UserResult)
+	go getAzureObjectList[azure.User](s.msgraph, ctx, path, params, out)
 
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.UserResult{}
-			nextLink  string
-		)
-		if users, err := s.GetAzureADUsers(ctx, params); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range users.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.UserResult{Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = users.NextLink
-			for nextLink != "" {
-				var users azure.UserList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.msgraph.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &users); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range users.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.UserResult{Ok: u}); !ok {
-							return
-						}
-					}
-					nextLink = users.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

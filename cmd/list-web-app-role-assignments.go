@@ -111,7 +111,7 @@ func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, w
 
 						webAppRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("Found web app role asignment", "webAppRoleAssignment", webAppRoleAssignment)

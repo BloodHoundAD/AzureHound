@@ -97,7 +97,7 @@ func listAutomationAccounts(ctx context.Context, client client.AzureClient, subs
 						resourceGroupId := item.Ok.ResourceGroupId()
 						automationAccount := models.AutomationAccount{
 							AutomationAccount: item.Ok,
-							SubscriptionId:    item.SubscriptionId,
+							SubscriptionId:    "/subscriptions/" + id,
 							ResourceGroupId:   resourceGroupId,
 							TenantId:          client.TenantInfo().TenantId,
 						}

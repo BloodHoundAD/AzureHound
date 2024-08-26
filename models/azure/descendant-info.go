@@ -60,13 +60,3 @@ type DescendantInfo struct {
 	// - /subscriptions
 	Type string `json:"type,omitempty"`
 }
-
-type DescendantInfoList struct {
-	NextLink string           `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []DescendantInfo `json:"value"`              // A list of management group descendants.
-}
-
-type DescendantInfoResult struct {
-	Error error
-	Ok    DescendantInfo
-}

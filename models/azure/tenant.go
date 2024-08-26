@@ -36,8 +36,3 @@ type TenantList struct {
 	NextLink string   `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
 	Value    []Tenant `json:"value"`              // A list of tenants.
 }
-
-type TenantResult struct {
-	Error error
-	Ok    Tenant
-}

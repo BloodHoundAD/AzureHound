@@ -99,12 +99,12 @@ func listWebApps(ctx context.Context, client client.AzureClient, subscriptions <
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing web apps for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
 						webApp := models.WebApp{
-							WebApp:          item.Ok,
-							SubscriptionId:  item.SubscriptionId,
-							ResourceGroupId: resourceGroupId,
-							TenantId:        client.TenantInfo().TenantId,
+							WebApp:            item.Ok,
+							SubscriptionId:    "/subscriptions/" + id,
+							ResourceGroupId:   item.Ok.ResourceGroupId(),
+							ResourceGroupName: item.Ok.ResourceGroupName(),
+							TenantId:          client.TenantInfo().TenantId,
 						}
 						if webApp.Kind == "app" {
 							log.V(2).Info("found web app", "webApp", webApp)

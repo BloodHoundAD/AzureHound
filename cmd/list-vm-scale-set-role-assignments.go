@@ -111,7 +111,7 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 
 						vmScaleSetRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found vm scale set role assignment", "vmScaleSetRoleAssignment", vmScaleSetRoleAssignment)

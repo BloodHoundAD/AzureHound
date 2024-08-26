@@ -20,100 +20,23 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) (azure.VirtualMachineList, error) {
+// ListAzureVirtualMachines https://learn.microsoft.com/en-us/rest/api/compute/virtual-machines/list-all?view=rest-compute-2021-07-01
+func (s *azureClient) ListAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azureResult[azure.VirtualMachine] {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Compute/virtualMachines", subscriptionId)
-		response azure.VirtualMachineList
+		out = make(chan azureResult[azure.VirtualMachine])
+		path = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Compute/virtualMachines", subscriptionId)
 	)
 
 	if params.ApiVersion == "" {
 		params.ApiVersion = "2021-07-01"
 	}
 
-	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
+	go getAzureObjectList[azure.VirtualMachine](s.resourceManager, ctx, path, params, out)
 
-func (s *azureClient) ListAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azure.VirtualMachineResult {
-	out := make(chan azure.VirtualMachineResult)
-
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.VirtualMachineResult{
-				SubscriptionId: subscriptionId,
-			}
-			nextLink string
-		)
-
-		if result, err := s.GetAzureVirtualMachines(ctx, subscriptionId, params); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range result.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.VirtualMachineResult{SubscriptionId: subscriptionId, Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = result.NextLink
-			for nextLink != "" {
-				var list azure.VirtualMachineList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.resourceManager.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.VirtualMachineResult{
-							SubscriptionId: "/subscriptions/" + subscriptionId,
-							Ok:             u,
-						}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

@@ -18,8 +18,6 @@
 package azure
 
 import (
-	"encoding/json"
-
 	"github.com/bloodhoundad/azurehound/v2/enums"
 )
 
@@ -130,21 +128,4 @@ type Device struct {
 	// Type of trust for the joined device.
 	// Read-only.
 	TrustType enums.TrustType `json:"trustType,omitempty"`
-}
-
-type DeviceList struct {
-	Count    int      `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string   `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []Device `json:"value"`                     // A list of devices.
-}
-
-type DeviceResult struct {
-	Error error
-	Ok    Device
-}
-
-type DeviceRegisteredOwnerResult struct {
-	DeviceId string
-	Error    error
-	Ok       json.RawMessage
 }

@@ -56,14 +56,3 @@ func (s KeyVault) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type KeyVaultList struct {
-	NextLink string     `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []KeyVault `json:"value"`              // A list of key vaults.
-}
-
-type KeyVaultResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             KeyVault
-}

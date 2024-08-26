@@ -65,6 +65,7 @@ func listGroupOwners(ctx context.Context, client client.AzureClient, groups <-ch
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, 25)
 		wg      sync.WaitGroup
+		params  = query.GraphParams{}
 	)
 
 	go func() {
@@ -96,13 +97,13 @@ func listGroupOwners(ctx context.Context, client client.AzureClient, groups <-ch
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADGroupOwners(ctx, id, query.GraphParams{}) {
+				for item := range client.ListAzureADGroupOwners(ctx, id, params) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this group", "groupId", id)
 					} else {
 						groupOwner := models.GroupOwner{
 							Owner:   item.Ok,
-							GroupId: item.GroupId,
+							GroupId: id,
 						}
 						log.V(2).Info("found group owner", "groupOwner", groupOwner)
 						count++

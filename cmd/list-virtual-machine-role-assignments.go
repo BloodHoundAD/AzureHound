@@ -102,7 +102,7 @@ func listVirtualMachineRoleAssignments(ctx context.Context, client client.AzureC
 						log.Error(item.Error, "unable to continue processing role assignments for this virtual machine", "virtualMachineId", id)
 					} else {
 						virtualMachineRoleAssignment := models.VirtualMachineRoleAssignment{
-							VirtualMachineId: item.ParentId,
+							VirtualMachineId: id,
 							RoleAssignment:   item.Ok,
 						}
 						log.V(2).Info("found virtual machine role assignment", "virtualMachineRoleAssignment", virtualMachineRoleAssignment)

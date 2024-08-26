@@ -113,7 +113,7 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 					} else {
 						groupMember := models.GroupMember{
 							Member:  item.Ok,
-							GroupId: item.ParentId,
+							GroupId: id,
 						}
 						log.V(2).Info("found group member", "groupMember", groupMember)
 						count++

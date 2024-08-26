@@ -20,103 +20,23 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) (azure.KeyVaultList, error) {
+// ListAzureKeyVaults https://learn.microsoft.com/en-us/rest/api/keyvault/keyvault/vaults/list-by-subscription?view=rest-keyvault-keyvault-2019-09-01
+func (s *azureClient) ListAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azureResult[azure.KeyVault] {
 	var (
-		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.KeyVault/vaults", subscriptionId)
-		response azure.KeyVaultList
+		out = make(chan azureResult[azure.KeyVault])
+		path = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.KeyVault/vaults", subscriptionId)
 	)
 
 	if params.ApiVersion == "" {
 		params.ApiVersion = "2019-09-01"
 	}
 
-	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
+	go getAzureObjectList[azure.KeyVault](s.resourceManager, ctx, path, params, out)
 
-func (s *azureClient) ListAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azure.KeyVaultResult {
-	out := make(chan azure.KeyVaultResult)
-
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.KeyVaultResult{
-				SubscriptionId: subscriptionId,
-			}
-			nextLink string
-		)
-
-		if result, err := s.GetAzureKeyVaults(ctx, subscriptionId, params); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range result.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.KeyVaultResult{
-					SubscriptionId: subscriptionId,
-					Ok:             u,
-				}); !ok {
-					return
-				}
-			}
-
-			nextLink = result.NextLink
-			for nextLink != "" {
-				var list azure.KeyVaultList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.resourceManager.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.KeyVaultResult{
-							SubscriptionId: subscriptionId,
-							Ok:             u,
-						}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

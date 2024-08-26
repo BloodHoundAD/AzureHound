@@ -100,11 +100,10 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing virtual machine scale sets for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
 						vmScaleSet := models.VMScaleSet{
 							VMScaleSet:      item.Ok,
-							SubscriptionId:  item.SubscriptionId,
-							ResourceGroupId: resourceGroupId,
+							SubscriptionId:   "/subscriptions/"+id,
+							ResourceGroupId: item.Ok.ResourceGroupId(),
 							TenantId:        client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found virtual machine scale set", "vmScaleSet", vmScaleSet)

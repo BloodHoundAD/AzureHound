@@ -20,184 +20,37 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADRoleAssignments(ctx context.Context, params query.GraphParams) (azure.UnifiedRoleAssignmentList, error) {
+// ListAzureADRoleAssignments https://learn.microsoft.com/en-us/graph/api/rbacapplication-list-roleassignments?view=graph-rest-beta
+func (s *azureClient) ListAzureADRoleAssignments(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.UnifiedRoleAssignment] {
 	var (
-		path     = fmt.Sprintf("/%s/roleManagement/directory/roleAssignments", constants.GraphApiVersion)
-		response azure.UnifiedRoleAssignmentList
+		out = make(chan azureResult[azure.UnifiedRoleAssignment])
+		path = fmt.Sprintf("/%s/roleManagement/directory/roleAssignments", constants.GraphApiVersion)
+
 	)
 
 	if params.Top == 0 {
 		params.Top = 999
 	}
 
-	if res, err := s.msgraph.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
-
-func (s *azureClient) ListAzureADRoleAssignments(ctx context.Context, params query.GraphParams) <-chan azure.UnifiedRoleAssignmentResult {
-	out := make(chan azure.UnifiedRoleAssignmentResult)
-
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.UnifiedRoleAssignmentResult{}
-			nextLink  string
-		)
-
-		if list, err := s.GetAzureADRoleAssignments(ctx, params); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range list.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.UnifiedRoleAssignmentResult{Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = list.NextLink
-			for nextLink != "" {
-				var list azure.UnifiedRoleAssignmentList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.msgraph.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.UnifiedRoleAssignmentResult{Ok: u}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
+	go getAzureObjectList[azure.UnifiedRoleAssignment](s.msgraph, ctx, path, params, out)
 	return out
 }
 
-func (s *azureClient) GetRoleAssignmentsForResource(ctx context.Context, resourceId string, filter, tenantId string) (azure.RoleAssignmentList, error) {
+// ListRoleAssignmentsForResource https://learn.microsoft.com/en-us/rest/api/authorization/role-assignments/list-for-resource?view=rest-authorization-2015-07-01
+func (s *azureClient) ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter, tenantId string) <-chan azureResult[azure.RoleAssignment] {
 	var (
-		path     = fmt.Sprintf("%s/providers/Microsoft.Authorization/roleAssignments", resourceId)
-		params   = query.RMParams{ApiVersion: "2015-07-01", Filter: filter, TenantId: tenantId}
-		response azure.RoleAssignmentList
+		out = make(chan azureResult[azure.RoleAssignment])
+		path   = fmt.Sprintf("%s/providers/Microsoft.Authorization/roleAssignments", resourceId)
+		params = query.RMParams{ApiVersion: "2015-07-01", Filter: filter, TenantId: tenantId}
 	)
 
-	if res, err := s.resourceManager.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
+	go getAzureObjectList[azure.RoleAssignment](s.resourceManager, ctx, path, params, out)
 
-}
-
-func (s *azureClient) ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter, tenantId string) <-chan azure.RoleAssignmentResult {
-	out := make(chan azure.RoleAssignmentResult)
-
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.RoleAssignmentResult{ParentId: resourceId}
-			nextLink  string
-		)
-
-		if result, err := s.GetRoleAssignmentsForResource(ctx, resourceId, filter, tenantId); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range result.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.RoleAssignmentResult{
-					ParentId: resourceId,
-					Ok:       u,
-				}); !ok {
-					return
-				}
-			}
-
-			nextLink = result.NextLink
-			for nextLink != "" {
-				var list azure.RoleAssignmentList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.resourceManager.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.RoleAssignmentResult{
-							ParentId: resourceId,
-							Ok:       u,
-						}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

@@ -99,11 +99,10 @@ func listManagedClusters(ctx context.Context, client client.AzureClient, subscri
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing managed clusters for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
 						managedCluster := models.ManagedCluster{
 							ManagedCluster:  item.Ok,
-							SubscriptionId:  item.SubscriptionId,
-							ResourceGroupId: resourceGroupId,
+							SubscriptionId:  "/subscriptions/" + id,
+							ResourceGroupId: item.Ok.ResourceGroupId(),
 							TenantId:        client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found managed cluster", "managedCluster", managedCluster)

@@ -49,14 +49,3 @@ func (s VMScaleSet) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type VMScaleSetList struct {
-	NextLink string       `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []VMScaleSet `json:"value"`              // A list of virtual machine scale sets.
-}
-
-type VMScaleSetResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             VMScaleSet
-}

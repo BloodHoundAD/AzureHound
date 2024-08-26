@@ -48,14 +48,3 @@ func (s WebApp) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type WebAppList struct {
-	NextLink string   `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []WebApp `json:"value"`              // A list of web apps.
-}
-
-type WebAppResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             WebApp
-}

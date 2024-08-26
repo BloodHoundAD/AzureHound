@@ -111,7 +111,7 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 
 						containerRegistryRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found container registry role assignment", "containerRegistryRoleAssignment", containerRegistryRoleAssignment)

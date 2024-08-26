@@ -67,14 +67,3 @@ type Role struct {
 	// Read-only when isBuiltIn is true
 	Version string `json:"version,omitempty"`
 }
-
-type RoleList struct {
-	Count    int    `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []Role `json:"value"`                     // A list of roles.
-}
-
-type RoleResult struct {
-	Error error
-	Ok    Role
-}

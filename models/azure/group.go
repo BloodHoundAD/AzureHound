@@ -18,8 +18,6 @@
 package azure
 
 import (
-	"encoding/json"
-
 	"github.com/bloodhoundad/azurehound/v2/enums"
 )
 
@@ -280,21 +278,4 @@ type Group struct {
 	// Returned by default.
 	// Nullable.
 	Visibility enums.GroupVisibility `json:"visibility,omitempty"`
-}
-
-type GroupList struct {
-	Count    int     `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string  `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []Group `json:"value"`                     // A list of groups.
-}
-
-type GroupResult struct {
-	Error error
-	Ok    Group
-}
-
-type GroupOwnerResult struct {
-	Error   error
-	GroupId string
-	Ok      json.RawMessage
 }

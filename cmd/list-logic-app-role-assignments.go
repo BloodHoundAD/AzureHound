@@ -111,7 +111,7 @@ func listLogicAppRoleAssignments(ctx context.Context, client client.AzureClient,
 
 						logicappRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found logic app role assignment", "logicappRoleAssignment", logicappRoleAssignment)

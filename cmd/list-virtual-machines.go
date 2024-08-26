@@ -95,11 +95,10 @@ func listVirtualMachines(ctx context.Context, client client.AzureClient, subscri
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing virtual machines for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
 						virtualMachine := models.VirtualMachine{
 							VirtualMachine:  item.Ok,
-							SubscriptionId:  item.SubscriptionId,
-							ResourceGroupId: resourceGroupId,
+							SubscriptionId:  "/subscriptions/" + id,
+							ResourceGroupId: item.Ok.ResourceGroupId(),
 							TenantId:        client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found virtual machine", "virtualMachine", virtualMachine)
