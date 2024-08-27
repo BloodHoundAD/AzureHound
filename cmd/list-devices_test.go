@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 	"go.uber.org/mock/gomock"
@@ -37,7 +38,7 @@ func TestListDevices(t *testing.T) {
 	ctx := context.Background()
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
-	mockChannel := make(chan azure.DeviceResult)
+	mockChannel := make(chan client.AzureResult[azure.Device])
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
@@ -45,13 +46,13 @@ func TestListDevices(t *testing.T) {
 
 	go func() {
 		defer close(mockChannel)
-		mockChannel <- azure.DeviceResult{
+		mockChannel <- client.AzureResult[azure.Device]{
 			Ok: azure.Device{},
 		}
-		mockChannel <- azure.DeviceResult{
+		mockChannel <- client.AzureResult[azure.Device]{
 			Error: mockError,
 		}
-		mockChannel <- azure.DeviceResult{
+		mockChannel <- client.AzureResult[azure.Device]{
 			Ok: azure.Device{},
 		}
 	}()

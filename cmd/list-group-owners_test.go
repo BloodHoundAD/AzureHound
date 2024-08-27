@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
@@ -41,8 +42,8 @@ func TestListGroupOwners(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockGroupsChannel := make(chan interface{})
-	mockGroupOwnerChannel := make(chan azure.GroupOwnerResult)
-	mockGroupOwnerChannel2 := make(chan azure.GroupOwnerResult)
+	mockGroupOwnerChannel := make(chan client.AzureResult[json.RawMessage])
+	mockGroupOwnerChannel2 := make(chan client.AzureResult[json.RawMessage])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -62,19 +63,19 @@ func TestListGroupOwners(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockGroupOwnerChannel)
-		mockGroupOwnerChannel <- azure.GroupOwnerResult{
+		mockGroupOwnerChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockGroupOwnerChannel <- azure.GroupOwnerResult{
+		mockGroupOwnerChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
 	}()
 	go func() {
 		defer close(mockGroupOwnerChannel2)
-		mockGroupOwnerChannel2 <- azure.GroupOwnerResult{
+		mockGroupOwnerChannel2 <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockGroupOwnerChannel2 <- azure.GroupOwnerResult{
+		mockGroupOwnerChannel2 <- client.AzureResult[json.RawMessage]{
 			Error: mockError,
 		}
 	}()

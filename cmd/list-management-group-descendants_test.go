@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
@@ -40,8 +41,8 @@ func TestListManagementGroupDescendants(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockManagementGroupsChannel := make(chan interface{})
-	mockManagementGroupDescendantChannel := make(chan azure.DescendantInfoResult)
-	mockManagementGroupDescendantChannel2 := make(chan azure.DescendantInfoResult)
+	mockManagementGroupDescendantChannel := make(chan client.AzureResult[azure.DescendantInfo])
+	mockManagementGroupDescendantChannel2 := make(chan client.AzureResult[azure.DescendantInfo])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -61,13 +62,13 @@ func TestListManagementGroupDescendants(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockManagementGroupDescendantChannel)
-		mockManagementGroupDescendantChannel <- azure.DescendantInfoResult{}
-		mockManagementGroupDescendantChannel <- azure.DescendantInfoResult{}
+		mockManagementGroupDescendantChannel <- client.AzureResult[azure.DescendantInfo]{}
+		mockManagementGroupDescendantChannel <- client.AzureResult[azure.DescendantInfo]{}
 	}()
 	go func() {
 		defer close(mockManagementGroupDescendantChannel2)
-		mockManagementGroupDescendantChannel2 <- azure.DescendantInfoResult{}
-		mockManagementGroupDescendantChannel2 <- azure.DescendantInfoResult{
+		mockManagementGroupDescendantChannel2 <- client.AzureResult[azure.DescendantInfo]{}
+		mockManagementGroupDescendantChannel2 <- client.AzureResult[azure.DescendantInfo]{
 			Error: mockError,
 		}
 	}()

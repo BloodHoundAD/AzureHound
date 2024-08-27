@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 	"go.uber.org/mock/gomock"
@@ -38,7 +39,7 @@ func TestListGroups(t *testing.T) {
 	ctx := context.Background()
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
-	mockChannel := make(chan azure.GroupResult)
+	mockChannel := make(chan client.AzureResult[azure.Group])
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
@@ -46,13 +47,13 @@ func TestListGroups(t *testing.T) {
 
 	go func() {
 		defer close(mockChannel)
-		mockChannel <- azure.GroupResult{
+		mockChannel <- client.AzureResult[azure.Group]{
 			Ok: azure.Group{},
 		}
-		mockChannel <- azure.GroupResult{
+		mockChannel <- client.AzureResult[azure.Group]{
 			Error: mockError,
 		}
-		mockChannel <- azure.GroupResult{
+		mockChannel <- client.AzureResult[azure.Group]{
 			Ok: azure.Group{},
 		}
 	}()

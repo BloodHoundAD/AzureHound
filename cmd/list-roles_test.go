@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 	"go.uber.org/mock/gomock"
@@ -37,7 +38,7 @@ func TestListRoles(t *testing.T) {
 	ctx := context.Background()
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
-	mockChannel := make(chan azure.RoleResult)
+	mockChannel := make(chan client.AzureResult[azure.Role])
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
@@ -45,13 +46,13 @@ func TestListRoles(t *testing.T) {
 
 	go func() {
 		defer close(mockChannel)
-		mockChannel <- azure.RoleResult{
+		mockChannel <- client.AzureResult[azure.Role]{
 			Ok: azure.Role{},
 		}
-		mockChannel <- azure.RoleResult{
+		mockChannel <- client.AzureResult[azure.Role]{
 			Error: mockError,
 		}
-		mockChannel <- azure.RoleResult{
+		mockChannel <- client.AzureResult[azure.Role]{
 			Ok: azure.Role{},
 		}
 	}()

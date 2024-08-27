@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -41,8 +42,8 @@ func TestListManagementGroupRoleAssignments(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockManagementGroupsChannel := make(chan interface{})
-	mockManagementGroupRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
-	mockManagementGroupRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
+	mockManagementGroupRoleAssignmentChannel := make(chan client.AzureResult[azure.RoleAssignment])
+	mockManagementGroupRoleAssignmentChannel2 := make(chan client.AzureResult[azure.RoleAssignment])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -62,14 +63,14 @@ func TestListManagementGroupRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockManagementGroupRoleAssignmentChannel)
-		mockManagementGroupRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockManagementGroupRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.ContributorRoleID,
 				},
 			},
 		}
-		mockManagementGroupRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockManagementGroupRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.OwnerRoleID,
@@ -79,14 +80,14 @@ func TestListManagementGroupRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockManagementGroupRoleAssignmentChannel2)
-		mockManagementGroupRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockManagementGroupRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.OwnerRoleID,
 				},
 			},
 		}
-		mockManagementGroupRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockManagementGroupRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Error: mockError,
 		}
 	}()

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -41,8 +42,8 @@ func TestListSubscriptionRoleAssignments(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockSubscriptionsChannel := make(chan interface{})
-	mockSubscriptionRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
-	mockSubscriptionRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
+	mockSubscriptionRoleAssignmentChannel := make(chan client.AzureResult[azure.RoleAssignment])
+	mockSubscriptionRoleAssignmentChannel2 := make(chan client.AzureResult[azure.RoleAssignment])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -62,14 +63,14 @@ func TestListSubscriptionRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockSubscriptionRoleAssignmentChannel)
-		mockSubscriptionRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockSubscriptionRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.ContributorRoleID,
 				},
 			},
 		}
-		mockSubscriptionRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockSubscriptionRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.OwnerRoleID,
@@ -79,14 +80,14 @@ func TestListSubscriptionRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockSubscriptionRoleAssignmentChannel2)
-		mockSubscriptionRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockSubscriptionRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.OwnerRoleID,
 				},
 			},
 		}
-		mockSubscriptionRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockSubscriptionRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Error: mockError,
 		}
 	}()

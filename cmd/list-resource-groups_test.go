@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
@@ -40,8 +41,8 @@ func TestListResourceGroups(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockSubscriptionsChannel := make(chan interface{})
-	mockResourceGroupChannel := make(chan azure.ResourceGroupResult)
-	mockResourceGroupChannel2 := make(chan azure.ResourceGroupResult)
+	mockResourceGroupChannel := make(chan client.AzureResult[azure.ResourceGroup])
+	mockResourceGroupChannel2 := make(chan client.AzureResult[azure.ResourceGroup])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -61,19 +62,19 @@ func TestListResourceGroups(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockResourceGroupChannel)
-		mockResourceGroupChannel <- azure.ResourceGroupResult{
+		mockResourceGroupChannel <- client.AzureResult[azure.ResourceGroup]{
 			Ok: azure.ResourceGroup{},
 		}
-		mockResourceGroupChannel <- azure.ResourceGroupResult{
+		mockResourceGroupChannel <- client.AzureResult[azure.ResourceGroup]{
 			Ok: azure.ResourceGroup{},
 		}
 	}()
 	go func() {
 		defer close(mockResourceGroupChannel2)
-		mockResourceGroupChannel2 <- azure.ResourceGroupResult{
+		mockResourceGroupChannel2 <- client.AzureResult[azure.ResourceGroup]{
 			Ok: azure.ResourceGroup{},
 		}
-		mockResourceGroupChannel2 <- azure.ResourceGroupResult{
+		mockResourceGroupChannel2 <- client.AzureResult[azure.ResourceGroup]{
 			Error: mockError,
 		}
 	}()

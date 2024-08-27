@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -41,8 +42,8 @@ func TestListKeyVaultRoleAssignments(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockKeyVaultsChannel := make(chan interface{})
-	mockKeyVaultRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
-	mockKeyVaultRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
+	mockKeyVaultRoleAssignmentChannel := make(chan client.AzureResult[azure.RoleAssignment])
+	mockKeyVaultRoleAssignmentChannel2 := make(chan client.AzureResult[azure.RoleAssignment])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -62,14 +63,14 @@ func TestListKeyVaultRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockKeyVaultRoleAssignmentChannel)
-		mockKeyVaultRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockKeyVaultRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.KeyVaultContributorRoleID,
 				},
 			},
 		}
-		mockKeyVaultRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockKeyVaultRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.ContributorRoleID,
@@ -79,14 +80,14 @@ func TestListKeyVaultRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockKeyVaultRoleAssignmentChannel2)
-		mockKeyVaultRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockKeyVaultRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.KeyVaultAdministratorRoleID,
 				},
 			},
 		}
-		mockKeyVaultRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockKeyVaultRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Error: mockError,
 		}
 	}()

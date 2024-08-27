@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -41,8 +42,8 @@ func TestListVirtualMachineRoleAssignments(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockVirtualMachinesChannel := make(chan interface{})
-	mockVirtualMachineRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
-	mockVirtualMachineRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
+	mockVirtualMachineRoleAssignmentChannel := make(chan client.AzureResult[azure.RoleAssignment])
+	mockVirtualMachineRoleAssignmentChannel2 := make(chan client.AzureResult[azure.RoleAssignment])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -62,14 +63,14 @@ func TestListVirtualMachineRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockVirtualMachineRoleAssignmentChannel)
-		mockVirtualMachineRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockVirtualMachineRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.VirtualMachineContributorRoleID,
 				},
 			},
 		}
-		mockVirtualMachineRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockVirtualMachineRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.AvereContributorRoleID,
@@ -79,14 +80,14 @@ func TestListVirtualMachineRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockVirtualMachineRoleAssignmentChannel2)
-		mockVirtualMachineRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockVirtualMachineRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.VirtualMachineAdministratorLoginRoleID,
 				},
 			},
 		}
-		mockVirtualMachineRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockVirtualMachineRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Error: mockError,
 		}
 	}()

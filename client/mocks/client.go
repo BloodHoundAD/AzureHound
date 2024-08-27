@@ -5,13 +5,14 @@
 package mocks
 
 import (
-	context "context"
-	json "encoding/json"
-	client "github.com/bloodhoundad/azurehound/v2/client"
-	query "github.com/bloodhoundad/azurehound/v2/client/query"
-	azure "github.com/bloodhoundad/azurehound/v2/models/azure"
-	gomock "go.uber.org/mock/gomock"
-	reflect "reflect"
+	"context"
+	"encoding/json"
+	"reflect"
+
+	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
+	"github.com/bloodhoundad/azurehound/v2/models/azure"
+	"go.uber.org/mock/gomock"
 )
 
 // MockAzureClient is a mock of AzureClient interface.

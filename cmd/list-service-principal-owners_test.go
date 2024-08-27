@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
@@ -41,8 +42,8 @@ func TestListServicePrincipalOwners(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockServicePrincipalsChannel := make(chan interface{})
-	mockServicePrincipalOwnerChannel := make(chan azure.ServicePrincipalOwnerResult)
-	mockServicePrincipalOwnerChannel2 := make(chan azure.ServicePrincipalOwnerResult)
+	mockServicePrincipalOwnerChannel := make(chan client.AzureResult[json.RawMessage])
+	mockServicePrincipalOwnerChannel2 := make(chan client.AzureResult[json.RawMessage])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -62,19 +63,19 @@ func TestListServicePrincipalOwners(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockServicePrincipalOwnerChannel)
-		mockServicePrincipalOwnerChannel <- azure.ServicePrincipalOwnerResult{
+		mockServicePrincipalOwnerChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockServicePrincipalOwnerChannel <- azure.ServicePrincipalOwnerResult{
+		mockServicePrincipalOwnerChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
 	}()
 	go func() {
 		defer close(mockServicePrincipalOwnerChannel2)
-		mockServicePrincipalOwnerChannel2 <- azure.ServicePrincipalOwnerResult{
+		mockServicePrincipalOwnerChannel2 <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockServicePrincipalOwnerChannel2 <- azure.ServicePrincipalOwnerResult{
+		mockServicePrincipalOwnerChannel2 <- client.AzureResult[json.RawMessage]{
 			Error: mockError,
 		}
 	}()
