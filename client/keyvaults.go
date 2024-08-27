@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureKeyVaults https://learn.microsoft.com/en-us/rest/api/keyvault/keyvault/vaults/list-by-subscription?view=rest-keyvault-keyvault-2019-09-01
-func (s *azureClient) ListAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azureResult[azure.KeyVault] {
+func (s *azureClient) ListAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) <-chan AzureResult[azure.KeyVault] {
 	var (
-		out = make(chan azureResult[azure.KeyVault])
+		out  = make(chan AzureResult[azure.KeyVault])
 		path = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.KeyVault/vaults", subscriptionId)
 	)
 

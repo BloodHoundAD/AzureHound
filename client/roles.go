@@ -27,9 +27,9 @@ import (
 )
 
 // ListAzureADRoles https://learn.microsoft.com/en-us/graph/api/rbacapplication-list-roledefinitions?view=graph-rest-beta
-func (s *azureClient) ListAzureADRoles(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Role] {
+func (s *azureClient) ListAzureADRoles(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.Role] {
 	var (
-		out = make(chan azureResult[azure.Role])
+		out  = make(chan AzureResult[azure.Role])
 		path = fmt.Sprintf("/%s/roleManagement/directory/roleDefinitions", constants.GraphApiVersion)
 	)
 

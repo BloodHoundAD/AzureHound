@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureFunctionApps
-func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId string) <-chan azureResult[azure.FunctionApp] {
+func (s *azureClient) ListAzureFunctionApps(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.FunctionApp] {
 	var (
-		out    = make(chan azureResult[azure.FunctionApp])
+		out    = make(chan AzureResult[azure.FunctionApp])
 		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Web/sites", subscriptionId)
 		params = query.RMParams{ApiVersion: "2022-03-01"}
 	)

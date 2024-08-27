@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureVirtualMachines https://learn.microsoft.com/en-us/rest/api/compute/virtual-machines/list-all?view=rest-compute-2021-07-01
-func (s *azureClient) ListAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azureResult[azure.VirtualMachine] {
+func (s *azureClient) ListAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) <-chan AzureResult[azure.VirtualMachine] {
 	var (
-		out = make(chan azureResult[azure.VirtualMachine])
+		out  = make(chan AzureResult[azure.VirtualMachine])
 		path = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Compute/virtualMachines", subscriptionId)
 	)
 

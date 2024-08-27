@@ -27,11 +27,10 @@ import (
 )
 
 // ListAzureADRoleAssignments https://learn.microsoft.com/en-us/graph/api/rbacapplication-list-roleassignments?view=graph-rest-beta
-func (s *azureClient) ListAzureADRoleAssignments(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.UnifiedRoleAssignment] {
+func (s *azureClient) ListAzureADRoleAssignments(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.UnifiedRoleAssignment] {
 	var (
-		out = make(chan azureResult[azure.UnifiedRoleAssignment])
+		out  = make(chan AzureResult[azure.UnifiedRoleAssignment])
 		path = fmt.Sprintf("/%s/roleManagement/directory/roleAssignments", constants.GraphApiVersion)
-
 	)
 
 	if params.Top == 0 {
@@ -43,9 +42,9 @@ func (s *azureClient) ListAzureADRoleAssignments(ctx context.Context, params que
 }
 
 // ListRoleAssignmentsForResource https://learn.microsoft.com/en-us/rest/api/authorization/role-assignments/list-for-resource?view=rest-authorization-2015-07-01
-func (s *azureClient) ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter, tenantId string) <-chan azureResult[azure.RoleAssignment] {
+func (s *azureClient) ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter, tenantId string) <-chan AzureResult[azure.RoleAssignment] {
 	var (
-		out = make(chan azureResult[azure.RoleAssignment])
+		out    = make(chan AzureResult[azure.RoleAssignment])
 		path   = fmt.Sprintf("%s/providers/Microsoft.Authorization/roleAssignments", resourceId)
 		params = query.RMParams{ApiVersion: "2015-07-01", Filter: filter, TenantId: tenantId}
 	)

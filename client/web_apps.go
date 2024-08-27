@@ -26,8 +26,8 @@ import (
 )
 
 // ListAzureWebApps https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/list?view=rest-appservice-2022-03-01
-func (s *azureClient) ListAzureWebApps(ctx context.Context, subscriptionId string) <-chan azureResult[azure.WebApp] {
-	out := make(chan azureResult[azure.WebApp])
+func (s *azureClient) ListAzureWebApps(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.WebApp] {
+	out := make(chan AzureResult[azure.WebApp])
 	var (
 		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Web/sites", subscriptionId)
 		params = query.RMParams{ApiVersion: "2022-03-01"}

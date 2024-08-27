@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureManagementGroups https://learn.microsoft.com/en-us/rest/api/managementgroups/management-groups/list?view=rest-managementgroups-2020-05-01
-func (s *azureClient) ListAzureManagementGroups(ctx context.Context, skipToken string) <-chan azureResult[azure.ManagementGroup] {
+func (s *azureClient) ListAzureManagementGroups(ctx context.Context, skipToken string) <-chan AzureResult[azure.ManagementGroup] {
 	var (
-		out = make(chan azureResult[azure.ManagementGroup])
+		out    = make(chan AzureResult[azure.ManagementGroup])
 		path   = "/providers/Microsoft.Management/managementGroups"
 		params = query.RMParams{ApiVersion: "2020-05-01", SkipToken: skipToken}
 	)
@@ -39,9 +39,9 @@ func (s *azureClient) ListAzureManagementGroups(ctx context.Context, skipToken s
 }
 
 // ListAzureManagementGroupDescendants https://learn.microsoft.com/en-us/rest/api/managementgroups/management-groups/get-descendants?view=rest-managementgroups-2020-05-01
-func (s *azureClient) ListAzureManagementGroupDescendants(ctx context.Context, groupId string, top int32) <-chan azureResult[azure.DescendantInfo] {
+func (s *azureClient) ListAzureManagementGroupDescendants(ctx context.Context, groupId string, top int32) <-chan AzureResult[azure.DescendantInfo] {
 	var (
-		out = make(chan azureResult[azure.DescendantInfo])
+		out    = make(chan AzureResult[azure.DescendantInfo])
 		path   = fmt.Sprintf("/providers/Microsoft.Management/managementGroups/%s/descendants", groupId)
 		params = query.RMParams{ApiVersion: "2020-05-01", Top: top}
 	)

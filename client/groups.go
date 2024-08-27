@@ -28,9 +28,9 @@ import (
 )
 
 // ListAzureADGroups https://learn.microsoft.com/en-us/graph/api/group-list?view=graph-rest-beta
-func (s *azureClient) ListAzureADGroups(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Group] {
+func (s *azureClient) ListAzureADGroups(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.Group] {
 	var (
-		out  = make(chan azureResult[azure.Group])
+		out  = make(chan AzureResult[azure.Group])
 		path = fmt.Sprintf("/%s/groups", constants.GraphApiVersion)
 	)
 
@@ -44,9 +44,9 @@ func (s *azureClient) ListAzureADGroups(ctx context.Context, params query.GraphP
 }
 
 // ListAzureADGroupOwners https://learn.microsoft.com/en-us/graph/api/group-list-owners?view=graph-rest-beta
-func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage] {
+func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage] {
 	var (
-		out  = make(chan azureResult[json.RawMessage])
+		out  = make(chan AzureResult[json.RawMessage])
 		path = fmt.Sprintf("/%s/groups/%s/owners", constants.GraphApiBetaVersion, objectId)
 	)
 
@@ -60,9 +60,9 @@ func (s *azureClient) ListAzureADGroupOwners(ctx context.Context, objectId strin
 }
 
 // ListAzureADGroupMembers https://learn.microsoft.com/en-us/graph/api/group-list-members?view=graph-rest-beta
-func (s *azureClient) ListAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage] {
+func (s *azureClient) ListAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage] {
 	var (
-		out  = make(chan azureResult[json.RawMessage])
+		out  = make(chan AzureResult[json.RawMessage])
 		path = fmt.Sprintf("/%s/groups/%s/members", constants.GraphApiBetaVersion, objectId)
 	)
 

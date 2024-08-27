@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureContainerRegistries https://learn.microsoft.com/en-us/rest/api/containerregistry/registries/list?view=rest-containerregistry-2023-01-01-preview
-func (s *azureClient) ListAzureContainerRegistries(ctx context.Context, subscriptionId string) <-chan azureResult[azure.ContainerRegistry]{
+func (s *azureClient) ListAzureContainerRegistries(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.ContainerRegistry] {
 	var (
-		out = make(chan azureResult[azure.ContainerRegistry])
+		out    = make(chan AzureResult[azure.ContainerRegistry])
 		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.ContainerRegistry/registries", subscriptionId)
 		params = query.RMParams{ApiVersion: "2023-01-01-preview"}
 	)

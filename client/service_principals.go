@@ -28,11 +28,10 @@ import (
 )
 
 // ListAzureADServicePrincipals https://learn.microsoft.com/en-us/graph/api/serviceprincipal-list?view=graph-rest-beta
-func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.ServicePrincipal] {
+func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.ServicePrincipal] {
 	var (
-		out = make(chan azureResult[azure.ServicePrincipal])
+		out  = make(chan AzureResult[azure.ServicePrincipal])
 		path = fmt.Sprintf("/%s/servicePrincipals", constants.GraphApiVersion)
-
 	)
 
 	if params.Top == 0 {
@@ -45,9 +44,9 @@ func (s *azureClient) ListAzureADServicePrincipals(ctx context.Context, params q
 }
 
 // ListAzureADServicePrincipalOwners https://learn.microsoft.com/en-us/graph/api/serviceprincipal-list-owners?view=graph-rest-beta
-func (s *azureClient) ListAzureADServicePrincipalOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage] {
+func (s *azureClient) ListAzureADServicePrincipalOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage] {
 	var (
-		out  = make(chan azureResult[json.RawMessage])
+		out  = make(chan AzureResult[json.RawMessage])
 		path = fmt.Sprintf("/%s/servicePrincipals/%s/owners", constants.GraphApiBetaVersion, objectId)
 	)
 

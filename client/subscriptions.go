@@ -25,9 +25,9 @@ import (
 )
 
 // ListAzureSubscriptions https://learn.microsoft.com/en-us/rest/api/subscription/subscriptions/list?view=rest-subscription-2020-01-01
-func (s *azureClient) ListAzureSubscriptions(ctx context.Context) <-chan azureResult[azure.Subscription] {
+func (s *azureClient) ListAzureSubscriptions(ctx context.Context) <-chan AzureResult[azure.Subscription] {
 	var (
-		out = make(chan azureResult[azure.Subscription])
+		out    = make(chan AzureResult[azure.Subscription])
 		path   = "/subscriptions"
 		params = query.RMParams{ApiVersion: "2020-01-01"}
 	)

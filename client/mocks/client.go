@@ -6,11 +6,12 @@ package mocks
 
 import (
 	context "context"
-	reflect "reflect"
-
+	json "encoding/json"
+	client "github.com/bloodhoundad/azurehound/v2/client"
 	query "github.com/bloodhoundad/azurehound/v2/client/query"
 	azure "github.com/bloodhoundad/azurehound/v2/models/azure"
 	gomock "go.uber.org/mock/gomock"
+	reflect "reflect"
 )
 
 // MockAzureClient is a mock of AzureClient interface.
@@ -79,10 +80,10 @@ func (mr *MockAzureClientMockRecorder) GetAzureADTenants(arg0, arg1 interface{})
 }
 
 // ListAzureADAppOwners mocks base method.
-func (m *MockAzureClient) ListAzureADAppOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.AppOwnerResult {
+func (m *MockAzureClient) ListAzureADAppOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan client.AzureResult[json.RawMessage] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADAppOwners", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.AppOwnerResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[json.RawMessage])
 	return ret0
 }
 
@@ -93,10 +94,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADAppOwners(arg0, arg1, arg2 int
 }
 
 // ListAzureADAppRoleAssignments mocks base method.
-func (m *MockAzureClient) ListAzureADAppRoleAssignments(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.AppRoleAssignmentResult {
+func (m *MockAzureClient) ListAzureADAppRoleAssignments(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan client.AzureResult[azure.AppRoleAssignment] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADAppRoleAssignments", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.AppRoleAssignmentResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.AppRoleAssignment])
 	return ret0
 }
 
@@ -107,10 +108,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADAppRoleAssignments(arg0, arg1,
 }
 
 // ListAzureADApps mocks base method.
-func (m *MockAzureClient) ListAzureADApps(arg0 context.Context, arg1 query.GraphParams) <-chan azure.ApplicationResult {
+func (m *MockAzureClient) ListAzureADApps(arg0 context.Context, arg1 query.GraphParams) <-chan client.AzureResult[azure.Application] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADApps", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.ApplicationResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.Application])
 	return ret0
 }
 
@@ -121,10 +122,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADApps(arg0, arg1 interface{}) *
 }
 
 // ListAzureADGroupMembers mocks base method.
-func (m *MockAzureClient) ListAzureADGroupMembers(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.MemberObjectResult {
+func (m *MockAzureClient) ListAzureADGroupMembers(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan client.AzureResult[json.RawMessage] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADGroupMembers", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.MemberObjectResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[json.RawMessage])
 	return ret0
 }
 
@@ -135,10 +136,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADGroupMembers(arg0, arg1, arg2 
 }
 
 // ListAzureADGroupOwners mocks base method.
-func (m *MockAzureClient) ListAzureADGroupOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.GroupOwnerResult {
+func (m *MockAzureClient) ListAzureADGroupOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan client.AzureResult[json.RawMessage] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADGroupOwners", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.GroupOwnerResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[json.RawMessage])
 	return ret0
 }
 
@@ -149,10 +150,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADGroupOwners(arg0, arg1, arg2 i
 }
 
 // ListAzureADGroups mocks base method.
-func (m *MockAzureClient) ListAzureADGroups(arg0 context.Context, arg1 query.GraphParams) <-chan azure.GroupResult {
+func (m *MockAzureClient) ListAzureADGroups(arg0 context.Context, arg1 query.GraphParams) <-chan client.AzureResult[azure.Group] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADGroups", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.GroupResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.Group])
 	return ret0
 }
 
@@ -163,10 +164,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADGroups(arg0, arg1 interface{})
 }
 
 // ListAzureADRoleAssignments mocks base method.
-func (m *MockAzureClient) ListAzureADRoleAssignments(arg0 context.Context, arg1 query.GraphParams) <-chan azure.UnifiedRoleAssignmentResult {
+func (m *MockAzureClient) ListAzureADRoleAssignments(arg0 context.Context, arg1 query.GraphParams) <-chan client.AzureResult[azure.UnifiedRoleAssignment] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADRoleAssignments", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.UnifiedRoleAssignmentResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.UnifiedRoleAssignment])
 	return ret0
 }
 
@@ -177,10 +178,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADRoleAssignments(arg0, arg1 int
 }
 
 // ListAzureADRoles mocks base method.
-func (m *MockAzureClient) ListAzureADRoles(arg0 context.Context, arg1 query.GraphParams) <-chan azure.RoleResult {
+func (m *MockAzureClient) ListAzureADRoles(arg0 context.Context, arg1 query.GraphParams) <-chan client.AzureResult[azure.Role] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADRoles", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.RoleResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.Role])
 	return ret0
 }
 
@@ -191,10 +192,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADRoles(arg0, arg1 interface{}) 
 }
 
 // ListAzureADServicePrincipalOwners mocks base method.
-func (m *MockAzureClient) ListAzureADServicePrincipalOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.ServicePrincipalOwnerResult {
+func (m *MockAzureClient) ListAzureADServicePrincipalOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan client.AzureResult[json.RawMessage] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADServicePrincipalOwners", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.ServicePrincipalOwnerResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[json.RawMessage])
 	return ret0
 }
 
@@ -205,10 +206,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADServicePrincipalOwners(arg0, a
 }
 
 // ListAzureADServicePrincipals mocks base method.
-func (m *MockAzureClient) ListAzureADServicePrincipals(arg0 context.Context, arg1 query.GraphParams) <-chan azure.ServicePrincipalResult {
+func (m *MockAzureClient) ListAzureADServicePrincipals(arg0 context.Context, arg1 query.GraphParams) <-chan client.AzureResult[azure.ServicePrincipal] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADServicePrincipals", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.ServicePrincipalResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.ServicePrincipal])
 	return ret0
 }
 
@@ -219,10 +220,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADServicePrincipals(arg0, arg1 i
 }
 
 // ListAzureADTenants mocks base method.
-func (m *MockAzureClient) ListAzureADTenants(arg0 context.Context, arg1 bool) <-chan azure.TenantResult {
+func (m *MockAzureClient) ListAzureADTenants(arg0 context.Context, arg1 bool) <-chan client.AzureResult[azure.Tenant] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADTenants", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.TenantResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.Tenant])
 	return ret0
 }
 
@@ -233,10 +234,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADTenants(arg0, arg1 interface{}
 }
 
 // ListAzureADUsers mocks base method.
-func (m *MockAzureClient) ListAzureADUsers(arg0 context.Context, arg1 query.GraphParams) <-chan azure.UserResult {
+func (m *MockAzureClient) ListAzureADUsers(arg0 context.Context, arg1 query.GraphParams) <-chan client.AzureResult[azure.User] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureADUsers", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.UserResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.User])
 	return ret0
 }
 
@@ -247,10 +248,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureADUsers(arg0, arg1 interface{}) 
 }
 
 // ListAzureAutomationAccounts mocks base method.
-func (m *MockAzureClient) ListAzureAutomationAccounts(arg0 context.Context, arg1 string) <-chan azure.AutomationAccountResult {
+func (m *MockAzureClient) ListAzureAutomationAccounts(arg0 context.Context, arg1 string) <-chan client.AzureResult[azure.AutomationAccount] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureAutomationAccounts", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.AutomationAccountResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.AutomationAccount])
 	return ret0
 }
 
@@ -261,10 +262,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureAutomationAccounts(arg0, arg1 in
 }
 
 // ListAzureContainerRegistries mocks base method.
-func (m *MockAzureClient) ListAzureContainerRegistries(arg0 context.Context, arg1 string) <-chan azure.ContainerRegistryResult {
+func (m *MockAzureClient) ListAzureContainerRegistries(arg0 context.Context, arg1 string) <-chan client.AzureResult[azure.ContainerRegistry] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureContainerRegistries", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.ContainerRegistryResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.ContainerRegistry])
 	return ret0
 }
 
@@ -275,10 +276,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureContainerRegistries(arg0, arg1 i
 }
 
 // ListAzureDeviceRegisteredOwners mocks base method.
-func (m *MockAzureClient) ListAzureDeviceRegisteredOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan azure.DeviceRegisteredOwnerResult {
+func (m *MockAzureClient) ListAzureDeviceRegisteredOwners(arg0 context.Context, arg1 string, arg2 query.GraphParams) <-chan client.AzureResult[json.RawMessage] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureDeviceRegisteredOwners", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.DeviceRegisteredOwnerResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[json.RawMessage])
 	return ret0
 }
 
@@ -289,10 +290,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureDeviceRegisteredOwners(arg0, arg
 }
 
 // ListAzureDevices mocks base method.
-func (m *MockAzureClient) ListAzureDevices(arg0 context.Context, arg1 query.GraphParams) <-chan azure.DeviceResult {
+func (m *MockAzureClient) ListAzureDevices(arg0 context.Context, arg1 query.GraphParams) <-chan client.AzureResult[azure.Device] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureDevices", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.DeviceResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.Device])
 	return ret0
 }
 
@@ -303,10 +304,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureDevices(arg0, arg1 interface{}) 
 }
 
 // ListAzureFunctionApps mocks base method.
-func (m *MockAzureClient) ListAzureFunctionApps(arg0 context.Context, arg1 string) <-chan azure.FunctionAppResult {
+func (m *MockAzureClient) ListAzureFunctionApps(arg0 context.Context, arg1 string) <-chan client.AzureResult[azure.FunctionApp] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureFunctionApps", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.FunctionAppResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.FunctionApp])
 	return ret0
 }
 
@@ -317,10 +318,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureFunctionApps(arg0, arg1 interfac
 }
 
 // ListAzureKeyVaults mocks base method.
-func (m *MockAzureClient) ListAzureKeyVaults(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan azure.KeyVaultResult {
+func (m *MockAzureClient) ListAzureKeyVaults(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan client.AzureResult[azure.KeyVault] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureKeyVaults", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.KeyVaultResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.KeyVault])
 	return ret0
 }
 
@@ -331,10 +332,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureKeyVaults(arg0, arg1, arg2 inter
 }
 
 // ListAzureLogicApps mocks base method.
-func (m *MockAzureClient) ListAzureLogicApps(arg0 context.Context, arg1, arg2 string, arg3 int32) <-chan azure.LogicAppResult {
+func (m *MockAzureClient) ListAzureLogicApps(arg0 context.Context, arg1, arg2 string, arg3 int32) <-chan client.AzureResult[azure.LogicApp] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureLogicApps", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(<-chan azure.LogicAppResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.LogicApp])
 	return ret0
 }
 
@@ -345,10 +346,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureLogicApps(arg0, arg1, arg2, arg3
 }
 
 // ListAzureManagedClusters mocks base method.
-func (m *MockAzureClient) ListAzureManagedClusters(arg0 context.Context, arg1 string) <-chan azure.ManagedClusterResult {
+func (m *MockAzureClient) ListAzureManagedClusters(arg0 context.Context, arg1 string) <-chan client.AzureResult[azure.ManagedCluster] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureManagedClusters", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.ManagedClusterResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.ManagedCluster])
 	return ret0
 }
 
@@ -359,10 +360,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureManagedClusters(arg0, arg1 inter
 }
 
 // ListAzureManagementGroupDescendants mocks base method.
-func (m *MockAzureClient) ListAzureManagementGroupDescendants(arg0 context.Context, arg1 string, arg2 int32) <-chan azure.DescendantInfoResult {
+func (m *MockAzureClient) ListAzureManagementGroupDescendants(arg0 context.Context, arg1 string, arg2 int32) <-chan client.AzureResult[azure.DescendantInfo] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureManagementGroupDescendants", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.DescendantInfoResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.DescendantInfo])
 	return ret0
 }
 
@@ -373,10 +374,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureManagementGroupDescendants(arg0,
 }
 
 // ListAzureManagementGroups mocks base method.
-func (m *MockAzureClient) ListAzureManagementGroups(arg0 context.Context, arg1 string) <-chan azure.ManagementGroupResult {
+func (m *MockAzureClient) ListAzureManagementGroups(arg0 context.Context, arg1 string) <-chan client.AzureResult[azure.ManagementGroup] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureManagementGroups", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.ManagementGroupResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.ManagementGroup])
 	return ret0
 }
 
@@ -387,10 +388,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureManagementGroups(arg0, arg1 inte
 }
 
 // ListAzureResourceGroups mocks base method.
-func (m *MockAzureClient) ListAzureResourceGroups(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan azure.ResourceGroupResult {
+func (m *MockAzureClient) ListAzureResourceGroups(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan client.AzureResult[azure.ResourceGroup] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureResourceGroups", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.ResourceGroupResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.ResourceGroup])
 	return ret0
 }
 
@@ -401,10 +402,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureResourceGroups(arg0, arg1, arg2 
 }
 
 // ListAzureStorageAccounts mocks base method.
-func (m *MockAzureClient) ListAzureStorageAccounts(arg0 context.Context, arg1 string) <-chan azure.StorageAccountResult {
+func (m *MockAzureClient) ListAzureStorageAccounts(arg0 context.Context, arg1 string) <-chan client.AzureResult[azure.StorageAccount] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureStorageAccounts", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.StorageAccountResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.StorageAccount])
 	return ret0
 }
 
@@ -415,10 +416,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureStorageAccounts(arg0, arg1 inter
 }
 
 // ListAzureStorageContainers mocks base method.
-func (m *MockAzureClient) ListAzureStorageContainers(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6 string) <-chan azure.StorageContainerResult {
+func (m *MockAzureClient) ListAzureStorageContainers(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6 string) <-chan client.AzureResult[azure.StorageContainer] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureStorageContainers", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
-	ret0, _ := ret[0].(<-chan azure.StorageContainerResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.StorageContainer])
 	return ret0
 }
 
@@ -429,10 +430,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureStorageContainers(arg0, arg1, ar
 }
 
 // ListAzureSubscriptions mocks base method.
-func (m *MockAzureClient) ListAzureSubscriptions(arg0 context.Context) <-chan azure.SubscriptionResult {
+func (m *MockAzureClient) ListAzureSubscriptions(arg0 context.Context) <-chan client.AzureResult[azure.Subscription] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureSubscriptions", arg0)
-	ret0, _ := ret[0].(<-chan azure.SubscriptionResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.Subscription])
 	return ret0
 }
 
@@ -443,10 +444,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureSubscriptions(arg0 interface{}) 
 }
 
 // ListAzureVMScaleSets mocks base method.
-func (m *MockAzureClient) ListAzureVMScaleSets(arg0 context.Context, arg1 string) <-chan azure.VMScaleSetResult {
+func (m *MockAzureClient) ListAzureVMScaleSets(arg0 context.Context, arg1 string) <-chan client.AzureResult[azure.VMScaleSet] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureVMScaleSets", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.VMScaleSetResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.VMScaleSet])
 	return ret0
 }
 
@@ -457,10 +458,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureVMScaleSets(arg0, arg1 interface
 }
 
 // ListAzureVirtualMachines mocks base method.
-func (m *MockAzureClient) ListAzureVirtualMachines(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan azure.VirtualMachineResult {
+func (m *MockAzureClient) ListAzureVirtualMachines(arg0 context.Context, arg1 string, arg2 query.RMParams) <-chan client.AzureResult[azure.VirtualMachine] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureVirtualMachines", arg0, arg1, arg2)
-	ret0, _ := ret[0].(<-chan azure.VirtualMachineResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.VirtualMachine])
 	return ret0
 }
 
@@ -471,10 +472,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureVirtualMachines(arg0, arg1, arg2
 }
 
 // ListAzureWebApps mocks base method.
-func (m *MockAzureClient) ListAzureWebApps(arg0 context.Context, arg1 string) <-chan azure.WebAppResult {
+func (m *MockAzureClient) ListAzureWebApps(arg0 context.Context, arg1 string) <-chan client.AzureResult[azure.WebApp] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAzureWebApps", arg0, arg1)
-	ret0, _ := ret[0].(<-chan azure.WebAppResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.WebApp])
 	return ret0
 }
 
@@ -485,10 +486,10 @@ func (mr *MockAzureClientMockRecorder) ListAzureWebApps(arg0, arg1 interface{}) 
 }
 
 // ListRoleAssignmentsForResource mocks base method.
-func (m *MockAzureClient) ListRoleAssignmentsForResource(arg0 context.Context, arg1, arg2, arg3 string) <-chan azure.RoleAssignmentResult {
+func (m *MockAzureClient) ListRoleAssignmentsForResource(arg0 context.Context, arg1, arg2, arg3 string) <-chan client.AzureResult[azure.RoleAssignment] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListRoleAssignmentsForResource", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(<-chan azure.RoleAssignmentResult)
+	ret0, _ := ret[0].(<-chan client.AzureResult[azure.RoleAssignment])
 	return ret0
 }
 

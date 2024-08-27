@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureStorageAccounts https://learn.microsoft.com/en-us/rest/api/storagerp/storage-accounts/list?view=rest-storagerp-2022-05-01
-func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscriptionId string) <-chan azureResult[azure.StorageAccount] {
+func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.StorageAccount] {
 	var (
-	out = make(chan azureResult[azure.StorageAccount])
+		out    = make(chan AzureResult[azure.StorageAccount])
 		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Storage/storageAccounts", subscriptionId)
 		params = query.RMParams{ApiVersion: "2022-05-01"}
 	)
@@ -43,9 +43,9 @@ func (s *azureClient) ListAzureStorageAccounts(ctx context.Context, subscription
 // ==
 
 // ListAzureStorageContainers https://learn.microsoft.com/en-us/rest/api/storagerp/blob-containers/list?view=rest-storagerp-2022-05-01
-func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) <-chan azureResult[azure.StorageContainer] {
+func (s *azureClient) ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) <-chan AzureResult[azure.StorageContainer] {
 	var (
-	out = make(chan azureResult[azure.StorageContainer])
+		out    = make(chan AzureResult[azure.StorageContainer])
 		path   = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s/blobServices/default/containers", subscriptionId, resourceGroupName, saName)
 		params = query.RMParams{ApiVersion: "2022-05-01", Filter: filter, IncludeDeleted: includeDeleted, MaxPageSize: maxPageSize}
 	)

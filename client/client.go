@@ -91,17 +91,17 @@ func initClientViaGraph(msgraph, resourceManager rest.RestClient) (AzureClient, 
 	}
 }
 
-type azureResult[T any] struct {
+type AzureResult[T any] struct {
 	Error error
 	Ok    T
 }
 
-func getAzureObjectList[T any](client rest.RestClient, ctx context.Context, path string, params query.Params, out chan azureResult[T]) {
+func getAzureObjectList[T any](client rest.RestClient, ctx context.Context, path string, params query.Params, out chan AzureResult[T]) {
 	defer panicrecovery.PanicRecovery()
 	defer close(out)
 
 	var (
-		errResult azureResult[T]
+		errResult AzureResult[T]
 		nextLink  string
 	)
 
@@ -148,7 +148,7 @@ func getAzureObjectList[T any](client rest.RestClient, ctx context.Context, path
 			return
 		} else {
 			for _, u := range list.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azureResult[T]{Ok: u}); !ok {
+				if ok := pipeline.Send(ctx.Done(), out, AzureResult[T]{Ok: u}); !ok {
 					return
 				}
 			}
@@ -184,41 +184,41 @@ type azureClient struct {
 type AzureGraphClient interface {
 	GetAzureADOrganization(ctx context.Context, selectCols []string) (*azure.Organization, error)
 
-	ListAzureADGroups(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Group]
-	ListAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage]
-	ListAzureADGroupOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage]
-	ListAzureADAppOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage]
-	ListAzureADApps(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Application]
-	ListAzureADUsers(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.User]
-	ListAzureADRoleAssignments(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.UnifiedRoleAssignment]
-	ListAzureADRoles(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Role]
-	ListAzureADServicePrincipalOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage]
-	ListAzureADServicePrincipals(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.ServicePrincipal]
-	ListAzureDeviceRegisteredOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage]
-	ListAzureDevices(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Device]
-	ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, params query.GraphParams) <-chan azureResult[azure.AppRoleAssignment]
+	ListAzureADGroups(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.Group]
+	ListAzureADGroupMembers(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage]
+	ListAzureADGroupOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage]
+	ListAzureADAppOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage]
+	ListAzureADApps(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.Application]
+	ListAzureADUsers(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.User]
+	ListAzureADRoleAssignments(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.UnifiedRoleAssignment]
+	ListAzureADRoles(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.Role]
+	ListAzureADServicePrincipalOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage]
+	ListAzureADServicePrincipals(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.ServicePrincipal]
+	ListAzureDeviceRegisteredOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage]
+	ListAzureDevices(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.Device]
+	ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, params query.GraphParams) <-chan AzureResult[azure.AppRoleAssignment]
 }
 
 type AzureResourceManagerClient interface {
 	GetAzureADTenants(ctx context.Context, includeAllTenantCategories bool) (azure.TenantList, error)
 
-	ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter, tenantId string) <-chan azureResult[azure.RoleAssignment]
-	ListAzureADTenants(ctx context.Context, includeAllTenantCategories bool) <-chan azureResult[azure.Tenant]
-	ListAzureContainerRegistries(ctx context.Context, subscriptionId string) <-chan azureResult[azure.ContainerRegistry]
-	ListAzureWebApps(ctx context.Context, subscriptionId string) <-chan azureResult[azure.WebApp]
-	ListAzureManagedClusters(ctx context.Context, subscriptionId string) <-chan azureResult[azure.ManagedCluster]
-	ListAzureVMScaleSets(ctx context.Context, subscriptionId string) <-chan azureResult[azure.VMScaleSet]
-	ListAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azureResult[azure.KeyVault]
-	ListAzureManagementGroups(ctx context.Context, skipToken string) <-chan azureResult[azure.ManagementGroup]
-	ListAzureManagementGroupDescendants(ctx context.Context, groupId string, top int32) <-chan azureResult[azure.DescendantInfo]
-	ListAzureResourceGroups(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azureResult[azure.ResourceGroup]
-	ListAzureSubscriptions(ctx context.Context) <-chan azureResult[azure.Subscription]
-	ListAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azureResult[azure.VirtualMachine]
-	ListAzureStorageAccounts(ctx context.Context, subscriptionId string) <-chan azureResult[azure.StorageAccount]
-	ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) <-chan azureResult[azure.StorageContainer]
-	ListAzureAutomationAccounts(ctx context.Context, subscriptionId string) <-chan azureResult[azure.AutomationAccount]
-	ListAzureLogicApps(ctx context.Context, subscriptionId string, filter string, top int32) <-chan azureResult[azure.LogicApp]
-	ListAzureFunctionApps(ctx context.Context, subscriptionId string) <-chan azureResult[azure.FunctionApp]
+	ListRoleAssignmentsForResource(ctx context.Context, resourceId string, filter, tenantId string) <-chan AzureResult[azure.RoleAssignment]
+	ListAzureADTenants(ctx context.Context, includeAllTenantCategories bool) <-chan AzureResult[azure.Tenant]
+	ListAzureContainerRegistries(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.ContainerRegistry]
+	ListAzureWebApps(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.WebApp]
+	ListAzureManagedClusters(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.ManagedCluster]
+	ListAzureVMScaleSets(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.VMScaleSet]
+	ListAzureKeyVaults(ctx context.Context, subscriptionId string, params query.RMParams) <-chan AzureResult[azure.KeyVault]
+	ListAzureManagementGroups(ctx context.Context, skipToken string) <-chan AzureResult[azure.ManagementGroup]
+	ListAzureManagementGroupDescendants(ctx context.Context, groupId string, top int32) <-chan AzureResult[azure.DescendantInfo]
+	ListAzureResourceGroups(ctx context.Context, subscriptionId string, params query.RMParams) <-chan AzureResult[azure.ResourceGroup]
+	ListAzureSubscriptions(ctx context.Context) <-chan AzureResult[azure.Subscription]
+	ListAzureVirtualMachines(ctx context.Context, subscriptionId string, params query.RMParams) <-chan AzureResult[azure.VirtualMachine]
+	ListAzureStorageAccounts(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.StorageAccount]
+	ListAzureStorageContainers(ctx context.Context, subscriptionId string, resourceGroupName string, saName string, filter string, includeDeleted string, maxPageSize string) <-chan AzureResult[azure.StorageContainer]
+	ListAzureAutomationAccounts(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.AutomationAccount]
+	ListAzureLogicApps(ctx context.Context, subscriptionId string, filter string, top int32) <-chan AzureResult[azure.LogicApp]
+	ListAzureFunctionApps(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.FunctionApp]
 }
 
 type AzureClient interface {

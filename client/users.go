@@ -26,13 +26,11 @@ import (
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 )
 
-
 // ListAzureADUsers https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-beta
-func (s *azureClient) ListAzureADUsers(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.User]{
+func (s *azureClient) ListAzureADUsers(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.User] {
 	var (
-		out = make(chan azureResult[azure.User])
-		path     = fmt.Sprintf("/%s/users", constants.GraphApiVersion)
-
+		out  = make(chan AzureResult[azure.User])
+		path = fmt.Sprintf("/%s/users", constants.GraphApiVersion)
 	)
 
 	if params.Top == 0 {

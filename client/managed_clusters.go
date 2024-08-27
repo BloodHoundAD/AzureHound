@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureManagedClusters https://learn.microsoft.com/en-us/rest/api/servicefabric/managedclusters/managed-clusters/list-by-subscription?view=rest-servicefabric-managedclusters-2021-07-01
-func (s *azureClient) ListAzureManagedClusters(ctx context.Context, subscriptionId string) <-chan azureResult[azure.ManagedCluster] {
+func (s *azureClient) ListAzureManagedClusters(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.ManagedCluster] {
 	var (
-		out = make(chan azureResult[azure.ManagedCluster])
+		out    = make(chan AzureResult[azure.ManagedCluster])
 		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.ContainerService/managedClusters", subscriptionId)
 		params = query.RMParams{ApiVersion: "2021-07-01"}
 	)

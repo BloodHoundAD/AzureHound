@@ -27,9 +27,9 @@ import (
 )
 
 // GetAzureADAppRoleAssignments https://learn.microsoft.com/en-us/graph/api/serviceprincipal-list-approleassignedto?view=graph-rest-1.0
-func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, params query.GraphParams) <-chan azureResult[azure.AppRoleAssignment] {
+func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, params query.GraphParams) <-chan AzureResult[azure.AppRoleAssignment] {
 	var (
-		out  = make(chan azureResult[azure.AppRoleAssignment])
+		out  = make(chan AzureResult[azure.AppRoleAssignment])
 		path = fmt.Sprintf("/%s/servicePrincipals/%s/appRoleAssignedTo", constants.GraphApiVersion, servicePrincipalId)
 	)
 

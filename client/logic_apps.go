@@ -26,11 +26,11 @@ import (
 )
 
 // ListAzureLogicApps https://learn.microsoft.com/en-us/rest/api/logic/workflows/list-by-subscription?view=rest-logic-2016-06-01
-func (s *azureClient) ListAzureLogicApps(ctx context.Context, subscriptionId string, filter string, top int32) <-chan azureResult[azure.LogicApp] {
+func (s *azureClient) ListAzureLogicApps(ctx context.Context, subscriptionId string, filter string, top int32) <-chan AzureResult[azure.LogicApp] {
 	var (
-	out = make(chan azureResult[azure.LogicApp])
-		path     = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Logic/workflows", subscriptionId)
-		params   = query.RMParams{ApiVersion: "2016-06-01", Filter: filter, Top: top}
+		out    = make(chan AzureResult[azure.LogicApp])
+		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Logic/workflows", subscriptionId)
+		params = query.RMParams{ApiVersion: "2016-06-01", Filter: filter, Top: top}
 	)
 
 	go getAzureObjectList[azure.LogicApp](s.resourceManager, ctx, path, params, out)

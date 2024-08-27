@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureVMScaleSets https://learn.microsoft.com/en-us/rest/api/compute/virtual-machine-scale-sets/list-all?view=rest-compute-2022-11-01
-func (s *azureClient) ListAzureVMScaleSets(ctx context.Context, subscriptionId string) <-chan azureResult[azure.VMScaleSet] {
+func (s *azureClient) ListAzureVMScaleSets(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.VMScaleSet] {
 	var (
-		out = make(chan azureResult[azure.VMScaleSet])
+		out    = make(chan AzureResult[azure.VMScaleSet])
 		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Compute/virtualMachineScaleSets", subscriptionId)
 		params = query.RMParams{ApiVersion: "2022-11-01"}
 	)

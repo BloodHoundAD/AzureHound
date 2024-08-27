@@ -28,11 +28,10 @@ import (
 )
 
 // ListAzureADApps https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-beta
-func (s *azureClient) ListAzureADApps(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Application] {
+func (s *azureClient) ListAzureADApps(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.Application] {
 	var (
-		out = make(chan azureResult[azure.Application])
-		path      = fmt.Sprintf("/%s/applications", constants.GraphApiVersion)
-
+		out  = make(chan AzureResult[azure.Application])
+		path = fmt.Sprintf("/%s/applications", constants.GraphApiVersion)
 	)
 
 	if params.Top == 0 {
@@ -45,10 +44,10 @@ func (s *azureClient) ListAzureADApps(ctx context.Context, params query.GraphPar
 }
 
 // ListAzureADAppOwners https://learn.microsoft.com/en-us/graph/api/application-list-owners?view=graph-rest-beta
-func (s *azureClient) ListAzureADAppOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage] {
+func (s *azureClient) ListAzureADAppOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage] {
 
 	var (
-		out  = make(chan azureResult[json.RawMessage])
+		out  = make(chan AzureResult[json.RawMessage])
 		path = fmt.Sprintf("/%s/applications/%s/owners", constants.GraphApiBetaVersion, objectId)
 	)
 

@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureAutomationAccounts https://learn.microsoft.com/en-us/rest/api/automation/automation-account/list?view=rest-automation-2021-06-22
-func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscriptionId string) <-chan azureResult[azure.AutomationAccount] {
+func (s *azureClient) ListAzureAutomationAccounts(ctx context.Context, subscriptionId string) <-chan AzureResult[azure.AutomationAccount] {
 	var (
-		out = make(chan azureResult[azure.AutomationAccount])
+		out    = make(chan AzureResult[azure.AutomationAccount])
 		path   = fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Automation/automationAccounts", subscriptionId)
 		params = query.RMParams{ApiVersion: "2021-06-22"}
 	)

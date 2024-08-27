@@ -28,9 +28,9 @@ import (
 )
 
 // ListAzureDevices https://learn.microsoft.com/en-us/graph/api/device-list?view=graph-rest-1.0
-func (s *azureClient) ListAzureDevices(ctx context.Context, params query.GraphParams) <-chan azureResult[azure.Device]{
+func (s *azureClient) ListAzureDevices(ctx context.Context, params query.GraphParams) <-chan AzureResult[azure.Device] {
 	var (
-		out = make(chan azureResult[azure.Device])
+		out  = make(chan AzureResult[azure.Device])
 		path = fmt.Sprintf("/%s/devices", constants.GraphApiVersion)
 	)
 
@@ -44,9 +44,9 @@ func (s *azureClient) ListAzureDevices(ctx context.Context, params query.GraphPa
 }
 
 // ListAzureDeviceRegisteredOwners https://learn.microsoft.com/en-us/graph/api/device-list-registeredowners?view=graph-rest-beta
-func (s *azureClient) ListAzureDeviceRegisteredOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan azureResult[json.RawMessage] {
+func (s *azureClient) ListAzureDeviceRegisteredOwners(ctx context.Context, objectId string, params query.GraphParams) <-chan AzureResult[json.RawMessage] {
 	var (
-		out = make(chan azureResult[json.RawMessage])
+		out  = make(chan AzureResult[json.RawMessage])
 		path = fmt.Sprintf("/%s/devices/%s/registeredOwners", constants.GraphApiBetaVersion, objectId)
 	)
 

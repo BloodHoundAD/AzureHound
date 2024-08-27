@@ -26,9 +26,9 @@ import (
 )
 
 // ListAzureResourceGroups https://learn.microsoft.com/en-us/rest/api/resources/resource-groups/list?view=rest-resources-2021-04-01
-func (s *azureClient) ListAzureResourceGroups(ctx context.Context, subscriptionId string, params query.RMParams) <-chan azureResult[azure.ResourceGroup] {
+func (s *azureClient) ListAzureResourceGroups(ctx context.Context, subscriptionId string, params query.RMParams) <-chan AzureResult[azure.ResourceGroup] {
 	var (
-		out  = make(chan azureResult[azure.ResourceGroup])
+		out  = make(chan AzureResult[azure.ResourceGroup])
 		path = fmt.Sprintf("/subscriptions/%s/resourcegroups", subscriptionId)
 	)
 

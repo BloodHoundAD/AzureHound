@@ -59,11 +59,11 @@ func (s *azureClient) GetAzureADTenants(ctx context.Context, includeAllTenantCat
 }
 
 // ListAzureADTenants https://learn.microsoft.com/en-us/rest/api/subscription/tenants/list?view=rest-subscription-2020-01-01
-func (s *azureClient) ListAzureADTenants(ctx context.Context, includeAllTenantCategories bool) <-chan azureResult[azure.Tenant] {
+func (s *azureClient) ListAzureADTenants(ctx context.Context, includeAllTenantCategories bool) <-chan AzureResult[azure.Tenant] {
 	var (
-		out = make(chan azureResult[azure.Tenant])
-		path     = "/tenants"
-		params   = query.RMParams{ApiVersion: "2020-01-01", IncludeAllTenantCategories: includeAllTenantCategories}
+		out    = make(chan AzureResult[azure.Tenant])
+		path   = "/tenants"
+		params = query.RMParams{ApiVersion: "2020-01-01", IncludeAllTenantCategories: includeAllTenantCategories}
 	)
 
 	go getAzureObjectList[azure.Tenant](s.resourceManager, ctx, path, params, out)
