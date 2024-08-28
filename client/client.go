@@ -124,7 +124,11 @@ func getAzureObjectList[T any](client rest.RestClient, ctx context.Context, path
 				_ = pipeline.Send(ctx.Done(), out, errResult)
 				return
 			} else {
-				if req, err := rest.NewRequest(ctx, "GET", nextUrl, nil, params.AsMap(), nil); err != nil {
+				paramsMap := make(map[string]string)
+				if params != nil {
+					paramsMap = params.AsMap()
+				}
+				if req, err := rest.NewRequest(ctx, "GET", nextUrl, nil, paramsMap, nil); err != nil {
 					errResult.Error = err
 					_ = pipeline.Send(ctx.Done(), out, errResult)
 					return
@@ -161,17 +165,6 @@ func getAzureObjectList[T any](client rest.RestClient, ctx context.Context, path
 		} else if list.NextLinkRM != "" {
 			nextLink = list.NextLinkRM
 		}
-	}
-}
-
-func getAzureObject[T any](client rest.RestClient, ctx context.Context, path string, params query.Params) (T, error) {
-	var response T
-	if res, err := client.Get(ctx, path, params, nil); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
 	}
 }
 
