@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
@@ -41,8 +42,8 @@ func TestListDeviceOwners(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockDevicesChannel := make(chan interface{})
-	mockDeviceOwnerChannel := make(chan azure.DeviceRegisteredOwnerResult)
-	mockDeviceOwnerChannel2 := make(chan azure.DeviceRegisteredOwnerResult)
+	mockDeviceOwnerChannel := make(chan client.AzureResult[json.RawMessage])
+	mockDeviceOwnerChannel2 := make(chan client.AzureResult[json.RawMessage])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -62,19 +63,19 @@ func TestListDeviceOwners(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockDeviceOwnerChannel)
-		mockDeviceOwnerChannel <- azure.DeviceRegisteredOwnerResult{
+		mockDeviceOwnerChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockDeviceOwnerChannel <- azure.DeviceRegisteredOwnerResult{
+		mockDeviceOwnerChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
 	}()
 	go func() {
 		defer close(mockDeviceOwnerChannel2)
-		mockDeviceOwnerChannel2 <- azure.DeviceRegisteredOwnerResult{
+		mockDeviceOwnerChannel2 <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockDeviceOwnerChannel2 <- azure.DeviceRegisteredOwnerResult{
+		mockDeviceOwnerChannel2 <- client.AzureResult[json.RawMessage]{
 			Error: mockError,
 		}
 	}()

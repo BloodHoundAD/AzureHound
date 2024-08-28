@@ -98,7 +98,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this function app", "functionAppId", id)
 					} else {
@@ -106,7 +106,7 @@ func listFunctionAppRoleAssignments(ctx context.Context, client client.AzureClie
 
 						functionAppRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("Found function app role asignment", "functionAppRoleAssignment", functionAppRoleAssignment)

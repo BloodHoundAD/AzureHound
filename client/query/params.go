@@ -38,36 +38,38 @@ const (
 	Skip                       string = "$skip"
 	SkipToken                  string = "$skipToken"
 	StatusOnly                 string = "StatusOnly"
+	TenantId                   string = "tenantId"
 	Top                        string = "$top"
 )
 
-type Params struct {
+type Params interface {
+	AsMap() map[string]string
+	NeedsEventualConsistencyHeaderFlag() bool
+}
+
+type RMParams struct {
 	ApiVersion                 string
-	Count                      bool
 	Expand                     string
 	Filter                     string
 	IncludeDeleted             string
 	IncludeAllTenantCategories bool
 	MaxPageSize                string
-	OrderBy                    string
 	Recurse                    bool
-	Search                     string
-	Select                     []string
-	Skip                       int
 	SkipToken                  string
 	StatusOnly                 bool
+	TenantId                   string // For cross-tenant request
 	Top                        int32
 }
 
-func (s Params) AsMap() map[string]string {
+func (s RMParams) NeedsEventualConsistencyHeaderFlag() bool {
+	return false
+}
+
+func (s RMParams) AsMap() map[string]string {
 	params := make(map[string]string)
 
 	if s.ApiVersion != "" {
 		params[ApiVersion] = s.ApiVersion
-	}
-
-	if s.Count {
-		params[Count] = "true"
 	}
 
 	if s.Expand != "" {
@@ -82,12 +84,66 @@ func (s Params) AsMap() map[string]string {
 		params[IncludeAllTenantCategories] = "true"
 	}
 
-	if s.OrderBy != "" {
-		params[OrderBy] = s.OrderBy
-	}
-
 	if s.Recurse {
 		params[Recurse] = "true"
+	}
+
+	if s.SkipToken != "" {
+		params[SkipToken] = s.SkipToken
+	}
+
+	if s.StatusOnly {
+		params[StatusOnly] = "true"
+	}
+
+	if s.TenantId != "" {
+		params[TenantId] = s.TenantId
+	}
+	if s.Top > 0 {
+		params[Top] = strconv.FormatInt(int64(s.Top), 10)
+	}
+
+	return params
+}
+
+type GraphParams struct {
+	Count     bool
+	Expand    string
+	Format    string
+	Filter    string
+	OrderBy   string
+	Search    string
+	Select    []string
+	Skip      int
+	Top       int32
+	SkipToken string
+}
+
+func (s GraphParams) NeedsEventualConsistencyHeaderFlag() bool {
+	return s.Count || s.Search != "" || s.OrderBy != "" || (s.Filter != "" && s.OrderBy != "") || strings.Contains(s.Filter, "endsWith")
+}
+
+func (s GraphParams) AsMap() map[string]string {
+	params := make(map[string]string)
+
+	if s.Count {
+		params[Count] = "true"
+	}
+
+	if s.Expand != "" {
+		params[Expand] = s.Expand
+	}
+
+	if s.Format != "" {
+		params[Format] = s.Format
+	}
+
+	if s.Filter != "" {
+		params[Filter] = s.Filter
+	}
+
+	if s.OrderBy != "" {
+		params[OrderBy] = s.OrderBy
 	}
 
 	if s.Search != "" {
@@ -104,10 +160,6 @@ func (s Params) AsMap() map[string]string {
 
 	if s.SkipToken != "" {
 		params[SkipToken] = s.SkipToken
-	}
-
-	if s.StatusOnly {
-		params[StatusOnly] = "true"
 	}
 
 	if s.Top > 0 {

@@ -66,7 +66,7 @@ func listManagementGroups(ctx context.Context, client client.AzureClient) <-chan
 		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		count := 0
-		for item := range client.ListAzureManagementGroups(ctx) {
+		for item := range client.ListAzureManagementGroups(ctx, "") {
 			if item.Error != nil {
 				log.Info("warning: unable to process azure management groups; either the organization has no management groups or azurehound does not have the reader role on the root management group.")
 				return

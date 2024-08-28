@@ -465,14 +465,3 @@ type User struct {
 	// Supports $filter (eq, ne, NOT, in).
 	UserType string `json:"userType,omitempty"`
 }
-
-type UserList struct {
-	Count    int    `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []User `json:"value"`                     // A list of users.
-}
-
-type UserResult struct {
-	Error error
-	Ok    User
-}

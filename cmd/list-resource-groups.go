@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -91,13 +92,13 @@ func listResourceGroups(ctx context.Context, client client.AzureClient, subscrip
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureResourceGroups(ctx, id, "") {
+				for item := range client.ListAzureResourceGroups(ctx, id, query.RMParams{Top: 1000}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing resource groups for this subscription", "subscriptionId", id)
 					} else {
 						resourceGroup := models.ResourceGroup{
 							ResourceGroup:  item.Ok,
-							SubscriptionId: item.SubscriptionId,
+							SubscriptionId: "/subscriptions/"+id,
 							TenantId:       client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found resource group", "resourceGroup", resourceGroup)

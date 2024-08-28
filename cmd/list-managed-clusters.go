@@ -95,15 +95,14 @@ func listManagedClusters(ctx context.Context, client client.AzureClient, subscri
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureManagedClusters(ctx, id, false) {
+				for item := range client.ListAzureManagedClusters(ctx, id) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing managed clusters for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
 						managedCluster := models.ManagedCluster{
 							ManagedCluster:  item.Ok,
-							SubscriptionId:  item.SubscriptionId,
-							ResourceGroupId: resourceGroupId,
+							SubscriptionId:  "/subscriptions/" + id,
+							ResourceGroupId: item.Ok.ResourceGroupId(),
 							TenantId:        client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found managed cluster", "managedCluster", managedCluster)

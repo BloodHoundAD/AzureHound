@@ -37,15 +37,3 @@ type AppRoleAssignment struct {
 	ResourceDisplayName  string    `json:"resourceDisplayName,omitempty"`
 	ResourceId           string    `json:"resourceId,omitempty"`
 }
-
-type AppRoleAssignmentList struct {
-	Count    int                 `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string              `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Context  string              `json:"@odata.context,omitempty"`
-	Value    []AppRoleAssignment `json:"value"` // A list of role assignments.
-}
-
-type AppRoleAssignmentResult struct {
-	Error error
-	Ok    AppRoleAssignment
-}

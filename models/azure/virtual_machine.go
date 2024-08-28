@@ -51,14 +51,3 @@ func (s VirtualMachine) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type VirtualMachineList struct {
-	NextLink string           `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []VirtualMachine `json:"value"`              // A list of virtual machines.
-}
-
-type VirtualMachineResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             VirtualMachine
-}

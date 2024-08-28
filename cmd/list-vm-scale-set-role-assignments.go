@@ -103,7 +103,7 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this vm scale set", "vmScaleSetId", id)
 					} else {
@@ -111,7 +111,7 @@ func listVMScaleSetRoleAssignments(ctx context.Context, client client.AzureClien
 
 						vmScaleSetRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found vm scale set role assignment", "vmScaleSetRoleAssignment", vmScaleSetRoleAssignment)

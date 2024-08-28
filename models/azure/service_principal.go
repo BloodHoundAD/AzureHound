@@ -18,8 +18,6 @@
 package azure
 
 import (
-	"encoding/json"
-
 	"github.com/bloodhoundad/azurehound/v2/enums"
 )
 
@@ -178,21 +176,4 @@ type ServicePrincipal struct {
 
 	// Specifies the verified publisher of the application which this service principal represents.
 	VerifiedPublisher VerifiedPublisher `json:"verifiedPublisher,omitempty"`
-}
-
-type ServicePrincipalList struct {
-	Count    int                `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string             `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []ServicePrincipal `json:"value"`                     // A list of ServicePrincipals.
-}
-
-type ServicePrincipalResult struct {
-	Error error
-	Ok    ServicePrincipal
-}
-
-type ServicePrincipalOwnerResult struct {
-	Error              error
-	ServicePrincipalId string
-	Ok                 json.RawMessage
 }

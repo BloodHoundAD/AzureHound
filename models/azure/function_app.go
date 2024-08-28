@@ -49,14 +49,3 @@ func (s FunctionApp) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type FunctionAppList struct {
-	NextLink string        `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []FunctionApp `json:"value"`              // A list of function apps
-}
-
-type FunctionAppResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             FunctionApp
-}

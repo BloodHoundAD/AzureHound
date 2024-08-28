@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -64,7 +65,7 @@ func listDevices(ctx context.Context, client client.AzureClient) <-chan interfac
 		defer panicrecovery.PanicRecovery()
 		defer close(out)
 		count := 0
-		for item := range client.ListAzureDevices(ctx, "", "", "", "", nil) {
+		for item := range client.ListAzureDevices(ctx, query.GraphParams{}) {
 			if item.Error != nil {
 				log.Error(item.Error, "unable to continue processing devices")
 				return

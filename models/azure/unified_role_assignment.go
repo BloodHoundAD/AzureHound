@@ -74,14 +74,3 @@ type UnifiedRoleAssignment struct {
 	// Supports $expand.
 	AppScope AppScope `json:"appScope,omitempty"`
 }
-
-type UnifiedRoleAssignmentList struct {
-	Count    int                     `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string                  `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []UnifiedRoleAssignment `json:"value"`                     // A list of role assignments.
-}
-
-type UnifiedRoleAssignmentResult struct {
-	Error error
-	Ok    UnifiedRoleAssignment
-}

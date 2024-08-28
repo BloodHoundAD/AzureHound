@@ -50,14 +50,3 @@ func (s ManagedCluster) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type ManagedClusterList struct {
-	NextLink string           `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []ManagedCluster `json:"value"`              // A list of managed clusters.
-}
-
-type ManagedClusterResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             ManagedCluster
-}

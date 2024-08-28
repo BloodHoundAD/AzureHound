@@ -39,14 +39,3 @@ type ResourceGroup struct {
 	// The type of the resource group.
 	Type string `json:"type,omitempty"`
 }
-
-type ResourceGroupList struct {
-	NextLink string          `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []ResourceGroup `json:"value"`              // A list of tenants.
-}
-
-type ResourceGroupResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             ResourceGroup
-}

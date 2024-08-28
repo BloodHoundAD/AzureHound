@@ -50,14 +50,3 @@ func (s AutomationAccount) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type AutomationAccountList struct {
-	NextLink string              `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []AutomationAccount `json:"value"`              // A list of automation accounts.
-}
-
-type AutomationAccountResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             AutomationAccount
-}

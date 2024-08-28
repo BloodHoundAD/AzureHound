@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 	"go.uber.org/mock/gomock"
@@ -38,21 +39,21 @@ func TestListUsers(t *testing.T) {
 	ctx := context.Background()
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
-	mockChannel := make(chan azure.UserResult)
+	mockChannel := make(chan client.AzureResult[azure.User])
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListAzureADUsers(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockChannel)
+	mockClient.EXPECT().ListAzureADUsers(gomock.Any(), gomock.Any()).Return(mockChannel)
 
 	go func() {
 		defer close(mockChannel)
-		mockChannel <- azure.UserResult{
+		mockChannel <- client.AzureResult[azure.User]{
 			Ok: azure.User{},
 		}
-		mockChannel <- azure.UserResult{
+		mockChannel <- client.AzureResult[azure.User]{
 			Error: mockError,
 		}
-		mockChannel <- azure.UserResult{
+		mockChannel <- client.AzureResult[azure.User]{
 			Ok: azure.User{},
 		}
 	}()

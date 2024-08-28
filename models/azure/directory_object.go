@@ -17,10 +17,6 @@
 
 package azure
 
-import (
-	"encoding/json"
-)
-
 // Represents an Azure Active Directory object. The directoryObject type is the base type for many other directory entity types.
 type DirectoryObject struct {
 	// The unique identifier for the object.
@@ -32,10 +28,4 @@ type DirectoryObject struct {
 	Id string `json:"id"`
 
 	Type string `json:"@odata.type,omitempty"`
-}
-
-type DirectoryObjectList struct {
-	Count    int               `json:"@odata.count,omitempty"`    // The total count of all results
-	NextLink string            `json:"@odata.nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []json.RawMessage `json:"value"`                     // A list of various Azure AD directory objects.
 }
