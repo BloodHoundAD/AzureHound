@@ -22,11 +22,23 @@ func StripEmptyEntries(data map[string]any) {
 		} else if nested, ok := value.(map[string]any); ok { // recursively strip nested maps
 			StripEmptyEntries(nested)
 		} else if slice, ok := value.([]any); ok {
+			value = make([]any, len(value.([]any)))
+			i := 0
 			for _, item := range slice {
 				if mapValue, ok := item.(map[string]any); ok {
 					StripEmptyEntries(mapValue)
 				}
+				if !isEmpty(reflect.ValueOf(item)) {
+					value.([]any)[i] = item
+					i++
+				}
 			}
+			value = value.([]any)[:i]
+		}
+
+		// Strip top level if empty post recursive strip
+		if _, ok := data[key]; ok && isEmpty(reflect.ValueOf(value)) {
+			delete(data, key)
 		}
 	}
 }
