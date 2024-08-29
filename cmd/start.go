@@ -53,6 +53,7 @@ var ErrExceededRetryLimit = errors.New("exceeded max retry limit for ingest batc
 
 func init() {
 	configs := append(config.AzureConfig, config.BloodHoundEnterpriseConfig...)
+	configs = append(configs, config.CollectionConfig...)
 	config.Init(startCmd, configs)
 	rootCmd.AddCommand(startCmd)
 }
@@ -154,7 +155,7 @@ func start(ctx context.Context) {
 
 								// Batch data out for ingestion
 								stream := listAll(ctx, azClient)
-								batches := pipeline.Batch(ctx.Done(), stream, 256, 10*time.Second)
+								batches := pipeline.Batch(ctx.Done(), stream, config.ColBatchSize.Value().(int), 10*time.Second)
 								hasIngestErr := ingest(ctx, *bheInstance, bheClient, batches)
 
 								// Notify BHE instance of job end

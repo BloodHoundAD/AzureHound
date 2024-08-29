@@ -24,6 +24,7 @@ import (
 	client "github.com/bloodhoundad/azurehound/v2/client/config"
 	config "github.com/bloodhoundad/azurehound/v2/config/internal"
 	"github.com/bloodhoundad/azurehound/v2/constants"
+	"github.com/go-logr/logr"
 )
 
 var Init = config.Init
@@ -46,6 +47,24 @@ func SetAzureDefaults() {
 		region := AzRegion.Value().(string)
 		url := client.ResourceManagerUrl(region, constants.AzureCloud().ResourceManagerUrl)
 		AzMgmtUrl.Set(url)
+	}
+}
+
+func CheckCollectionConfigSanity(log logr.Logger) {
+	useSaneIntValues(ColBatchSize, log)
+	useSaneIntValues(ColMaxConnsPerHost, log)
+	useSaneIntValues(ColMaxIdleConnsPerHost, log)
+	useSaneIntValues(ColStreamCount, log)
+}
+
+func useSaneIntValues(c config.Config, log logr.Logger) {
+	val := c.Value().(int)
+	if val < c.MinValue {
+		log.V(1).Info(fmt.Sprintf("Provided value %d for config option %s is less than minimum value %d. Using default value %d.", val, c.Name, c.MinValue, c.Default))
+		c.Set(c.Default)
+	} else if val > c.MaxValue {
+		log.V(1).Info(fmt.Sprintf("Provided value %d for config option %s is greater than maximum value %d. Using default value %d.", val, c.Name, c.MaxValue, c.Default))
+		c.Set(c.Default)
 	}
 }
 

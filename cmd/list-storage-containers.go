@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -70,7 +71,7 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 		// The error message with higher values for size is
 		// "The request was throttled."
 		// See issue #7: https://github.com/bloodhoundad/azurehound/issues/7
-		streams = pipeline.Demux(ctx.Done(), ids, 2)
+		streams = pipeline.Demux(ctx.Done(), ids, config.ColStreamCount.Value().(int))
 		wg      sync.WaitGroup
 	)
 
@@ -104,7 +105,7 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 						storageContainer := models.StorageContainer{
 							StorageContainer:  item.Ok,
 							StorageAccountId:  stAccount.(models.StorageAccount).StorageAccount.Id,
-							SubscriptionId:    "/subscriptions/"+stAccount.(models.StorageAccount).SubscriptionId,
+							SubscriptionId:    "/subscriptions/" + stAccount.(models.StorageAccount).SubscriptionId,
 							ResourceGroupId:   item.Ok.ResourceGroupId(),
 							ResourceGroupName: item.Ok.ResourceGroupName(),
 							TenantId:          client.TenantInfo().TenantId,

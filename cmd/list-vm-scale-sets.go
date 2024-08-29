@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -69,7 +70,7 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
+		streams = pipeline.Demux(ctx.Done(), ids, config.ColStreamCount.Value().(int))
 		wg      sync.WaitGroup
 	)
 
@@ -102,7 +103,7 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 					} else {
 						vmScaleSet := models.VMScaleSet{
 							VMScaleSet:      item.Ok,
-							SubscriptionId:   "/subscriptions/"+id,
+							SubscriptionId:  "/subscriptions/" + id,
 							ResourceGroupId: item.Ok.ResourceGroupId(),
 							TenantId:        client.TenantInfo().TenantId,
 						}

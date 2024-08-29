@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
@@ -68,7 +69,7 @@ func listManagedClusters(ctx context.Context, client client.AzureClient, subscri
 	var (
 		out     = make(chan interface{})
 		ids     = make(chan string)
-		streams = pipeline.Demux(ctx.Done(), ids, 25)
+		streams = pipeline.Demux(ctx.Done(), ids, config.ColStreamCount.Value().(int))
 		wg      sync.WaitGroup
 	)
 

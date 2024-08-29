@@ -36,6 +36,8 @@ type Config struct {
 	Required   bool
 	Persistent bool
 	Default    interface{}
+	MinValue   int
+	MaxValue   int
 }
 
 func (s Config) Value() interface{} {

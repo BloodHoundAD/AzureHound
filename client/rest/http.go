@@ -29,13 +29,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 )
 
 func NewHTTPClient(proxyUrl string) (*http.Client, error) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.MaxConnsPerHost = 200
-	transport.MaxIdleConnsPerHost = 200
+	transport.MaxConnsPerHost = config.ColMaxConnsPerHost.Value().(int)
+	transport.MaxIdleConnsPerHost = config.ColMaxIdleConnsPerHost.Value().(int)
 	transport.DisableKeepAlives = false
 
 	// defaults to TLS 1.0 which is not favorable
