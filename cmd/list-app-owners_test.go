@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -42,14 +43,14 @@ func TestListAppOwners(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockAppsChannel := make(chan azureWrapper[models.App])
-	mockAppOwnerChannel := make(chan azure.AppOwnerResult)
-	mockAppOwnerChannel2 := make(chan azure.AppOwnerResult)
+	mockAppOwnerChannel := make(chan client.AzureResult[json.RawMessage])
+	mockAppOwnerChannel2 := make(chan client.AzureResult[json.RawMessage])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListAzureADAppOwners(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockAppOwnerChannel).Times(1)
-	mockClient.EXPECT().ListAzureADAppOwners(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockAppOwnerChannel2).Times(1)
+	mockClient.EXPECT().ListAzureADAppOwners(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockAppOwnerChannel).Times(1)
+	mockClient.EXPECT().ListAzureADAppOwners(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockAppOwnerChannel2).Times(1)
 	channel := listAppOwners(ctx, mockClient, mockAppsChannel)
 
 	go func() {
@@ -59,19 +60,19 @@ func TestListAppOwners(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockAppOwnerChannel)
-		mockAppOwnerChannel <- azure.AppOwnerResult{
+		mockAppOwnerChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockAppOwnerChannel <- azure.AppOwnerResult{
+		mockAppOwnerChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
 	}()
 	go func() {
 		defer close(mockAppOwnerChannel2)
-		mockAppOwnerChannel2 <- azure.AppOwnerResult{
+		mockAppOwnerChannel2 <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockAppOwnerChannel2 <- azure.AppOwnerResult{
+		mockAppOwnerChannel2 <- client.AzureResult[json.RawMessage]{
 			Error: mockError,
 		}
 	}()

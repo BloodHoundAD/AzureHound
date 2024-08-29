@@ -104,7 +104,7 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this container registry", "containerRegistryId", id)
 					} else {
@@ -112,7 +112,7 @@ func listContainerRegistryRoleAssignments(ctx context.Context, client client.Azu
 
 						containerRegistryRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found container registry role assignment", "containerRegistryRoleAssignment", containerRegistryRoleAssignment)

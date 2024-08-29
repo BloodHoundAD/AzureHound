@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -36,6 +37,7 @@ import (
 
 func init() {
 	listRootCmd.AddCommand(listGroupMembersCmd)
+	listGroupMembersCmd.Flags().StringSliceVar(&listGroupMembersSelect, "select", []string{"id,displayName,createdDateTime"}, `Select properties to include. Use "" for Azure default properties. Azurehound default is "id,displayName,createdDateTime" if flag is not supplied.`)
 }
 
 var listGroupMembersCmd = &cobra.Command{
@@ -45,7 +47,9 @@ var listGroupMembersCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
-func listGroupMembersCmdImpl(cmd *cobra.Command, args []string) {
+var listGroupMembersSelect []string
+
+func listGroupMembersCmdImpl(cmd *cobra.Command, _ []string) {
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill)
 	defer gracefulShutdown(stop)
 
@@ -65,6 +69,14 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 		ids     = make(chan string)
 		streams = pipeline.Demux(ctx.Done(), ids, config.ColStreamCount.Value().(int))
 		wg      sync.WaitGroup
+		params  = query.GraphParams{
+			Select: unique(listGroupMembersSelect),
+			Filter: "",
+			Count:  false,
+			Search: "",
+			Top:    0,
+			Expand: "",
+		}
 	)
 
 	go func() {
@@ -96,13 +108,13 @@ func listGroupMembers(ctx context.Context, client client.AzureClient, groups <-c
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADGroupMembers(ctx, id, "", "", "", nil) {
+				for item := range client.ListAzureADGroupMembers(ctx, id, params) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing members for this group", "groupId", id)
 					} else {
 						groupMember := models.GroupMember{
 							Member:  item.Ok,
-							GroupId: item.ParentId,
+							GroupId: id,
 						}
 						log.V(2).Info("found group member", "groupMember", groupMember)
 						count++

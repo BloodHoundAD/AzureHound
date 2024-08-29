@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 	"go.uber.org/mock/gomock"
@@ -37,7 +38,7 @@ func TestListSubscriptions(t *testing.T) {
 	ctx := context.Background()
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
-	mockChannel := make(chan azure.SubscriptionResult)
+	mockChannel := make(chan client.AzureResult[azure.Subscription])
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
@@ -45,13 +46,13 @@ func TestListSubscriptions(t *testing.T) {
 
 	go func() {
 		defer close(mockChannel)
-		mockChannel <- azure.SubscriptionResult{
+		mockChannel <- client.AzureResult[azure.Subscription]{
 			Ok: azure.Subscription{},
 		}
-		mockChannel <- azure.SubscriptionResult{
+		mockChannel <- client.AzureResult[azure.Subscription]{
 			Error: mockError,
 		}
-		mockChannel <- azure.SubscriptionResult{
+		mockChannel <- client.AzureResult[azure.Subscription]{
 			Ok: azure.Subscription{},
 		}
 	}()

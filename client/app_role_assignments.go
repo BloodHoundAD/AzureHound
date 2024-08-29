@@ -20,100 +20,24 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/url"
-	"strings"
 
 	"github.com/bloodhoundad/azurehound/v2/client/query"
-	"github.com/bloodhoundad/azurehound/v2/client/rest"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
-	"github.com/bloodhoundad/azurehound/v2/panicrecovery"
-	"github.com/bloodhoundad/azurehound/v2/pipeline"
 )
 
-func (s *azureClient) GetAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, filter, search, orderBy, expand string, selectCols []string, top int32, count bool) (azure.AppRoleAssignmentList, error) {
+// GetAzureADAppRoleAssignments https://learn.microsoft.com/en-us/graph/api/serviceprincipal-list-approleassignedto?view=graph-rest-1.0
+func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipalId string, params query.GraphParams) <-chan AzureResult[azure.AppRoleAssignment] {
 	var (
-		path     = fmt.Sprintf("/%s/servicePrincipals/%s/appRoleAssignedTo", constants.GraphApiVersion, servicePrincipalId)
-		params   = query.Params{Filter: filter, Search: search, OrderBy: orderBy, Select: selectCols, Top: top, Count: count, Expand: expand}
-		headers  map[string]string
-		response azure.AppRoleAssignmentList
+		out  = make(chan AzureResult[azure.AppRoleAssignment])
+		path = fmt.Sprintf("/%s/servicePrincipals/%s/appRoleAssignedTo", constants.GraphApiVersion, servicePrincipalId)
 	)
 
-	count = count || search != "" || (filter != "" && orderBy != "") || strings.Contains(filter, "endsWith")
-	if count {
-		headers = make(map[string]string)
-		headers["ConsistencyLevel"] = "eventual"
+	if params.Top == 0 {
+		params.Top = 999
 	}
-	if res, err := s.msgraph.Get(ctx, path, params.AsMap(), headers); err != nil {
-		return response, err
-	} else if err := rest.Decode(res.Body, &response); err != nil {
-		return response, err
-	} else {
-		return response, nil
-	}
-}
 
-func (s *azureClient) ListAzureADAppRoleAssignments(ctx context.Context, servicePrincipal, filter, search, orderBy, expand string, selectCols []string) <-chan azure.AppRoleAssignmentResult {
-	out := make(chan azure.AppRoleAssignmentResult)
+	go getAzureObjectList[azure.AppRoleAssignment](s.msgraph, ctx, path, params, out)
 
-	go func() {
-		defer panicrecovery.PanicRecovery()
-		defer close(out)
-
-		var (
-			errResult = azure.AppRoleAssignmentResult{}
-			nextLink  string
-		)
-
-		if list, err := s.GetAzureADAppRoleAssignments(ctx, servicePrincipal, filter, search, orderBy, expand, selectCols, 999, false); err != nil {
-			errResult.Error = err
-			if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-				return
-			}
-		} else {
-			for _, u := range list.Value {
-				if ok := pipeline.Send(ctx.Done(), out, azure.AppRoleAssignmentResult{Ok: u}); !ok {
-					return
-				}
-			}
-
-			nextLink = list.NextLink
-			for nextLink != "" {
-				var list azure.AppRoleAssignmentList
-				if url, err := url.Parse(nextLink); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if req, err := rest.NewRequest(ctx, "GET", url, nil, nil, nil); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if res, err := s.msgraph.Send(req); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else if err := rest.Decode(res.Body, &list); err != nil {
-					errResult.Error = err
-					if ok := pipeline.Send(ctx.Done(), out, errResult); !ok {
-						return
-					}
-					nextLink = ""
-				} else {
-					for _, u := range list.Value {
-						if ok := pipeline.Send(ctx.Done(), out, azure.AppRoleAssignmentResult{Ok: u}); !ok {
-							return
-						}
-					}
-					nextLink = list.NextLink
-				}
-			}
-		}
-	}()
 	return out
 }

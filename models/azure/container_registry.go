@@ -47,14 +47,3 @@ func (s ContainerRegistry) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type ContainerRegistryList struct {
-	NextLink string              `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []ContainerRegistry `json:"value"`              // A list of container registries.
-}
-
-type ContainerRegistryResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             ContainerRegistry
-}

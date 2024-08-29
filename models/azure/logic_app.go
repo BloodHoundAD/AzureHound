@@ -47,14 +47,3 @@ func (s LogicApp) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type LogicAppList struct {
-	NextLink string     `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []LogicApp `json:"value"`              // A list of logic apps.
-}
-
-type LogicAppResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             LogicApp
-}

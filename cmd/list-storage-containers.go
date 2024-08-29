@@ -102,14 +102,12 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing storage containers for this subscription", "subscriptionId", stAccount.(models.StorageAccount).SubscriptionId, "storageAccountName", stAccount.(models.StorageAccount).Name)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
-						resourceGroupName := item.Ok.ResourceGroupName()
 						storageContainer := models.StorageContainer{
 							StorageContainer:  item.Ok,
 							StorageAccountId:  stAccount.(models.StorageAccount).StorageAccount.Id,
-							SubscriptionId:    item.SubscriptionId,
-							ResourceGroupId:   resourceGroupId,
-							ResourceGroupName: resourceGroupName,
+							SubscriptionId:    "/subscriptions/"+stAccount.(models.StorageAccount).SubscriptionId,
+							ResourceGroupId:   item.Ok.ResourceGroupId(),
+							ResourceGroupName: item.Ok.ResourceGroupName(),
 							TenantId:          client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found storage container", "storageContainer", storageContainer)

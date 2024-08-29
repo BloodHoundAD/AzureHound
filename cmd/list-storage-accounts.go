@@ -95,13 +95,11 @@ func listStorageAccounts(ctx context.Context, client client.AzureClient, subscri
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing storage accounts for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
-						resourceGroupName := item.Ok.ResourceGroupName()
 						storageAccount := models.StorageAccount{
 							StorageAccount:    item.Ok,
-							SubscriptionId:    item.SubscriptionId,
-							ResourceGroupId:   resourceGroupId,
-							ResourceGroupName: resourceGroupName,
+							SubscriptionId:    "/subscriptions/" + id,
+							ResourceGroupId:   item.Ok.ResourceGroupId(),
+							ResourceGroupName: item.Ok.ResourceGroupName(),
 							TenantId:          client.TenantInfo().TenantId,
 						}
 						log.V(2).Info("found storage account", "storageAccount", storageAccount)

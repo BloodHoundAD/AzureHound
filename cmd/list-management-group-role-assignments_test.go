@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -41,14 +42,14 @@ func TestListResourceGroupRoleAssignments(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockResourceGroupsChannel := make(chan interface{})
-	mockResourceGroupRoleAssignmentChannel := make(chan azure.RoleAssignmentResult)
-	mockResourceGroupRoleAssignmentChannel2 := make(chan azure.RoleAssignmentResult)
+	mockResourceGroupRoleAssignmentChannel := make(chan client.AzureResult[azure.RoleAssignment])
+	mockResourceGroupRoleAssignmentChannel2 := make(chan client.AzureResult[azure.RoleAssignment])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupRoleAssignmentChannel).Times(1)
-	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupRoleAssignmentChannel2).Times(1)
+	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupRoleAssignmentChannel).Times(1)
+	mockClient.EXPECT().ListRoleAssignmentsForResource(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResourceGroupRoleAssignmentChannel2).Times(1)
 	channel := listResourceGroupRoleAssignments(ctx, mockClient, mockResourceGroupsChannel)
 
 	go func() {
@@ -62,14 +63,14 @@ func TestListResourceGroupRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockResourceGroupRoleAssignmentChannel)
-		mockResourceGroupRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockResourceGroupRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.ContributorRoleID,
 				},
 			},
 		}
-		mockResourceGroupRoleAssignmentChannel <- azure.RoleAssignmentResult{
+		mockResourceGroupRoleAssignmentChannel <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.OwnerRoleID,
@@ -79,14 +80,14 @@ func TestListResourceGroupRoleAssignments(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockResourceGroupRoleAssignmentChannel2)
-		mockResourceGroupRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockResourceGroupRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Ok: azure.RoleAssignment{
 				Properties: azure.RoleAssignmentPropertiesWithScope{
 					RoleDefinitionId: constants.OwnerRoleID,
 				},
 			},
 		}
-		mockResourceGroupRoleAssignmentChannel2 <- azure.RoleAssignmentResult{
+		mockResourceGroupRoleAssignmentChannel2 <- client.AzureResult[azure.RoleAssignment]{
 			Error: mockError,
 		}
 	}()

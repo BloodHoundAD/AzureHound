@@ -104,7 +104,7 @@ func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, w
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this web app", "webAppId", id)
 					} else {
@@ -112,7 +112,7 @@ func listWebAppRoleAssignments(ctx context.Context, client client.AzureClient, w
 
 						webAppRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("Found web app role asignment", "webAppRoleAssignment", webAppRoleAssignment)

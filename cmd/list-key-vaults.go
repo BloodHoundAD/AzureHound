@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -92,17 +93,16 @@ func listKeyVaults(ctx context.Context, client client.AzureClient, subscriptions
 			defer wg.Done()
 			for id := range stream {
 				count := 0
-				for item := range client.ListAzureKeyVaults(ctx, id, 999) {
+				for item := range client.ListAzureKeyVaults(ctx, id, query.RMParams{Top: 999}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing key vaults for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroup := item.Ok.ResourceGroupId()
 						// the embedded struct's values override top-level properties so TenantId
 						// needs to be explicitly set.
 						keyVault := models.KeyVault{
 							KeyVault:       item.Ok,
-							SubscriptionId: item.SubscriptionId,
-							ResourceGroup:  resourceGroup,
+							SubscriptionId: id,
+							ResourceGroup:  item.Ok.ResourceGroupId(),
 							TenantId:       item.Ok.Properties.TenantId,
 						}
 						log.V(2).Info("found key vault", "keyVault", keyVault)

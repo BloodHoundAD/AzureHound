@@ -95,12 +95,12 @@ func listFunctionApps(ctx context.Context, client client.AzureClient, subscripti
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing function apps for this subscription", "subscriptionId", id)
 					} else {
-						resourceGroupId := item.Ok.ResourceGroupId()
 						functionApp := models.FunctionApp{
-							FunctionApp:     item.Ok,
-							SubscriptionId:  item.SubscriptionId,
-							ResourceGroupId: resourceGroupId,
-							TenantId:        client.TenantInfo().TenantId,
+							FunctionApp:       item.Ok,
+							SubscriptionId:    "/subscriptions/" + id,
+							ResourceGroupId:   item.Ok.ResourceGroupId(),
+							ResourceGroupName: item.Ok.ResourceGroupName(),
+							TenantId:          client.TenantInfo().TenantId,
 						}
 						if functionApp.Kind == "functionapp" {
 							log.V(2).Info("found function app", "functionApp", functionApp)

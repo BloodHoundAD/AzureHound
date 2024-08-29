@@ -42,20 +42,6 @@ type RoleAssignment struct {
 	Properties RoleAssignmentPropertiesWithScope `json:"properties,omitempty"`
 }
 
-type RoleAssignmentList struct {
-	// The URL to use for getting the next set of results.
-	NextLink string `json:"nextLink,omitempty"`
-
-	// The role assignment list.
-	Value []RoleAssignment `json:"value"`
-}
-
-type RoleAssignmentResult struct {
-	ParentId string
-	Error    error
-	Ok       RoleAssignment
-}
-
 func (s RoleAssignment) GetPrincipalId() string {
 	return s.Properties.PrincipalId
 }

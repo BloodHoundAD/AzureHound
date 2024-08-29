@@ -99,7 +99,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this storage account", "storageAccountId", id)
 					} else {
@@ -107,7 +107,7 @@ func listStorageAccountRoleAssignments(ctx context.Context, client client.AzureC
 
 						storageAccountRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found storage account role assignment", "storageAccountRoleAssignment", storageAccountRoleAssignment)

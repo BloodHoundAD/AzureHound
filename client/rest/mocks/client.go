@@ -9,6 +9,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
+	query "github.com/bloodhoundad/azurehound/v2/client/query"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -62,7 +63,7 @@ func (mr *MockRestClientMockRecorder) CloseIdleConnections() *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockRestClient) Delete(arg0 context.Context, arg1 string, arg2 interface{}, arg3, arg4 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Delete(arg0 context.Context, arg1 string, arg2 interface{}, arg3 query.Params, arg4 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*http.Response)
@@ -77,7 +78,7 @@ func (mr *MockRestClientMockRecorder) Delete(arg0, arg1, arg2, arg3, arg4 interf
 }
 
 // Get mocks base method.
-func (m *MockRestClient) Get(arg0 context.Context, arg1 string, arg2, arg3 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Get(arg0 context.Context, arg1 string, arg2 query.Params, arg3 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*http.Response)
@@ -92,7 +93,7 @@ func (mr *MockRestClientMockRecorder) Get(arg0, arg1, arg2, arg3 interface{}) *g
 }
 
 // Patch mocks base method.
-func (m *MockRestClient) Patch(arg0 context.Context, arg1 string, arg2 interface{}, arg3, arg4 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Patch(arg0 context.Context, arg1 string, arg2 interface{}, arg3 query.Params, arg4 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Patch", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*http.Response)
@@ -107,7 +108,7 @@ func (mr *MockRestClientMockRecorder) Patch(arg0, arg1, arg2, arg3, arg4 interfa
 }
 
 // Post mocks base method.
-func (m *MockRestClient) Post(arg0 context.Context, arg1 string, arg2 interface{}, arg3, arg4 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Post(arg0 context.Context, arg1 string, arg2 interface{}, arg3 query.Params, arg4 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Post", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*http.Response)
@@ -122,7 +123,7 @@ func (mr *MockRestClientMockRecorder) Post(arg0, arg1, arg2, arg3, arg4 interfac
 }
 
 // Put mocks base method.
-func (m *MockRestClient) Put(arg0 context.Context, arg1 string, arg2 interface{}, arg3, arg4 map[string]string) (*http.Response, error) {
+func (m *MockRestClient) Put(arg0 context.Context, arg1 string, arg2 interface{}, arg3 query.Params, arg4 map[string]string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Put", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*http.Response)

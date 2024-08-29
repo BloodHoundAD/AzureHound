@@ -29,13 +29,3 @@ type ManagementGroup struct {
 	// The type of resource: "Microsoft.Management/managementGroups"
 	Type string `json:"type,omitempty"`
 }
-
-type ManagementGroupList struct {
-	NextLink string            `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []ManagementGroup `json:"value"`              // A list of tenants.
-}
-
-type ManagementGroupResult struct {
-	Error error
-	Ok    ManagementGroup
-}

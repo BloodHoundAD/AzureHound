@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -101,7 +102,7 @@ func listRoleAssignments(ctx context.Context, client client.AzureClient, roles <
 					filter = fmt.Sprintf("roleDefinitionId eq '%s'", id)
 				)
 				// We expand directoryScope in order to obtain the appId from app specific scoped role assignments
-				for item := range client.ListAzureADRoleAssignments(ctx, filter, "", "", "directoryScope", nil) {
+				for item := range client.ListAzureADRoleAssignments(ctx, query.GraphParams{Filter: filter, Expand: "directoryScope"}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this role", "roleDefinitionId", id)
 					} else {

@@ -2,7 +2,6 @@ package models_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -89,7 +88,14 @@ func TestStripEmptyEntries(t *testing.T) {
 
 	t.Run("should recursively strip non-empty, nested map[string]any entries", func(t *testing.T) {
 		data := map[string]any{
-			"empty": map[string]any{},
+			"empty": map[string]any{
+				"false":       false,
+				"emptystring": "",
+				"emptynest": map[string]any{
+					"false":       false,
+					"emptystring": "",
+				},
+			},
 			"nonempty": map[string]any{
 				"emptyprop":    0,
 				"nonemptyprop": 1,
@@ -106,9 +112,25 @@ func TestStripEmptyEntries(t *testing.T) {
 		require.Equal(t, 1, nested["nonemptyprop"])
 	})
 
-	t.Run("should strip non-empty slice entries of type map[string]any", func(t *testing.T) {
+	t.Run("should strip empty slice entries of type map[string]any", func(t *testing.T) {
 		data := map[string]any{
-			"empty": []any{},
+			"empty": []any{
+				map[string]any{
+					"false":       false,
+					"emptystring": "",
+				},
+			},
+			"emptynestedslice": []any{
+				map[string]any{
+					"nestedslice": []any{
+						map[string]any{
+							"false":       false,
+							"emptystring": "",
+						},
+					},
+					"emptystring": "",
+				},
+			},
 			"nonempty": []any{
 				map[string]any{
 					"emptyprop":    0,
@@ -117,13 +139,12 @@ func TestStripEmptyEntries(t *testing.T) {
 			},
 		}
 
-		fmt.Println(data["nonempty"])
 		models.StripEmptyEntries(data)
 		require.Nil(t, data["empty"])
+		require.Nil(t, data["emptynestedslice"])
 		require.NotNil(t, data["nonempty"])
 		require.IsType(t, []any{}, data["nonempty"])
 		slice := data["nonempty"].([]any)
-		fmt.Println(slice)
 		require.IsType(t, map[string]any{}, slice[0])
 		entry := slice[0].(map[string]any)
 		require.Nil(t, entry["emptyprop"])
@@ -147,7 +168,7 @@ func TestOmitEmpty(t *testing.T) {
 		require.Equal(t, `{}`, string(filtered))
 	})
 
-	t.Run("should not omit non-empty basic types", func(t *testing.T) {
+	t.Run("should not omit non-empty basic types except empty structs", func(t *testing.T) {
 		data := json.RawMessage(`{
 			"string": "foo",
 			"number": 1,
@@ -158,17 +179,17 @@ func TestOmitEmpty(t *testing.T) {
 
 		filtered, err := models.OmitEmpty(data)
 		require.Nil(t, err)
-		require.Equal(t, `{"array":[1],"boolean":true,"number":1,"object":{},"string":"foo"}`, string(filtered))
+		require.Equal(t, `{"array":[1],"boolean":true,"number":1,"string":"foo"}`, string(filtered))
 	})
 
-	t.Run("should not omit empty struct/object types, just their empty properties", func(t *testing.T) {
+	t.Run("should omit empty struct/object types, just their empty properties", func(t *testing.T) {
 		data := json.RawMessage(`{
 			"object": { "bar": "" }
 		}`)
 
 		filtered, err := models.OmitEmpty(data)
 		require.Nil(t, err)
-		require.Equal(t, `{"object":{}}`, string(filtered))
+		require.Equal(t, `{}`, string(filtered))
 	})
 
 	t.Run("should recursively strip non-empty, nested object entries", func(t *testing.T) {

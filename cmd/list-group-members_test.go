@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
@@ -41,14 +42,14 @@ func TestListGroupMembers(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockGroupsChannel := make(chan interface{})
-	mockGroupMemberChannel := make(chan azure.MemberObjectResult)
-	mockGroupMemberChannel2 := make(chan azure.MemberObjectResult)
+	mockGroupMemberChannel := make(chan client.AzureResult[json.RawMessage])
+	mockGroupMemberChannel2 := make(chan client.AzureResult[json.RawMessage])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListAzureADGroupMembers(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupMemberChannel).Times(1)
-	mockClient.EXPECT().ListAzureADGroupMembers(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupMemberChannel2).Times(1)
+	mockClient.EXPECT().ListAzureADGroupMembers(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupMemberChannel).Times(1)
+	mockClient.EXPECT().ListAzureADGroupMembers(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockGroupMemberChannel2).Times(1)
 	channel := listGroupMembers(ctx, mockClient, mockGroupsChannel)
 
 	go func() {
@@ -62,19 +63,19 @@ func TestListGroupMembers(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockGroupMemberChannel)
-		mockGroupMemberChannel <- azure.MemberObjectResult{
+		mockGroupMemberChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockGroupMemberChannel <- azure.MemberObjectResult{
+		mockGroupMemberChannel <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
 	}()
 	go func() {
 		defer close(mockGroupMemberChannel2)
-		mockGroupMemberChannel2 <- azure.MemberObjectResult{
+		mockGroupMemberChannel2 <- client.AzureResult[json.RawMessage]{
 			Ok: json.RawMessage{},
 		}
-		mockGroupMemberChannel2 <- azure.MemberObjectResult{
+		mockGroupMemberChannel2 <- client.AzureResult[json.RawMessage]{
 			Error: mockError,
 		}
 	}()

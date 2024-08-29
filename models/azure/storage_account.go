@@ -50,14 +50,3 @@ func (s StorageAccount) ResourceGroupId() string {
 		return ""
 	}
 }
-
-type StorageAccountList struct {
-	NextLink string           `json:"nextLink,omitempty"` // The URL to use for getting the next set of values.
-	Value    []StorageAccount `json:"value"`              // A list of storage accounts.
-}
-
-type StorageAccountResult struct {
-	SubscriptionId string
-	Error          error
-	Ok             StorageAccount
-}

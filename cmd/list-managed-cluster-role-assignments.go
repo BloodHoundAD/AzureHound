@@ -104,7 +104,7 @@ func listManagedClusterRoleAssignments(ctx context.Context, client client.AzureC
 					}
 					count = 0
 				)
-				for item := range client.ListRoleAssignmentsForResource(ctx, id, "") {
+				for item := range client.ListRoleAssignmentsForResource(ctx, id, "", "") {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing role assignments for this managed cluster", "managedClusterId", id)
 					} else {
@@ -112,7 +112,7 @@ func listManagedClusterRoleAssignments(ctx context.Context, client client.AzureC
 
 						managedClusterRoleAssignment := models.AzureRoleAssignment{
 							Assignee:         item.Ok,
-							ObjectId:         item.ParentId,
+							ObjectId:         id,
 							RoleDefinitionId: roleDefinitionId,
 						}
 						log.V(2).Info("found managed cluster role assignment", "managedClusterRoleAssignment", managedClusterRoleAssignment)

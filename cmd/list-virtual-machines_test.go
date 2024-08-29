@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
@@ -40,8 +41,8 @@ func TestListVirtualMachines(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockSubscriptionsChannel := make(chan interface{})
-	mockVirtualMachineChannel := make(chan azure.VirtualMachineResult)
-	mockVirtualMachineChannel2 := make(chan azure.VirtualMachineResult)
+	mockVirtualMachineChannel := make(chan client.AzureResult[azure.VirtualMachine])
+	mockVirtualMachineChannel2 := make(chan client.AzureResult[azure.VirtualMachine])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -61,19 +62,19 @@ func TestListVirtualMachines(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockVirtualMachineChannel)
-		mockVirtualMachineChannel <- azure.VirtualMachineResult{
+		mockVirtualMachineChannel <- client.AzureResult[azure.VirtualMachine]{
 			Ok: azure.VirtualMachine{},
 		}
-		mockVirtualMachineChannel <- azure.VirtualMachineResult{
+		mockVirtualMachineChannel <- client.AzureResult[azure.VirtualMachine]{
 			Ok: azure.VirtualMachine{},
 		}
 	}()
 	go func() {
 		defer close(mockVirtualMachineChannel2)
-		mockVirtualMachineChannel2 <- azure.VirtualMachineResult{
+		mockVirtualMachineChannel2 <- client.AzureResult[azure.VirtualMachine]{
 			Ok: azure.VirtualMachine{},
 		}
-		mockVirtualMachineChannel2 <- azure.VirtualMachineResult{
+		mockVirtualMachineChannel2 <- client.AzureResult[azure.VirtualMachine]{
 			Error: mockError,
 		}
 	}()

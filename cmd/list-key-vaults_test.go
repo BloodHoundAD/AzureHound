@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
@@ -40,8 +41,8 @@ func TestListKeyVaults(t *testing.T) {
 	mockClient := mocks.NewMockAzureClient(ctrl)
 
 	mockSubscriptionsChannel := make(chan interface{})
-	mockKeyVaultChannel := make(chan azure.KeyVaultResult)
-	mockKeyVaultChannel2 := make(chan azure.KeyVaultResult)
+	mockKeyVaultChannel := make(chan client.AzureResult[azure.KeyVault])
+	mockKeyVaultChannel2 := make(chan client.AzureResult[azure.KeyVault])
 
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
@@ -61,19 +62,19 @@ func TestListKeyVaults(t *testing.T) {
 	}()
 	go func() {
 		defer close(mockKeyVaultChannel)
-		mockKeyVaultChannel <- azure.KeyVaultResult{
+		mockKeyVaultChannel <- client.AzureResult[azure.KeyVault]{
 			Ok: azure.KeyVault{},
 		}
-		mockKeyVaultChannel <- azure.KeyVaultResult{
+		mockKeyVaultChannel <- client.AzureResult[azure.KeyVault]{
 			Ok: azure.KeyVault{},
 		}
 	}()
 	go func() {
 		defer close(mockKeyVaultChannel2)
-		mockKeyVaultChannel2 <- azure.KeyVaultResult{
+		mockKeyVaultChannel2 <- client.AzureResult[azure.KeyVault]{
 			Ok: azure.KeyVault{},
 		}
-		mockKeyVaultChannel2 <- azure.KeyVaultResult{
+		mockKeyVaultChannel2 <- client.AzureResult[azure.KeyVault]{
 			Error: mockError,
 		}
 	}()

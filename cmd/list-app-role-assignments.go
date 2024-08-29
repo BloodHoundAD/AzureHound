@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -97,7 +98,7 @@ func listAppRoleAssignments(ctx context.Context, client client.AzureClient, serv
 				var (
 					count = 0
 				)
-				for item := range client.ListAzureADAppRoleAssignments(ctx, servicePrincipal.Id, "", "", "", "", nil) {
+				for item := range client.ListAzureADAppRoleAssignments(ctx, servicePrincipal.Id, query.GraphParams{}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing app role assignments for this service principal", "servicePrincipalId", servicePrincipal)
 					} else {

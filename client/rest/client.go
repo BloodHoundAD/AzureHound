@@ -32,16 +32,17 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client/config"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/constants"
 )
 
 type RestClient interface {
 	Authenticate() error
-	Delete(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
-	Get(ctx context.Context, path string, params, headers map[string]string) (*http.Response, error)
-	Patch(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
-	Post(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
-	Put(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error)
+	Delete(ctx context.Context, path string, body interface{}, params query.Params, headers map[string]string) (*http.Response, error)
+	Get(ctx context.Context, path string, params query.Params, headers map[string]string) (*http.Response, error)
+	Patch(ctx context.Context, path string, body interface{}, params query.Params, headers map[string]string) (*http.Response, error)
+	Post(ctx context.Context, path string, body interface{}, params query.Params, headers map[string]string) (*http.Response, error)
+	Put(ctx context.Context, path string, body interface{}, params query.Params, headers map[string]string) (*http.Response, error)
 	Send(req *http.Request) (*http.Response, error)
 	CloseIdleConnections()
 }
@@ -154,45 +155,73 @@ func (s *restClient) Authenticate() error {
 	}
 }
 
-func (s *restClient) Delete(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Delete(ctx context.Context, path string, body interface{}, params query.Params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
-	if req, err := NewRequest(ctx, http.MethodDelete, endpoint, body, params, headers); err != nil {
+	paramsMap := make(map[string]string)
+	if params != nil {
+		paramsMap = params.AsMap()
+	}
+	if req, err := NewRequest(ctx, http.MethodDelete, endpoint, body, paramsMap, headers); err != nil {
 		return nil, err
 	} else {
 		return s.Send(req)
 	}
 }
 
-func (s *restClient) Get(ctx context.Context, path string, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Get(ctx context.Context, path string, params query.Params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
-	if req, err := NewRequest(ctx, http.MethodGet, endpoint, nil, params, headers); err != nil {
+	paramsMap := make(map[string]string)
+
+	if params != nil {
+		paramsMap = params.AsMap()
+		if params.NeedsEventualConsistencyHeaderFlag() {
+			if headers == nil {
+				headers = make(map[string]string)
+			}
+			headers["ConsistencyLevel"] = "eventual"
+		}
+	}
+
+	if req, err := NewRequest(ctx, http.MethodGet, endpoint, nil, paramsMap, headers); err != nil {
 		return nil, err
 	} else {
 		return s.Send(req)
 	}
 }
 
-func (s *restClient) Patch(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Patch(ctx context.Context, path string, body interface{}, params query.Params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
-	if req, err := NewRequest(ctx, http.MethodPatch, endpoint, body, params, headers); err != nil {
+	paramsMap := make(map[string]string)
+	if params != nil {
+		paramsMap = params.AsMap()
+	}
+	if req, err := NewRequest(ctx, http.MethodPatch, endpoint, body, paramsMap, headers); err != nil {
 		return nil, err
 	} else {
 		return s.Send(req)
 	}
 }
 
-func (s *restClient) Post(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Post(ctx context.Context, path string, body interface{}, params query.Params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
-	if req, err := NewRequest(ctx, http.MethodPost, endpoint, body, params, headers); err != nil {
+	paramsMap := make(map[string]string)
+	if params != nil {
+		paramsMap = params.AsMap()
+	}
+	if req, err := NewRequest(ctx, http.MethodPost, endpoint, body, paramsMap, headers); err != nil {
 		return nil, err
 	} else {
 		return s.Send(req)
 	}
 }
 
-func (s *restClient) Put(ctx context.Context, path string, body interface{}, params, headers map[string]string) (*http.Response, error) {
+func (s *restClient) Put(ctx context.Context, path string, body interface{}, params query.Params, headers map[string]string) (*http.Response, error) {
 	endpoint := s.api.ResolveReference(&url.URL{Path: path})
-	if req, err := NewRequest(ctx, http.MethodPost, endpoint, body, params, headers); err != nil {
+	paramsMap := make(map[string]string)
+	if params != nil {
+		paramsMap = params.AsMap()
+	}
+	if req, err := NewRequest(ctx, http.MethodPost, endpoint, body, paramsMap, headers); err != nil {
 		return nil, err
 	} else {
 		return s.Send(req)

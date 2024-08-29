@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bloodhoundad/azurehound/v2/client"
 	"github.com/bloodhoundad/azurehound/v2/client/mocks"
 	"github.com/bloodhoundad/azurehound/v2/models/azure"
 	"go.uber.org/mock/gomock"
@@ -37,21 +38,21 @@ func TestListServicePrincipals(t *testing.T) {
 	ctx := context.Background()
 
 	mockClient := mocks.NewMockAzureClient(ctrl)
-	mockChannel := make(chan azure.ServicePrincipalResult)
+	mockChannel := make(chan client.AzureResult[azure.ServicePrincipal])
 	mockTenant := azure.Tenant{}
 	mockError := fmt.Errorf("I'm an error")
 	mockClient.EXPECT().TenantInfo().Return(mockTenant).AnyTimes()
-	mockClient.EXPECT().ListAzureADServicePrincipals(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockChannel)
+	mockClient.EXPECT().ListAzureADServicePrincipals(gomock.Any(), gomock.Any()).Return(mockChannel)
 
 	go func() {
 		defer close(mockChannel)
-		mockChannel <- azure.ServicePrincipalResult{
+		mockChannel <- client.AzureResult[azure.ServicePrincipal]{
 			Ok: azure.ServicePrincipal{},
 		}
-		mockChannel <- azure.ServicePrincipalResult{
+		mockChannel <- client.AzureResult[azure.ServicePrincipal]{
 			Error: mockError,
 		}
-		mockChannel <- azure.ServicePrincipalResult{
+		mockChannel <- client.AzureResult[azure.ServicePrincipal]{
 			Ok: azure.ServicePrincipal{},
 		}
 	}()

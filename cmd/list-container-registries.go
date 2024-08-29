@@ -103,7 +103,7 @@ func listContainerRegistries(ctx context.Context, client client.AzureClient, sub
 						resourceGroupId := item.Ok.ResourceGroupId()
 						containerRegistry := models.ContainerRegistry{
 							ContainerRegistry: item.Ok,
-							SubscriptionId:    item.SubscriptionId,
+							SubscriptionId:    "/subscriptions/" + id,
 							ResourceGroupId:   resourceGroupId,
 							TenantId:          client.TenantInfo().TenantId,
 						}

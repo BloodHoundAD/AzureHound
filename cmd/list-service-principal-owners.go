@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/bloodhoundad/azurehound/v2/client"
+	"github.com/bloodhoundad/azurehound/v2/client/query"
 	"github.com/bloodhoundad/azurehound/v2/config"
 	"github.com/bloodhoundad/azurehound/v2/enums"
 	"github.com/bloodhoundad/azurehound/v2/models"
@@ -97,13 +98,13 @@ func listServicePrincipalOwners(ctx context.Context, client client.AzureClient, 
 					}
 					count = 0
 				)
-				for item := range client.ListAzureADServicePrincipalOwners(ctx, id, "", "", "", nil) {
+				for item := range client.ListAzureADServicePrincipalOwners(ctx, id, query.GraphParams{}) {
 					if item.Error != nil {
 						log.Error(item.Error, "unable to continue processing owners for this service principal", "servicePrincipalId", id)
 					} else {
 						servicePrincipalOwner := models.ServicePrincipalOwner{
 							Owner:              item.Ok,
-							ServicePrincipalId: item.ServicePrincipalId,
+							ServicePrincipalId: id,
 						}
 						log.V(2).Info("found service principal owner", "servicePrincipalOwner", servicePrincipalOwner)
 						count++
