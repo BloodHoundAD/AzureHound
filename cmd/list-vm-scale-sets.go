@@ -103,7 +103,7 @@ func listVMScaleSets(ctx context.Context, client client.AzureClient, subscriptio
 					} else {
 						vmScaleSet := models.VMScaleSet{
 							VMScaleSet:      item.Ok,
-							SubscriptionId:   "/subscriptions/"+id,
+							SubscriptionId:  "/subscriptions/" + id,
 							ResourceGroupId: item.Ok.ResourceGroupId(),
 							TenantId:        client.TenantInfo().TenantId,
 						}

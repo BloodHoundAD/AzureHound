@@ -105,7 +105,7 @@ func listStorageContainers(ctx context.Context, client client.AzureClient, stora
 						storageContainer := models.StorageContainer{
 							StorageContainer:  item.Ok,
 							StorageAccountId:  stAccount.(models.StorageAccount).StorageAccount.Id,
-							SubscriptionId:    "/subscriptions/"+stAccount.(models.StorageAccount).SubscriptionId,
+							SubscriptionId:    "/subscriptions/" + stAccount.(models.StorageAccount).SubscriptionId,
 							ResourceGroupId:   item.Ok.ResourceGroupId(),
 							ResourceGroupName: item.Ok.ResourceGroupName(),
 							TenantId:          client.TenantInfo().TenantId,
