@@ -303,9 +303,9 @@ var (
 		Usage:      "The number of threads to use when collecting various resources.",
 		Persistent: true,
 		Required:   false,
-		Default:    2,
+		Default:    25,
 		MinValue:   1,
-		MaxValue:   25,
+		MaxValue:   50,
 	}
 
 	// Command specific configurations
